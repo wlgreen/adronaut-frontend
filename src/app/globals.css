@@ -1,26 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #111827;
+  --foreground: #f9fafb;
+  --surface: #374151;
+  --surface-hover: #4b5563;
+  --border: #9ca3af;
+  --border-subtle: #6b7280;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --accent-cyan: #06b6d4;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Clean scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Clean text selection */
+::selection {
+  background: rgba(79, 70, 229, 0.2);
+  color: var(--foreground);
+}
+
+/* Glassmorphism panel effect */
+.glass-panel {
+  background: linear-gradient(135deg,
+    rgba(55, 65, 81, 0.9) 0%,
+    rgba(55, 65, 81, 0.7) 100%);
+  border: 1px solid rgba(156, 163, 175, 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+              0 4px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Premium button styles */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  filter: brightness(1.1);
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+  border: 1px solid var(--success);
+  transition: all 0.2s ease;
+}
+
+.btn-success:hover {
+  filter: brightness(1.1);
+}
+
+.btn-danger {
+  background: var(--error);
+  color: white;
+  border: 1px solid var(--error);
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+}
+
+/* Subtle accent highlights */
+.accent-highlight {
+  position: relative;
+}
+
+.accent-highlight::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  width: 3px;
+  height: 3px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 4px var(--accent-cyan);
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 0.2s ease;
+}
+
+/* Display typography */
+.display-heading {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 600;
+}
+
+/* Content separation utilities */
+.content-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.content-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Better visual separation */
+.separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 1.5rem 0;
 }

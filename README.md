@@ -1,36 +1,152 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Adronaut Web Application
 
-## Getting Started
+The frontend for Adronaut - a sci-fi themed marketing mission control system built with Next.js, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🚀 **Workspace**: Upload data artifacts and view AI-generated analysis snapshots
+- 🎯 **Strategy**: Mission control interface for HITL strategy management
+- 📊 **Results**: Telemetry dashboard with real-time campaign metrics
+- 🎨 **Sci-Fi UI**: Dark theme with neon accents, glowing effects, and holographic panels
+- 🤖 **AI Integration**: AutoGen agents for feature extraction and insights
+
+## Tech Stack
+
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type safety and developer experience
+- **Tailwind CSS** - Utility-first CSS framework
+- **Supabase** - Database and file storage
+- **Lucide React** - Icon library
+- **React Dropzone** - File upload functionality
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Supabase account and project
+- OpenAI API key
+
+## Environment Setup
+
+1. **Copy environment file**:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Configure environment variables**:
+   ```env
+   # Supabase Configuration
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+   # AutoGen Service
+   NEXT_PUBLIC_AUTOGEN_SERVICE_URL=http://localhost:8000
+
+   # OpenAI (for client-side LLM calls if needed)
+   NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key
+   ```
+
+## Database Setup
+
+1. **Create Supabase project** at [supabase.com](https://supabase.com)
+
+2. **Run the database schema**:
+   - Go to your Supabase project dashboard
+   - Navigate to SQL Editor
+   - Copy and execute the schema from `/docs/supabase-schema.sql`
+
+3. **Configure storage bucket**:
+   - Go to Storage in your Supabase dashboard
+   - The `artifacts` bucket should be created automatically by the schema
+   - Verify storage policies are set up correctly
+
+## Installation
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Open the application**:
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── page.tsx           # Workspace page (home)
+│   ├── strategy/          # Strategy management
+│   ├── results/           # Results dashboard
+│   ├── layout.tsx         # Root layout
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── ui/               # Reusable UI components
+│   ├── layout/           # Layout components
+│   ├── workspace/        # Workspace-specific components
+│   ├── strategy/         # Strategy-specific components
+│   └── results/          # Results-specific components
+└── lib/                  # Utilities and configurations
+    ├── supabase.ts       # Supabase client
+    └── database.types.ts # TypeScript types
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## UI Components
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Core Components
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Button**: Sci-fi styled buttons with glow effects
+- **Card**: Holographic panel containers with variants
+- **Badge**: Status indicators with neon colors
+- **Dialog**: Floating holo-panel modals
+- **Progress**: Animated progress bars
 
-## Learn More
+### Design System
 
-To learn more about Next.js, take a look at the following resources:
+The application uses a custom sci-fi design system built on Tailwind CSS:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Colors**: Space grays, electric indigo, neon accents
+- **Typography**: Inter (body), Orbitron (headings), JetBrains Mono (code)
+- **Effects**: Glowing borders, holographic panels, scan lines
+- **Animations**: Pulse effects, floating elements, streaming animations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Integration
 
-## Deploy on Vercel
+The web app integrates with the AutoGen service running on port 8000:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **File Upload**: `POST /upload`
+- **Start Workflow**: `POST /autogen/run/start`
+- **Continue Workflow**: `POST /autogen/run/continue`
+- **Project Status**: `GET /project/{project_id}/status`
+- **Real-time Events**: `GET /events/{run_id}` (SSE)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+### Vercel (Recommended)
+
+1. **Connect repository** to Vercel
+2. **Configure environment variables** in Vercel dashboard
+3. **Deploy** - automatic deployments on git push
+
+### Self-hosted
+
+1. **Build the application**:
+   ```bash
+   npm run build
+   ```
+
+2. **Start production server**:
+   ```bash
+   npm start
+   ```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
