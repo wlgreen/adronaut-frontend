@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BarChart3, TrendingUp, AlertTriangle, Zap, DollarSign, Users, MousePointer, Eye } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
@@ -9,76 +9,9 @@ import { Badge } from '@/components/ui/Badge'
 import { CampaignCard } from '@/components/results/CampaignCard'
 import { MetricsChart } from '@/components/results/MetricsChart'
 import { PerformanceAlerts } from '@/components/results/PerformanceAlerts'
+import { useResultsData } from '@/hooks/useLLMData'
 
-// Sample campaign data
-const sampleCampaigns = [
-  {
-    campaign_id: "camp_001",
-    name: "Tech-Savvy Professionals Q4",
-    status: "running" as const,
-    start_date: "2024-09-25T00:00:00Z",
-    strategy_version: 2,
-    platforms: ["facebook", "google_ads", "linkedin"],
-    current_metrics: {
-      impressions: 245780,
-      clicks: 8936,
-      conversions: 287,
-      spend: 4250.50,
-      revenue: 18975.30
-    },
-    performance_indicators: {
-      ctr: 3.64,
-      cpa: 14.81,
-      roas: 4.46,
-      conversion_rate: 3.21
-    }
-  },
-  {
-    campaign_id: "camp_002",
-    name: "Budget-Conscious Families",
-    status: "completed" as const,
-    start_date: "2024-09-20T00:00:00Z",
-    strategy_version: 1,
-    platforms: ["facebook", "google_ads"],
-    current_metrics: {
-      impressions: 189340,
-      clicks: 5247,
-      conversions: 156,
-      spend: 2890.75,
-      revenue: 8734.20
-    },
-    performance_indicators: {
-      ctr: 2.77,
-      cpa: 18.53,
-      roas: 3.02,
-      conversion_rate: 2.97
-    }
-  }
-]
-
-// Sample performance alerts
-const sampleAlerts = [
-  {
-    id: "alert_001",
-    type: "optimization" as const,
-    severity: "medium" as const,
-    title: "CPA Above Target",
-    description: "Campaign 'Tech-Savvy Professionals Q4' has CPA 15% above target threshold",
-    recommendation: "Consider tightening audience targeting or adjusting bidding strategy",
-    created_at: "2024-09-28T14:30:00Z"
-  },
-  {
-    id: "alert_002",
-    type: "opportunity" as const,
-    severity: "low" as const,
-    title: "Strong Performance Detected",
-    description: "LinkedIn channel showing 40% higher ROAS than other channels",
-    recommendation: "Consider reallocating budget to maximize LinkedIn performance",
-    created_at: "2024-09-28T12:15:00Z"
-  }
-]
-
-// Sample metrics time series data
+// Fallback sample metrics data for when no real data is available
 const sampleMetricsData = [
   { date: '2024-09-25', impressions: 45200, clicks: 1630, conversions: 52, spend: 850 },
   { date: '2024-09-26', impressions: 48900, clicks: 1789, conversions: 58, spend: 875 },
@@ -89,8 +22,23 @@ const sampleMetricsData = [
 export default function ResultsPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d')
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
+  const [projectId, setProjectId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('adronaut_project_id') || `proj_${Date.now()}`
+    }
+    return `proj_${Date.now()}`
+  })
 
-  const totalMetrics = sampleCampaigns.reduce((total, campaign) => ({
+  const {
+    campaigns,
+    performanceAlerts,
+    metricsData,
+    isAnalyzingPerformance,
+    error,
+    analyzePerformance
+  } = useResultsData(projectId)
+
+  const totalMetrics = campaigns.reduce((total, campaign) => ({
     impressions: total.impressions + campaign.current_metrics.impressions,
     clicks: total.clicks + campaign.current_metrics.clicks,
     conversions: total.conversions + campaign.current_metrics.conversions,
@@ -98,12 +46,19 @@ export default function ResultsPage() {
     revenue: total.revenue + campaign.current_metrics.revenue
   }), { impressions: 0, clicks: 0, conversions: 0, spend: 0, revenue: 0 })
 
-  const avgMetrics = {
-    ctr: ((totalMetrics.clicks / totalMetrics.impressions) * 100),
-    cpa: totalMetrics.spend / totalMetrics.conversions,
-    roas: totalMetrics.revenue / totalMetrics.spend,
-    conversion_rate: ((totalMetrics.conversions / totalMetrics.clicks) * 100)
-  }
+  const avgMetrics = campaigns.length > 0 ? {
+    ctr: totalMetrics.impressions > 0 ? ((totalMetrics.clicks / totalMetrics.impressions) * 100) : 0,
+    cpa: totalMetrics.conversions > 0 ? (totalMetrics.spend / totalMetrics.conversions) : 0,
+    roas: totalMetrics.spend > 0 ? (totalMetrics.revenue / totalMetrics.spend) : 0,
+    conversion_rate: totalMetrics.clicks > 0 ? ((totalMetrics.conversions / totalMetrics.clicks) * 100) : 0
+  } : { ctr: 0, cpa: 0, roas: 0, conversion_rate: 0 }
+
+  // Trigger performance analysis when campaigns data is available
+  useEffect(() => {
+    if (campaigns.length > 0 && performanceAlerts.length === 0 && !isAnalyzingPerformance) {
+      analyzePerformance()
+    }
+  }, [campaigns, performanceAlerts, isAnalyzingPerformance, analyzePerformance])
 
   return (
     <div>
@@ -114,8 +69,13 @@ export default function ResultsPage() {
         actions={
           <div className="flex items-center gap-3">
             <Badge variant="success" glow>
-              {sampleCampaigns.filter(c => c.status === 'running').length} Active Campaigns
+              {campaigns.filter(c => c.status === 'running').length} Active Campaigns
             </Badge>
+            {isAnalyzingPerformance && (
+              <Badge variant="warning" glow>
+                Analyzing Performance...
+              </Badge>
+            )}
             <Button variant="primary" size="sm">
               <TrendingUp className="w-4 h-4" />
               Export Report
@@ -125,6 +85,40 @@ export default function ResultsPage() {
       />
 
       <div className="p-6 space-y-8">
+        {/* Error Display */}
+        {error && (
+          <section>
+            <Card variant="default" className="border-red-500 bg-red-500/10">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-red-500" />
+                  <div>
+                    <h3 className="font-semibold text-red-400">Performance Analysis Error</h3>
+                    <p className="text-sm text-red-300 mt-1">{error}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* No Data Warning */}
+        {campaigns.length === 0 && (
+          <section>
+            <Card variant="default" className="border-yellow-500 bg-yellow-500/10">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                  <div>
+                    <h3 className="font-semibold text-yellow-400">No Campaign Data</h3>
+                    <p className="text-sm text-yellow-300 mt-1">No campaigns found. Create campaigns from your strategy first.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
         {/* Performance Overview */}
         <section>
           <div className="mb-6">
@@ -243,7 +237,7 @@ export default function ResultsPage() {
           </div>
 
           <MetricsChart
-            data={sampleMetricsData}
+            data={metricsData.length > 0 ? metricsData : sampleMetricsData}
             timeRange={selectedTimeRange}
           />
         </section>
@@ -260,7 +254,7 @@ export default function ResultsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {sampleCampaigns.map((campaign) => (
+            {campaigns.map((campaign) => (
               <CampaignCard
                 key={campaign.campaign_id}
                 campaign={campaign}
@@ -285,7 +279,7 @@ export default function ResultsPage() {
             </p>
           </div>
 
-          <PerformanceAlerts alerts={sampleAlerts} />
+          <PerformanceAlerts alerts={performanceAlerts} />
         </section>
       </div>
     </div>

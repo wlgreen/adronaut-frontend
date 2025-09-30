@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { clsx } from 'clsx'
 import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react'
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Progress } from '@/components/ui/Progress'
 import { Badge } from '@/components/ui/Badge'
+import { supabase } from '@/lib/supabase'
+import { v4 as uuidv4 } from 'uuid'
 
 interface UploadedFile {
   id: string
@@ -15,21 +17,33 @@ interface UploadedFile {
   status: 'uploading' | 'success' | 'error'
   progress: number
   error?: string
+  supabaseId?: string
+  storagePath?: string
 }
 
 interface FileUploaderProps {
   onUploadComplete: (files: UploadedFile[]) => void
   maxFiles?: number
   acceptedFileTypes?: string[]
+  projectId: string
 }
 
 export function FileUploader({
   onUploadComplete,
   maxFiles = 10,
-  acceptedFileTypes = ['.csv', '.json', '.pdf', '.png', '.jpg', '.jpeg']
+  acceptedFileTypes = ['.csv', '.json', '.pdf', '.png', '.jpg', '.jpeg'],
+  projectId
 }: FileUploaderProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
+
+  // Effect to notify parent when files are uploaded successfully
+  useEffect(() => {
+    const successfulFiles = uploadedFiles.filter(f => f.status === 'success')
+    if (successfulFiles.length > 0 && !isUploading) {
+      onUploadComplete(successfulFiles)
+    }
+  }, [uploadedFiles, isUploading, onUploadComplete])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (uploadedFiles.length + acceptedFiles.length > maxFiles) {
@@ -48,38 +62,149 @@ export function FileUploader({
 
     setUploadedFiles(prev => [...prev, ...newFiles])
 
-    // Simulate file upload process
+    // Check if we're in development mode (force dev mode for now until Supabase is properly set up)
+    const isDevelopmentMode = true // TODO: Set to false when Supabase tables and storage are ready
+
+    // Upload files to Supabase (or simulate in dev mode)
     for (const fileData of newFiles) {
       try {
-        // Update progress incrementally
-        for (let progress = 0; progress <= 100; progress += 20) {
-          await new Promise(resolve => setTimeout(resolve, 200))
+        const artifactId = uuidv4()
+        const fileExtension = fileData.file.name.split('.').pop()
+        const storagePath = `${projectId}/${artifactId}.${fileExtension}`
+
+        if (isDevelopmentMode) {
+          // Simulate upload for development
+          console.log('Development mode: Simulating file upload for', fileData.file.name)
+
+          // Simulate progress
+          for (let progress = 25; progress <= 100; progress += 25) {
+            await new Promise(resolve => setTimeout(resolve, 300))
+            setUploadedFiles(prev =>
+              prev.map(f =>
+                f.id === fileData.id
+                  ? { ...f, progress }
+                  : f
+              )
+            )
+          }
+
+          // Mark as complete
           setUploadedFiles(prev =>
             prev.map(f =>
               f.id === fileData.id
-                ? { ...f, progress }
+                ? {
+                    ...f,
+                    status: 'success' as const,
+                    progress: 100,
+                    supabaseId: artifactId,
+                    storagePath: storagePath
+                  }
                 : f
             )
           )
+
+          continue
+        }
+
+        // Update progress to 25%
+        setUploadedFiles(prev =>
+          prev.map(f =>
+            f.id === fileData.id
+              ? { ...f, progress: 25 }
+              : f
+          )
+        )
+
+        // Upload to Supabase Storage
+        const { data: storageData, error: storageError } = await supabase.storage
+          .from('artifacts')
+          .upload(storagePath, fileData.file)
+
+        if (storageError) {
+          console.error('Storage error:', storageError)
+          // Check for common errors and provide helpful messages
+          if (storageError.message?.includes('bucket')) {
+            throw new Error('Storage bucket "artifacts" not found. Please create it in Supabase Dashboard.')
+          } else if (storageError.message?.includes('policy')) {
+            throw new Error('Storage policy not configured. Please set up storage policies in Supabase.')
+          } else {
+            throw new Error(`Storage upload failed: ${storageError.message || 'Unknown storage error'}`)
+          }
+        }
+
+        // Update progress to 75%
+        setUploadedFiles(prev =>
+          prev.map(f =>
+            f.id === fileData.id
+              ? { ...f, progress: 75 }
+              : f
+          )
+        )
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('artifacts')
+          .getPublicUrl(storagePath)
+
+        // Save metadata to database
+        const dbPayload = {
+          artifact_id: artifactId,
+          project_id: projectId,
+          filename: fileData.file.name,
+          mime: fileData.file.type || 'application/octet-stream',
+          storage_url: publicUrl,
+          created_at: new Date().toISOString()
+        }
+
+        const { data: dbData, error: dbError } = await supabase
+          .from('artifacts')
+          .insert(dbPayload)
+          .select()
+          .single()
+
+        if (dbError) {
+          console.error('Database error:', dbError)
+          // Check for common database errors
+          if (dbError.message?.includes('relation') && dbError.message?.includes('does not exist')) {
+            throw new Error('Database table "artifacts" not found. Please run the database schema setup.')
+          } else if (dbError.message?.includes('policy')) {
+            throw new Error('Database policy not configured. Please set up RLS policies in Supabase.')
+          } else {
+            throw new Error(`Database insert failed: ${dbError.message || 'Unknown database error'}`)
+          }
         }
 
         // Mark as complete
         setUploadedFiles(prev =>
           prev.map(f =>
             f.id === fileData.id
-              ? { ...f, status: 'success' as const, progress: 100 }
+              ? {
+                  ...f,
+                  status: 'success' as const,
+                  progress: 100,
+                  supabaseId: artifactId,
+                  storagePath: storagePath
+                }
               : f
           )
         )
 
       } catch (error) {
+        console.error('Upload error details:', {
+          error,
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          errorStack: error instanceof Error ? error.stack : undefined,
+          fileName: fileData.file.name,
+          projectId
+        })
+
         setUploadedFiles(prev =>
           prev.map(f =>
             f.id === fileData.id
               ? {
                   ...f,
                   status: 'error' as const,
-                  error: error instanceof Error ? error.message : 'Upload failed'
+                  error: error instanceof Error ? error.message : `Upload failed: ${JSON.stringify(error)}`
                 }
               : f
           )
@@ -89,9 +214,7 @@ export function FileUploader({
 
     setIsUploading(false)
 
-    // Get final uploaded files state
-    const finalFiles = [...uploadedFiles, ...newFiles.map(f => ({ ...f, status: 'success' as const, progress: 100 }))]
-    onUploadComplete(finalFiles)
+    // The useEffect will handle notifying the parent of successful uploads
 
   }, [uploadedFiles, maxFiles, onUploadComplete])
 
