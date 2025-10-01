@@ -35,24 +35,25 @@ export function MetricsChart({ data, timeRange }: MetricsChartProps) {
   const maxSpend = getMaxValue('spend')
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Impressions Chart */}
-      <Card variant="holo">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-neon-cyan" />
-            Impressions Trend
-            <Badge variant="info">{timeRange}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="space-y-8">
+      {/* Chart Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Impressions Chart */}
+        <div className="metric-card-trends">
+          <div className="chart-header">
+            <h3 className="chart-title">
+              <Eye className="w-5 h-5 text-green-400" />
+              Impressions Trend
+            </h3>
+            <Badge variant="success">{timeRange}</Badge>
+          </div>
           <div className="space-y-4">
             <div className="flex items-end justify-between h-32 px-2">
               {data.map((point, index) => (
                 <div key={index} className="flex flex-col items-center gap-2">
                   <div className="flex items-end h-24">
                     <div
-                      className="w-8 bg-gradient-to-t from-neon-cyan to-neon-cyan/50 rounded-t"
+                      className="w-8 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
                       style={{ height: `${getBarHeight(point.impressions, maxImpressions)}%` }}
                     />
                   </div>
@@ -63,32 +64,30 @@ export function MetricsChart({ data, timeRange }: MetricsChartProps) {
               ))}
             </div>
             <div className="text-center">
-              <p className="text-2xl font-mono font-bold text-white">
+              <p className="metric-value text-green-300">
                 {data.reduce((sum, d) => sum + d.impressions, 0).toLocaleString()}
               </p>
-              <p className="text-sm text-gray-400">Total Impressions</p>
+              <p className="metric-label">Total Impressions</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Clicks Chart */}
-      <Card variant="holo">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MousePointer className="w-5 h-5 text-neon-emerald" />
-            Clicks Trend
+        {/* Clicks Chart */}
+        <div className="metric-card-trends">
+          <div className="chart-header">
+            <h3 className="chart-title">
+              <MousePointer className="w-5 h-5 text-green-400" />
+              Clicks Trend
+            </h3>
             <Badge variant="success">{timeRange}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </div>
           <div className="space-y-4">
             <div className="flex items-end justify-between h-32 px-2">
               {data.map((point, index) => (
                 <div key={index} className="flex flex-col items-center gap-2">
                   <div className="flex items-end h-24">
                     <div
-                      className="w-8 bg-gradient-to-t from-neon-emerald to-neon-emerald/50 rounded-t"
+                      className="w-8 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
                       style={{ height: `${getBarHeight(point.clicks, maxClicks)}%` }}
                     />
                   </div>
@@ -99,32 +98,30 @@ export function MetricsChart({ data, timeRange }: MetricsChartProps) {
               ))}
             </div>
             <div className="text-center">
-              <p className="text-2xl font-mono font-bold text-white">
+              <p className="metric-value text-green-300">
                 {data.reduce((sum, d) => sum + d.clicks, 0).toLocaleString()}
               </p>
-              <p className="text-sm text-gray-400">Total Clicks</p>
+              <p className="metric-label">Total Clicks</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Conversions Chart */}
-      <Card variant="holo">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-neon-amber" />
-            Conversions Trend
-            <Badge variant="warning">{timeRange}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* Conversions Chart */}
+        <div className="metric-card-trends">
+          <div className="chart-header">
+            <h3 className="chart-title">
+              <Users className="w-5 h-5 text-green-400" />
+              Conversions Trend
+            </h3>
+            <Badge variant="success">{timeRange}</Badge>
+          </div>
           <div className="space-y-4">
             <div className="flex items-end justify-between h-32 px-2">
               {data.map((point, index) => (
                 <div key={index} className="flex flex-col items-center gap-2">
                   <div className="flex items-end h-24">
                     <div
-                      className="w-8 bg-gradient-to-t from-neon-amber to-neon-amber/50 rounded-t"
+                      className="w-8 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
                       style={{ height: `${getBarHeight(point.conversions, maxConversions)}%` }}
                     />
                   </div>
@@ -135,32 +132,30 @@ export function MetricsChart({ data, timeRange }: MetricsChartProps) {
               ))}
             </div>
             <div className="text-center">
-              <p className="text-2xl font-mono font-bold text-white">
+              <p className="metric-value text-green-300">
                 {data.reduce((sum, d) => sum + d.conversions, 0)}
               </p>
-              <p className="text-sm text-gray-400">Total Conversions</p>
+              <p className="metric-label">Total Conversions</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Spend Chart */}
-      <Card variant="holo">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-electric-500" />
-            Spend Trend
-            <Badge variant="default">{timeRange}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* Spend Chart */}
+        <div className="metric-card-trends">
+          <div className="chart-header">
+            <h3 className="chart-title">
+              <DollarSign className="w-5 h-5 text-green-400" />
+              Spend Trend
+            </h3>
+            <Badge variant="success">{timeRange}</Badge>
+          </div>
           <div className="space-y-4">
             <div className="flex items-end justify-between h-32 px-2">
               {data.map((point, index) => (
                 <div key={index} className="flex flex-col items-center gap-2">
                   <div className="flex items-end h-24">
                     <div
-                      className="w-8 bg-gradient-to-t from-electric-500 to-electric-500/50 rounded-t"
+                      className="w-8 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
                       style={{ height: `${getBarHeight(point.spend, maxSpend)}%` }}
                     />
                   </div>
@@ -171,67 +166,76 @@ export function MetricsChart({ data, timeRange }: MetricsChartProps) {
               ))}
             </div>
             <div className="text-center">
-              <p className="text-2xl font-mono font-bold text-white">
+              <p className="metric-value text-green-300">
                 ${data.reduce((sum, d) => sum + d.spend, 0).toLocaleString()}
               </p>
-              <p className="text-sm text-gray-400">Total Spend</p>
+              <p className="metric-label">Total Spend</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Combined Performance Metrics */}
-      <Card variant="glow" className="col-span-1 lg:col-span-2">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-electric-500" />
+      {/* Performance Metrics Section */}
+      <div className="section-divider"></div>
+
+      <div className="performance-section performance-metrics-section">
+        <div className="performance-section-header">
+          <h2 className="performance-section-title">
+            <TrendingUp className="w-5 h-5" />
             Performance Metrics Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-neon-cyan/20 flex items-center justify-center">
-                <Eye className="w-8 h-8 text-neon-cyan" />
-              </div>
-              <p className="text-lg font-mono font-bold text-white">
-                {((data.reduce((sum, d) => sum + d.clicks, 0) / data.reduce((sum, d) => sum + d.impressions, 0)) * 100).toFixed(2)}%
-              </p>
-              <p className="text-sm text-gray-400">Click-Through Rate</p>
-            </div>
+          </h2>
+        </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-neon-emerald/20 flex items-center justify-center">
-                <Users className="w-8 h-8 text-neon-emerald" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="metric-card-performance">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="metric-value text-orange-300">
+                  {((data.reduce((sum, d) => sum + d.clicks, 0) / data.reduce((sum, d) => sum + d.impressions, 0)) * 100).toFixed(2)}%
+                </p>
+                <p className="metric-label">Click-Through Rate</p>
               </div>
-              <p className="text-lg font-mono font-bold text-white">
-                {((data.reduce((sum, d) => sum + d.conversions, 0) / data.reduce((sum, d) => sum + d.clicks, 0)) * 100).toFixed(2)}%
-              </p>
-              <p className="text-sm text-gray-400">Conversion Rate</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-neon-amber/20 flex items-center justify-center">
-                <DollarSign className="w-8 h-8 text-neon-amber" />
-              </div>
-              <p className="text-lg font-mono font-bold text-white">
-                ${(data.reduce((sum, d) => sum + d.spend, 0) / data.reduce((sum, d) => sum + d.conversions, 0)).toFixed(2)}
-              </p>
-              <p className="text-sm text-gray-400">Cost per Acquisition</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-electric-500/20 flex items-center justify-center">
-                <TrendingUp className="w-8 h-8 text-electric-500" />
-              </div>
-              <p className="text-lg font-mono font-bold text-white">
-                +18.5%
-              </p>
-              <p className="text-sm text-gray-400">Growth Rate</p>
+              <Eye className="w-8 h-8 text-orange-400" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="metric-card-performance">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="metric-value text-orange-300">
+                  {((data.reduce((sum, d) => sum + d.conversions, 0) / data.reduce((sum, d) => sum + d.clicks, 0)) * 100).toFixed(2)}%
+                </p>
+                <p className="metric-label">Conversion Rate</p>
+              </div>
+              <Users className="w-8 h-8 text-orange-400" />
+            </div>
+          </div>
+
+          <div className="metric-card-performance">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="metric-value text-orange-300">
+                  ${(data.reduce((sum, d) => sum + d.spend, 0) / data.reduce((sum, d) => sum + d.conversions, 0)).toFixed(2)}
+                </p>
+                <p className="metric-label">Cost per Acquisition</p>
+              </div>
+              <DollarSign className="w-8 h-8 text-orange-400" />
+            </div>
+          </div>
+
+          <div className="metric-card-performance">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="metric-value text-orange-300">
+                  +18.5%
+                </p>
+                <p className="metric-label">Growth Rate</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-orange-400" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

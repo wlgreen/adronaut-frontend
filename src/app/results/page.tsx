@@ -120,127 +120,107 @@ export default function ResultsPage() {
         )}
 
         {/* Performance Overview */}
-        <section>
-          <div className="mb-6">
-            <h2 className="text-2xl font-heading font-bold text-white mb-2">
+        <section className="performance-section performance-overview-section">
+          <div className="performance-section-header">
+            <h2 className="performance-section-title">
+              <Eye className="w-5 h-5" />
               Performance Overview
             </h2>
-            <p className="text-gray-400">
+            <p className="text-gray-400 text-sm">
               Real-time campaign metrics and key performance indicators
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card variant="glow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Total Impressions</p>
-                    <p className="text-2xl font-mono font-bold text-white">
-                      {totalMetrics.impressions.toLocaleString()}
-                    </p>
-                  </div>
-                  <Eye className="w-8 h-8 text-neon-cyan" />
+            <div className="metric-card-overview">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="metric-label">Total Impressions</p>
+                  <p className="metric-value">
+                    {totalMetrics.impressions.toLocaleString()}
+                  </p>
+                  <p className="metric-context">+12% vs last period</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="success" className="text-xs">
-                    +12% vs last period
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card variant="glow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Click-Through Rate</p>
-                    <p className="text-2xl font-mono font-bold text-neon-emerald">
-                      {avgMetrics.ctr.toFixed(2)}%
-                    </p>
-                  </div>
-                  <MousePointer className="w-8 h-8 text-neon-emerald" />
-                </div>
-                <div className="mt-2">
-                  <Badge variant="success" className="text-xs">
-                    Above industry avg
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card variant="glow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Cost per Acquisition</p>
-                    <p className="text-2xl font-mono font-bold text-neon-amber">
-                      ${avgMetrics.cpa.toFixed(2)}
-                    </p>
-                  </div>
-                  <DollarSign className="w-8 h-8 text-neon-amber" />
-                </div>
-                <div className="mt-2">
-                  <Badge variant="warning" className="text-xs">
-                    5% above target
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card variant="glow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Return on Ad Spend</p>
-                    <p className="text-2xl font-mono font-bold text-electric-500">
-                      {avgMetrics.roas.toFixed(2)}x
-                    </p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-electric-500" />
-                </div>
-                <div className="mt-2">
-                  <Badge variant="success" className="text-xs">
-                    Strong performance
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Performance Charts */}
-        <section>
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-heading font-bold text-white mb-2">
-                  Performance Trends
-                </h2>
-                <p className="text-gray-400">
-                  Historical metrics and trend analysis
-                </p>
+                <Eye className="w-8 h-8 text-blue-400" />
               </div>
-              <div className="flex items-center gap-2">
-                {['7d', '30d', '90d'].map((range) => (
-                  <Button
-                    key={range}
-                    variant={selectedTimeRange === range ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setSelectedTimeRange(range)}
-                  >
-                    {range}
-                  </Button>
-                ))}
+            </div>
+
+            <div className="metric-card-overview">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="metric-label">Click-Through Rate</p>
+                  <p className="metric-value text-blue-300">
+                    {avgMetrics.ctr.toFixed(2)}%
+                  </p>
+                  <p className="metric-context">Above industry avg</p>
+                </div>
+                <MousePointer className="w-8 h-8 text-blue-400" />
+              </div>
+            </div>
+
+            <div className="metric-card-overview">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="metric-label">Cost per Acquisition</p>
+                  <p className="metric-value text-blue-300">
+                    ${avgMetrics.cpa.toFixed(2)}
+                  </p>
+                  <p className="metric-context">5% above target</p>
+                </div>
+                <DollarSign className="w-8 h-8 text-blue-400" />
+              </div>
+            </div>
+
+            <div className="metric-card-overview">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="metric-label">Return on Ad Spend</p>
+                  <p className="metric-value text-blue-300">
+                    {avgMetrics.roas.toFixed(2)}x
+                  </p>
+                  <p className="metric-context">Strong performance</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-blue-400" />
               </div>
             </div>
           </div>
-
-          <MetricsChart
-            data={metricsData.length > 0 ? metricsData : sampleMetricsData}
-            timeRange={selectedTimeRange}
-          />
         </section>
+
+        <div className="section-divider"></div>
+
+        {/* Performance Charts */}
+        <section className="performance-section performance-trends-section">
+          <div className="performance-section-header">
+            <h2 className="performance-section-title">
+              <BarChart3 className="w-5 h-5" />
+              Performance Trends
+            </h2>
+            <div className="flex items-center gap-2">
+              {['7d', '30d', '90d'].map((range) => (
+                <Button
+                  key={range}
+                  variant={selectedTimeRange === range ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setSelectedTimeRange(range)}
+                >
+                  {range}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <p className="text-gray-400 text-sm mb-6">
+            Historical metrics and trend analysis
+          </p>
+
+          <div className="chart-container">
+            <MetricsChart
+              data={metricsData.length > 0 ? metricsData : sampleMetricsData}
+              timeRange={selectedTimeRange}
+            />
+          </div>
+        </section>
+
+        <div className="section-divider"></div>
 
         {/* Active Campaigns */}
         <section>
