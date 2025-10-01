@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { Rocket, Play } from 'lucide-react'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { FileUploader } from '@/components/workspace/FileUploader'
 import { AnalysisSnapshot } from '@/components/workspace/AnalysisSnapshot'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { PremiumButton } from '@/components/ui/PremiumButton'
+import { PremiumCard } from '@/components/ui/PremiumCard'
+import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { useWorkspaceData } from '@/hooks/useLLMData'
 import { supabase } from '@/lib/supabase'
 
 export default function WorkspacePage() {
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string; status: string}>>([])
   const [hasUploadedFiles, setHasUploadedFiles] = useState(false)
   const [projectId, setProjectId] = useState<string>(() => {
     // Generate or retrieve project ID
@@ -53,7 +53,7 @@ export default function WorkspacePage() {
           setHasUploadedFiles(true)
 
           // Update uploaded files count for display
-          setUploadedFiles(files.map((file, index) => ({
+          setUploadedFiles(files.map((file: {artifact_id: string}) => ({
             id: file.artifact_id,
             status: 'success'
           })))
@@ -69,7 +69,7 @@ export default function WorkspacePage() {
     checkUploadedFiles()
   }, [projectId])
 
-  const handleUploadComplete = (files: any[]) => {
+  const handleUploadComplete = (files: Array<{id: string; status: string}>) => {
     // Use setTimeout to defer state updates to avoid rendering conflicts
     setTimeout(() => {
       setUploadedFiles(files)
@@ -95,35 +95,43 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Workspace"
-        description="DATA INGESTION • FEATURE EXTRACTION • ANALYSIS"
-        icon={Rocket}
-        actions={
-          hasUploadedFiles && !analysisSnapshot && !isAnalyzing && (
-            <Button
-              variant="primary"
-              size="lg"
-              glow
-              onClick={startAnalysis}
-              className="btn-hover-lift"
-            >
-              <Play className="w-5 h-5" />
-              Start Analysis
-            </Button>
-          )
-        }
-      />
+    <div className="min-h-screen bg-slate-950">
+      {/* Header */}
+      <header className="bg-slate-900/50 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Rocket className="w-6 h-6 text-indigo-400" />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-100">Workspace</h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  Data ingestion • Feature extraction • Analysis
+                </p>
+              </div>
+            </div>
 
-      <div className="p-8 space-y-12 max-w-7xl mx-auto">
+            {hasUploadedFiles && !analysisSnapshot && !isAnalyzing && (
+              <PremiumButton
+                variant="primary"
+                size="lg"
+                onClick={startAnalysis}
+                icon={<Play className="w-5 h-5" />}
+              >
+                Start Analysis
+              </PremiumButton>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Upload Section */}
         <section className="space-y-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="heading-xl text-white mb-4">
+            <h2 className="text-3xl font-bold text-slate-100 mb-4">
               Upload Data Artifacts
             </h2>
-            <p className="body-lg" style={{ color: 'var(--space-300)' }}>
+            <p className="text-lg text-slate-400 leading-relaxed">
               Upload sales data, customer reviews, marketing documents, and images for comprehensive AI analysis
             </p>
           </div>
@@ -139,36 +147,34 @@ export default function WorkspacePage() {
         {/* Analysis Status */}
         {hasUploadedFiles && !analysisSnapshot && (
           <section className="max-w-2xl mx-auto">
-            <div className="card-workspace">
-              <div className="p-8">
-                <div className="text-center">
-                  {isAnalyzing ? (
-                    <div className="space-y-6">
-                      <div className="flex justify-center">
-                        <div className="w-12 h-12 border-3 border-electric-500 border-t-transparent rounded-full animate-spin" />
-                      </div>
-                      <div className="space-y-3">
-                        <h3 className="heading-lg" style={{ color: 'var(--foreground)' }}>
-                          Analyzing Data Artifacts
-                        </h3>
-                        <p className="body-md font-mono" style={{ color: 'var(--electric)' }}>
-                          AI agents extracting features and generating insights...
-                        </p>
-                      </div>
+            <PremiumCard variant="elevated" className="p-8">
+              <div className="text-center">
+                {isAnalyzing ? (
+                  <div className="space-y-6">
+                    <div className="flex justify-center">
+                      <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <h3 className="heading-md" style={{ color: 'var(--foreground)' }}>
-                        Ready for Analysis
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-semibold text-slate-100">
+                        Analyzing Data Artifacts
                       </h3>
-                      <p className="body-md leading-relaxed" style={{ color: 'var(--space-300)' }}>
-                        Data artifacts uploaded successfully. Analysis will start automatically or click the button above.
+                      <p className="text-base font-mono text-indigo-400">
+                        AI agents extracting features and generating insights...
                       </p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-slate-100">
+                      Ready for Analysis
+                    </h3>
+                    <p className="text-base leading-relaxed text-slate-400">
+                      Data artifacts uploaded successfully. Analysis will start automatically or click the button above.
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
+            </PremiumCard>
           </section>
         )}
 
@@ -176,35 +182,29 @@ export default function WorkspacePage() {
         {analysisSnapshot && (
           <section className="space-y-8">
             <div className="text-center max-w-3xl mx-auto">
-              <h2 className="heading-xl mb-4" style={{ color: 'var(--foreground)' }}>
+              <h2 className="text-3xl font-bold text-slate-100 mb-4">
                 Analysis Results
               </h2>
-              <p className="body-lg leading-relaxed" style={{ color: 'var(--space-300)' }}>
+              <p className="text-lg leading-relaxed text-slate-400">
                 AI-generated insights and recommendations from your uploaded data artifacts
               </p>
             </div>
-            <div className="card-analysis">
+            <PremiumCard variant="elevated">
               <AnalysisSnapshot snapshot={analysisSnapshot} />
-            </div>
+            </PremiumCard>
           </section>
         )}
 
         {/* Error Display */}
         {error && (
-          <section className="max-w-2xl mx-auto">
-            <div className="card-workspace border-neon-rose bg-neon-rose/10">
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--neon-rose)', opacity: 0.2 }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--neon-rose)' }} />
-                  </div>
-                  <div>
-                    <h3 className="heading-sm mb-2" style={{ color: 'var(--neon-rose)' }}>Analysis Error</h3>
-                    <p className="body-sm leading-relaxed" style={{ color: 'var(--error)' }}>{error}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <section className="max-w-4xl mx-auto">
+            <ErrorDisplay
+              error={error}
+              context="analysis"
+              onRetry={hasUploadedFiles ? startAnalysis : undefined}
+              retryLabel="Retry Analysis"
+              isRetrying={isAnalyzing}
+            />
           </section>
         )}
 
@@ -212,21 +212,21 @@ export default function WorkspacePage() {
         {!hasUploadedFiles && !analysisSnapshot && (
           <section className="text-center py-16">
             <div className="max-w-lg mx-auto">
-              <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-card-elevated" style={{ background: 'linear-gradient(135deg, var(--space-200), var(--space-300))' }}>
-                <Rocket className="w-12 h-12" style={{ color: 'var(--electric)' }} />
+              <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 bg-gradient-to-br from-slate-800 to-slate-700 shadow-xl">
+                <Rocket className="w-12 h-12 text-indigo-400" />
               </div>
               <div className="space-y-4">
-                <h3 className="heading-lg" style={{ color: 'var(--foreground)' }}>
+                <h3 className="text-xl font-semibold text-slate-100">
                   Ready for Mission Launch
                 </h3>
-                <p className="body-md leading-relaxed max-w-md mx-auto" style={{ color: 'var(--space-300)' }}>
+                <p className="text-base leading-relaxed max-w-md mx-auto text-slate-400">
                   Upload your marketing data artifacts to begin AI-powered analysis and strategy generation.
                 </p>
               </div>
             </div>
           </section>
         )}
-      </div>
+      </main>
     </div>
   )
 }

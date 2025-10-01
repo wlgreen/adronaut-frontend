@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Target, Settings, CheckCircle, XCircle, Edit3, Clock, Users, MessageSquare } from 'lucide-react'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { PremiumButton, ButtonGroup } from '@/components/ui/PremiumButton'
+import { PremiumCard } from '@/components/ui/PremiumCard'
 import { Badge } from '@/components/ui/Badge'
 import { PatchCard } from '@/components/strategy/PatchCard'
 import { StrategyOverview } from '@/components/strategy/StrategyOverview'
@@ -56,86 +55,96 @@ export default function StrategyPage() {
   }, [analysisSnapshot, activeStrategy, isGeneratingStrategy, generateStrategy])
 
   return (
-    <div>
-      <PageHeader
-        title="Strategy"
-        description="MISSION CONTROL • STRATEGY MANAGEMENT • HITL APPROVAL"
-        icon={Target}
-        actions={
-          <div className="flex items-center gap-3">
-            {activeStrategy && (
-              <Badge variant="success" glow>
-                Active Strategy v{activeStrategy.version}
-              </Badge>
-            )}
-            {isGeneratingStrategy && (
-              <Badge variant="warning" glow>
-                Generating Strategy...
-              </Badge>
-            )}
-            {pendingPatches.length > 0 && (
-              <Badge variant="warning" glow>
-                {pendingPatches.length} Pending Patch{pendingPatches.length !== 1 ? 'es' : ''}
-              </Badge>
-            )}
-            {!analysisSnapshot && (
-              <Button variant="secondary" size="sm" onClick={() => window.location.href = '/'}>
-                Upload Data First
-              </Button>
-            )}
-          </div>
-        }
-      />
+    <div className="min-h-screen bg-slate-950">
+      {/* Header */}
+      <header className="bg-slate-900/50 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Target className="w-6 h-6 text-indigo-400" />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-100">Strategy</h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  MISSION CONTROL • STRATEGY MANAGEMENT • HITL APPROVAL
+                </p>
+              </div>
+            </div>
 
-      <div className="p-6 space-y-8">
+            <div className="flex items-center gap-3">
+              {activeStrategy && (
+                <Badge variant="success" glow>
+                  Active Strategy v{activeStrategy.version}
+                </Badge>
+              )}
+              {isGeneratingStrategy && (
+                <Badge variant="warning" glow>
+                  Generating Strategy...
+                </Badge>
+              )}
+              {pendingPatches.length > 0 && (
+                <Badge variant="warning" glow>
+                  {pendingPatches.length} Pending Patch{pendingPatches.length !== 1 ? 'es' : ''}
+                </Badge>
+              )}
+              {!analysisSnapshot && (
+                <PremiumButton variant="secondary" size="sm" onClick={() => window.location.href = '/'}>
+                  Upload Data First
+                </PremiumButton>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Error Display */}
         {error && (
           <section>
-            <Card variant="default" className="border-red-500 bg-red-500/10">
-              <CardContent className="p-6">
+            <PremiumCard className="border-rose-500/50 bg-rose-500/10">
+              <div className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
+                  <div className="w-2 h-2 rounded-full bg-rose-500" />
                   <div>
-                    <h3 className="font-semibold text-red-400">Strategy Error</h3>
-                    <p className="text-sm text-red-300 mt-1">{error}</p>
+                    <h3 className="font-semibold text-rose-400">Strategy Error</h3>
+                    <p className="text-sm text-rose-300 mt-1">{error}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </PremiumCard>
           </section>
         )}
 
         {/* Strategy Generation Loading */}
         {isGeneratingStrategy && (
           <section>
-            <Card variant="default">
-              <CardContent className="p-6">
+            <PremiumCard variant="elevated">
+              <div className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 border-2 border-electric-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                   <div>
-                    <h3 className="font-semibold text-white">Generating Strategy</h3>
-                    <p className="text-sm text-gray-400 mt-1">AI agents are creating your marketing strategy from analysis insights...</p>
+                    <h3 className="font-semibold text-indigo-400">Generating Strategy</h3>
+                    <p className="text-sm text-slate-400 mt-1">AI agents are creating your marketing strategy from analysis insights...</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </PremiumCard>
           </section>
         )}
 
         {/* No Analysis Warning */}
         {!analysisSnapshot && !isGeneratingStrategy && (
           <section>
-            <Card variant="default" className="border-yellow-500 bg-yellow-500/10">
-              <CardContent className="p-6">
+            <PremiumCard className="border-amber-500/50 bg-amber-500/10">
+              <div className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
                   <div>
-                    <h3 className="font-semibold text-yellow-400">No Analysis Data</h3>
-                    <p className="text-sm text-yellow-300 mt-1">Upload and analyze data files in the Workspace before generating a strategy.</p>
+                    <h3 className="font-semibold text-amber-400">No Analysis Data</h3>
+                    <p className="text-sm text-amber-300 mt-1">Upload and analyze data files in the Workspace before generating a strategy.</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </PremiumCard>
           </section>
         )}
 
@@ -197,8 +206,8 @@ export default function StrategyPage() {
               </p>
             </div>
 
-            <Card variant="holo">
-              <CardContent className="p-6">
+            <PremiumCard variant="elevated">
+              <div className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 rounded-lg bg-electric-500/10 border border-electric-500/30">
                     <div className="w-10 h-10 rounded-full bg-electric-500 flex items-center justify-center">
@@ -224,11 +233,11 @@ export default function StrategyPage() {
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </PremiumCard>
           </section>
         )}
-      </div>
+      </main>
 
       {/* Edit Patch Dialog */}
       {editingPatch && (

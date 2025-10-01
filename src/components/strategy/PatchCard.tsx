@@ -2,14 +2,14 @@
 
 import { useState } from 'react'
 import { CheckCircle, XCircle, Edit3, Brain, AlertCircle, Code, Users, DollarSign } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { PremiumCard } from '@/components/ui/PremiumCard'
+import { PremiumPremiumButton } from '@/components/ui/PremiumPremiumButton'
 import { Badge } from '@/components/ui/Badge'
 
 interface PatchCardProps {
   patch: {
     patch_id: string
-    source: 'insights' | 'reflection' | 'edited_llm'
+    source: 'insights' | 'performance' | 'manual'
     status: 'proposed' | 'approved' | 'rejected' | 'superseded'
     patch_json: any
     justification: string
@@ -24,8 +24,8 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
   const getSourceIcon = (source: string) => {
     switch (source) {
       case 'insights': return <Brain className="w-5 h-5" />
-      case 'reflection': return <AlertCircle className="w-5 h-5" />
-      case 'edited_llm': return <Edit3 className="w-5 h-5" />
+      case 'performance': return <AlertCircle className="w-5 h-5" />
+      case 'manual': return <Edit3 className="w-5 h-5" />
       default: return <Brain className="w-5 h-5" />
     }
   }
@@ -33,8 +33,8 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
   const getSourceColor = (source: string) => {
     switch (source) {
       case 'insights': return 'info'
-      case 'reflection': return 'warning'
-      case 'edited_llm': return 'success'
+      case 'performance': return 'warning'
+      case 'manual': return 'success'
       default: return 'default'
     }
   }
@@ -42,8 +42,8 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
   const getSourceLabel = (source: string) => {
     switch (source) {
       case 'insights': return 'Insights Agent'
-      case 'reflection': return 'Performance Analyzer'
-      case 'edited_llm': return 'Human Edited'
+      case 'performance': return 'Performance Analyzer'
+      case 'manual': return 'Human Edited'
       default: return 'Unknown'
     }
   }
@@ -112,10 +112,10 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
   }
 
   return (
-    <Card variant="holo" className="overflow-hidden">
-      <CardHeader>
+    <PremiumCard variant="elevated" className="overflow-hidden">
+      <div className="p-6 border-b border-slate-700/30">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-electric-500 to-neon-cyan flex items-center justify-center">
               {getSourceIcon(patch.source)}
             </div>
@@ -132,10 +132,10 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
                 </span>
               </div>
             </div>
-          </CardTitle>
+          </div>
 
           <div className="flex items-center gap-2">
-            <Button
+            <PremiumButton
               variant="success"
               size="sm"
               onClick={() => onAction(patch.patch_id, 'approve')}
@@ -143,28 +143,28 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
             >
               <CheckCircle className="w-4 h-4" />
               Approve
-            </Button>
-            <Button
+            </PremiumButton>
+            <PremiumButton
               variant="danger"
               size="sm"
               onClick={() => onAction(patch.patch_id, 'reject')}
             >
               <XCircle className="w-4 h-4" />
               Reject
-            </Button>
-            <Button
+            </PremiumButton>
+            <PremiumButton
               variant="secondary"
               size="sm"
               onClick={() => onAction(patch.patch_id, 'edit')}
             >
               <Edit3 className="w-4 h-4" />
               Edit
-            </Button>
+            </PremiumButton>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-6">
+      <div className="p-6 space-y-6">
         {/* Justification */}
         <div>
           <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
@@ -183,13 +183,13 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
               <Code className="w-4 h-4 text-neon-cyan" />
               Proposed Changes
             </h4>
-            <Button
+            <PremiumButton
               variant="secondary"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
             >
               {isExpanded ? 'Hide Details' : 'Show Details'}
-            </Button>
+            </PremiumButton>
           </div>
 
           {isExpanded ? (
@@ -221,7 +221,7 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PremiumCard>
   )
 }

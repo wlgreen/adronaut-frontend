@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { errorLogger } from './error-logger'
 
 export interface AnalysisSnapshot {
   audience_segments: Array<{
@@ -180,7 +181,32 @@ export class LLMService {
       return this.parseAnalysisOutput(analysisResult.analysis_output)
     } catch (error) {
       console.error('Analysis failed:', error)
-      throw error
+      errorLogger.logError('llm-analysis', 'File analysis failed', {
+        projectId,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack
+        } : error
+      })
+
+      // Provide more detailed error messages
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          throw new Error('Network error: Unable to connect to analysis service. Please check your internet connection.')
+        } else if (error.message.includes('API key')) {
+          throw new Error('Authentication error: OpenAI API key is invalid or missing. Please check your configuration.')
+        } else if (error.message.includes('rate limit')) {
+          throw new Error('Rate limit error: Too many requests to OpenAI API. Please wait and try again.')
+        } else if (error.message.includes('401')) {
+          throw new Error('Authentication error: OpenAI API key is invalid. Please check your API key configuration.')
+        } else if (error.message.includes('429')) {
+          throw new Error('Rate limit exceeded: Please wait and try again. Consider upgrading your OpenAI plan.')
+        } else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('503')) {
+          throw new Error('Service unavailable: OpenAI service is temporarily down. Please try again later.')
+        }
+      }
+
+      throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`)
     }
   }
 
@@ -199,7 +225,26 @@ export class LLMService {
       return await this.generateRealStrategy(analysisSnapshot, projectId)
     } catch (error) {
       console.error('Strategy generation failed:', error)
-      throw error
+      errorLogger.logError('llm-strategy', 'Strategy generation failed', {
+        projectId,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack
+        } : error
+      })
+
+      // Provide more detailed error messages
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          throw new Error('Network error: Unable to connect to strategy service. Please check your internet connection.')
+        } else if (error.message.includes('API key')) {
+          throw new Error('Authentication error: OpenAI API key is invalid or missing. Please check your configuration.')
+        } else if (error.message.includes('rate limit')) {
+          throw new Error('Rate limit error: Too many requests to OpenAI API. Please wait and try again.')
+        }
+      }
+
+      throw new Error(`Strategy generation failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`)
     }
   }
 
@@ -224,7 +269,17 @@ export class LLMService {
       return this.parsePatchesOutput(patchResult.patches_output)
     } catch (error) {
       console.error('Patch generation failed:', error)
-      throw error
+
+      // Provide more detailed error messages
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          throw new Error('Network error: Unable to connect to AutoGen service. Please check if the backend is running.')
+        } else if (error.message.includes('timeout')) {
+          throw new Error('Timeout error: Patch generation took too long. Please try again with smaller datasets.')
+        }
+      }
+
+      throw new Error(`Patch generation failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`)
     }
   }
 
@@ -248,7 +303,26 @@ export class LLMService {
       return this.parsePerformanceOutput(performanceResult.performance_output)
     } catch (error) {
       console.error('Performance analysis failed:', error)
-      throw error
+      errorLogger.logError('llm-performance', 'Performance analysis failed', {
+        campaignCount: campaigns.length,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack
+        } : error
+      })
+
+      // Provide more detailed error messages
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          throw new Error('Network error: Unable to connect to AutoGen service. Please check if the backend is running.')
+        } else if (error.message.includes('campaigns')) {
+          throw new Error('Data error: Invalid campaign data provided. Please check your campaign configuration.')
+        } else if (error.message.includes('timeout')) {
+          throw new Error('Timeout error: Performance analysis took too long. Please try again.')
+        }
+      }
+
+      throw new Error(`Performance analysis failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`)
     }
   }
 
@@ -447,7 +521,8 @@ Based on the project context and typical marketing patterns, provide a realistic
           console.warn('OpenAI API server error. Using sample analysis...')
           return this.createSampleAnalysis()
         } else {
-          throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
+          const errorText = await response.text().catch(() => 'Unknown error')
+          throw new Error(`OpenAI API error (${response.status}): ${errorText || response.statusText}`)
         }
       }
 
@@ -568,7 +643,8 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
           console.warn('OpenAI API server error during strategy generation. Using sample strategy...')
           return this.createSampleStrategy(analysisSnapshot)
         } else {
-          throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
+          const errorText = await response.text().catch(() => 'Unknown error')
+          throw new Error(`OpenAI API error (${response.status}): ${errorText || response.statusText}`)
         }
       }
 

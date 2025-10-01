@@ -41,7 +41,12 @@ export function FileUploader({
   useEffect(() => {
     const successfulFiles = uploadedFiles.filter(f => f.status === 'success')
     if (successfulFiles.length > 0 && !isUploading) {
-      onUploadComplete(successfulFiles)
+      // Use setTimeout to prevent blocking navigation
+      const timeout = setTimeout(() => {
+        onUploadComplete(successfulFiles)
+      }, 100)
+
+      return () => clearTimeout(timeout)
     }
   }, [uploadedFiles, isUploading, onUploadComplete])
 
@@ -321,14 +326,14 @@ export function FileUploader({
         <div className="card-data">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-emerald to-electric-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-indigo-500 flex items-center justify-center">
                 <File className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h4 className="heading-md" style={{ color: 'var(--foreground)' }}>
+                <h4 className="text-lg font-semibold text-slate-100">
                   Uploaded Artifacts ({uploadedFiles.length})
                 </h4>
-                <p className="body-sm" style={{ color: 'var(--space-400)' }}>
+                <p className="text-sm text-slate-400">
                   Files ready for analysis
                 </p>
               </div>
@@ -338,7 +343,7 @@ export function FileUploader({
               {uploadedFiles.map((fileData) => (
                 <div
                   key={fileData.id}
-                  className="flex items-center gap-4 p-5 rounded-xl bg-space-200/50 border border-space-300 hover:border-space-400 transition-colors"
+                  className="flex items-center gap-4 p-5 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-slate-600/50 transition-colors"
                 >
                   <div className="flex-shrink-0">
                     {getFileTypeIcon(fileData.file.name)}

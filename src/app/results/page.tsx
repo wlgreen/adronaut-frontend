@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { BarChart3, TrendingUp, AlertTriangle, Zap, DollarSign, Users, MousePointer, Eye } from 'lucide-react'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { PremiumButton, ButtonGroup } from '@/components/ui/PremiumButton'
+import { PremiumCard, MetricCard } from '@/components/ui/PremiumCard'
 import { Badge } from '@/components/ui/Badge'
+import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
+import { ChartContainer, MetricBar, TrendLine, ChartGrid } from '@/components/charts/PremiumChart'
 import { CampaignCard } from '@/components/results/CampaignCard'
-import { MetricsChart } from '@/components/results/MetricsChart'
 import { PerformanceAlerts } from '@/components/results/PerformanceAlerts'
 import { useResultsData } from '@/hooks/useLLMData'
 
@@ -61,176 +61,176 @@ export default function ResultsPage() {
   }, [campaigns, performanceAlerts, isAnalyzingPerformance, analyzePerformance])
 
   return (
-    <div>
-      <PageHeader
-        title="Results"
-        description="TELEMETRY DASHBOARD • PERFORMANCE ANALYSIS • REAL-TIME METRICS"
-        icon={BarChart3}
-        actions={
-          <div className="flex items-center gap-3">
-            <Badge variant="success" glow>
-              {campaigns.filter(c => c.status === 'running').length} Active Campaigns
-            </Badge>
-            {isAnalyzingPerformance && (
-              <Badge variant="warning" glow>
-                Analyzing Performance...
-              </Badge>
-            )}
-            <Button variant="primary" size="sm" className="btn-hover-lift" glow>
-              <TrendingUp className="w-4 h-4" />
-              Export Report
-            </Button>
-          </div>
-        }
-      />
+    <div className="min-h-screen bg-slate-950">
+      {/* Header */}
+      <header className="bg-slate-900/50 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-6 h-6 text-indigo-400" />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-100">Results</h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  Telemetry dashboard • Performance analysis • Real-time metrics
+                </p>
+              </div>
+            </div>
 
-      <div className="p-6 space-y-8">
+            <div className="flex items-center gap-4">
+              <Badge variant="success" className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                {campaigns.filter(c => c.status === 'running').length} Active Campaigns
+              </Badge>
+              {isAnalyzingPerformance && (
+                <Badge variant="warning" className="bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  Analyzing Performance...
+                </Badge>
+              )}
+              <ButtonGroup>
+                <PremiumButton variant="secondary" size="sm">
+                  <TrendingUp className="w-4 h-4" />
+                  Export Report
+                </PremiumButton>
+              </ButtonGroup>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Error Display */}
         {error && (
           <section>
-            <Card variant="default" className="border-red-500 bg-red-500/10">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <div>
-                    <h3 className="font-semibold text-red-400">Performance Analysis Error</h3>
-                    <p className="text-sm text-red-300 mt-1">{error}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ErrorDisplay
+              error={error}
+              context="performance"
+              onRetry={campaigns.length > 0 ? analyzePerformance : undefined}
+              retryLabel="Retry Performance Analysis"
+              isRetrying={isAnalyzingPerformance}
+            />
           </section>
         )}
 
         {/* No Data Warning */}
         {campaigns.length === 0 && (
           <section>
-            <Card variant="default" className="border-yellow-500 bg-yellow-500/10">
-              <CardContent className="p-6">
+            <PremiumCard className="border-amber-500/50 bg-amber-500/10">
+              <div className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
                   <div>
-                    <h3 className="font-semibold text-yellow-400">No Campaign Data</h3>
-                    <p className="text-sm text-yellow-300 mt-1">No campaigns found. Create campaigns from your strategy first.</p>
+                    <h3 className="font-semibold text-amber-400">No Campaign Data</h3>
+                    <p className="text-sm text-amber-300 mt-1">No campaigns found. Create campaigns from your strategy first.</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </PremiumCard>
           </section>
         )}
 
         {/* Performance Overview */}
-        <section className="performance-section performance-overview-section">
-          <div className="performance-section-header">
-            <h2 className="performance-section-title">
-              <Eye className="w-5 h-5" />
+        <section>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-indigo-400" />
               Performance Overview
             </h2>
-            <p className="text-gray-400 text-sm">
+            <p className="text-sm text-slate-400">
               Real-time campaign metrics and key performance indicators
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="metric-card-overview">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="metric-label">Total Impressions</p>
-                  <p className="metric-value">
-                    {totalMetrics.impressions.toLocaleString()}
-                  </p>
-                  <p className="metric-context">+12% vs last period</p>
-                </div>
-                <Eye className="w-8 h-8 text-blue-400" />
-              </div>
-            </div>
-
-            <div className="metric-card-overview">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="metric-label">Click-Through Rate</p>
-                  <p className="metric-value text-blue-300">
-                    {avgMetrics.ctr.toFixed(2)}%
-                  </p>
-                  <p className="metric-context">Above industry avg</p>
-                </div>
-                <MousePointer className="w-8 h-8 text-blue-400" />
-              </div>
-            </div>
-
-            <div className="metric-card-overview">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="metric-label">Cost per Acquisition</p>
-                  <p className="metric-value text-blue-300">
-                    ${avgMetrics.cpa.toFixed(2)}
-                  </p>
-                  <p className="metric-context">5% above target</p>
-                </div>
-                <DollarSign className="w-8 h-8 text-blue-400" />
-              </div>
-            </div>
-
-            <div className="metric-card-overview">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="metric-label">Return on Ad Spend</p>
-                  <p className="metric-value text-blue-300">
-                    {avgMetrics.roas.toFixed(2)}x
-                  </p>
-                  <p className="metric-context">Strong performance</p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-blue-400" />
-              </div>
-            </div>
-          </div>
+          <ChartGrid columns={4}>
+            <MetricCard
+              title="Total Impressions"
+              value={totalMetrics.impressions.toLocaleString()}
+              change="+12%"
+              changeType="positive"
+              icon={<Eye />}
+              subtitle="vs last period"
+            />
+            <MetricCard
+              title="Click-Through Rate"
+              value={`${avgMetrics.ctr.toFixed(2)}%`}
+              change="Above avg"
+              changeType="positive"
+              icon={<MousePointer />}
+              subtitle="Industry benchmark"
+            />
+            <MetricCard
+              title="Cost per Acquisition"
+              value={`$${avgMetrics.cpa.toFixed(2)}`}
+              change="-5%"
+              changeType="positive"
+              icon={<DollarSign />}
+              subtitle="Efficiency improved"
+            />
+            <MetricCard
+              title="Return on Ad Spend"
+              value={`${avgMetrics.roas.toFixed(2)}x`}
+              change="Strong"
+              changeType="positive"
+              icon={<TrendingUp />}
+              subtitle="Performance"
+            />
+          </ChartGrid>
         </section>
-
-        <div className="section-divider"></div>
 
         {/* Performance Charts */}
-        <section className="performance-section performance-trends-section">
-          <div className="performance-section-header">
-            <h2 className="performance-section-title">
-              <BarChart3 className="w-5 h-5" />
-              Performance Trends
-            </h2>
-            <div className="flex items-center gap-2">
-              {['7d', '30d', '90d'].map((range) => (
-                <Button
-                  key={range}
-                  variant={selectedTimeRange === range ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => setSelectedTimeRange(range)}
-                  className="interactive-scale"
-                  glow={selectedTimeRange === range}
-                >
-                  {range}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <p className="text-gray-400 text-sm mb-6">
-            Historical metrics and trend analysis
-          </p>
+        <section>
+          <ChartContainer
+            title="Performance Trends"
+            subtitle="Historical metrics and trend analysis"
+            timeRange={['7d', '30d', '90d']}
+            selectedRange={selectedTimeRange}
+            onRangeChange={setSelectedTimeRange}
+          >
+            <ChartGrid columns={2}>
+              <PremiumCard className="p-6">
+                <div className="mb-4">
+                  <h4 className="text-base font-semibold text-slate-200 mb-1">Impressions Trend</h4>
+                  <p className="text-sm text-slate-400">Daily impression volume</p>
+                </div>
+                <div className="space-y-3">
+                  {sampleMetricsData.map((metric, index) => (
+                    <MetricBar
+                      key={index}
+                      label={new Date(metric.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      value={metric.impressions}
+                      maxValue={Math.max(...sampleMetricsData.map(m => m.impressions))}
+                      color="bg-gradient-to-r from-indigo-500 to-indigo-400"
+                    />
+                  ))}
+                </div>
+              </PremiumCard>
 
-          <div className="chart-container">
-            <MetricsChart
-              data={metricsData.length > 0 ? metricsData : sampleMetricsData}
-              timeRange={selectedTimeRange}
-            />
-          </div>
+              <PremiumCard className="p-6">
+                <div className="mb-4">
+                  <h4 className="text-base font-semibold text-slate-200 mb-1">Clicks Trend</h4>
+                  <p className="text-sm text-slate-400">User engagement metrics</p>
+                </div>
+                <div className="space-y-3">
+                  {sampleMetricsData.map((metric, index) => (
+                    <MetricBar
+                      key={index}
+                      label={new Date(metric.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      value={metric.clicks}
+                      maxValue={Math.max(...sampleMetricsData.map(m => m.clicks))}
+                      color="bg-gradient-to-r from-emerald-500 to-emerald-400"
+                    />
+                  ))}
+                </div>
+              </PremiumCard>
+            </ChartGrid>
+          </ChartContainer>
         </section>
-
-        <div className="section-divider"></div>
 
         {/* Active Campaigns */}
         <section>
           <div className="mb-6">
-            <h2 className="text-2xl font-heading font-bold text-white mb-2">
+            <h2 className="text-xl font-semibold text-slate-100 mb-2">
               Active Campaigns
             </h2>
-            <p className="text-gray-400">
+            <p className="text-sm text-slate-400">
               Individual campaign performance and status
             </p>
           </div>
@@ -252,18 +252,18 @@ export default function ResultsPage() {
         {/* Performance Alerts */}
         <section>
           <div className="mb-6">
-            <h2 className="text-2xl font-heading font-bold text-white mb-2 flex items-center gap-3">
-              <AlertTriangle className="w-6 h-6 text-neon-amber" />
+            <h2 className="text-xl font-semibold text-slate-100 mb-2 flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400" />
               AI Performance Analysis
             </h2>
-            <p className="text-gray-400">
+            <p className="text-sm text-slate-400">
               Automated insights and optimization recommendations
             </p>
           </div>
 
           <PerformanceAlerts alerts={performanceAlerts} />
         </section>
-      </div>
+      </main>
     </div>
   )
 }

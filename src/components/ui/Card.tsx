@@ -2,27 +2,39 @@ import { clsx } from 'clsx'
 import { forwardRef } from 'react'
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glass' | 'elevated'
+  variant?: 'default' | 'glass' | 'elevated' | 'metric' | 'prominent' | 'analysis'
   hover?: boolean
+  accentColor?: 'primary' | 'success' | 'warning' | 'info' | 'none'
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', hover = false, children, ...props }, ref) => {
+  ({ className, variant = 'default', hover = false, accentColor = 'none', children, ...props }, ref) => {
     return (
       <div
         className={clsx(
-          'rounded-xl transition-all duration-200',
+          'rounded-xl transition-all duration-200 relative',
 
           // Variant styles
           {
             'bg-surface border border-border': variant === 'default',
-            'bg-surface border border-border shadow-sm': variant === 'glass',
-            'bg-surface border border-border shadow-sm': variant === 'elevated',
+            'glass-card': variant === 'glass',
+            'card-elevated': variant === 'elevated',
+            'metric-card': variant === 'metric',
+            'card-prominent': variant === 'prominent',
+            'card-analysis': variant === 'analysis',
+          },
+
+          // Accent color top borders
+          {
+            'border-t-2 border-t-primary': accentColor === 'primary',
+            'border-t-2 border-t-success': accentColor === 'success',
+            'border-t-2 border-t-warning': accentColor === 'warning',
+            'border-t-2 border-t-info': accentColor === 'info',
           },
 
           // Hover effects
           {
-            'hover:border-primary/30 hover:shadow-sm cursor-pointer': hover,
+            'card-interactive cursor-pointer': hover,
           },
 
           className
@@ -42,7 +54,7 @@ const CardHeader = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => {
     return (
       <div
-        className={clsx('flex flex-col space-y-1.5 p-6 pb-3', className)}
+        className={clsx('flex flex-col space-y-1.5 p-5 pb-3', className)}
         ref={ref}
         {...props}
       />
@@ -87,7 +99,7 @@ CardDescription.displayName = 'CardDescription'
 
 const CardContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
-    return <div className={clsx('p-6 pt-0', className)} ref={ref} {...props} />
+    return <div className={clsx('p-5 pt-0', className)} ref={ref} {...props} />
   }
 )
 

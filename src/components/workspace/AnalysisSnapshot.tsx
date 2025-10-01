@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { PremiumCard } from '@/components/ui/PremiumCard'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/Progress'
 import { Brain, Users, MapPin, Clock, TrendingUp, Zap } from 'lucide-react'
@@ -57,14 +57,14 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-electric-500 to-neon-cyan flex items-center justify-center shadow-glow-subtle">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg">
           <Brain className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-2xl font-heading font-bold text-white">
+          <h3 className="text-2xl font-bold text-slate-100">
             Analysis Snapshot
           </h3>
-          <p className="text-sm text-gray-400 font-mono">
+          <p className="text-sm text-slate-400 font-mono">
             AI-extracted insights from uploaded artifacts
           </p>
         </div>
@@ -73,48 +73,48 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
       {/* Key Performance Insights - Top Priority */}
       <section className="space-y-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-2 h-8 bg-gradient-to-b from-neon-emerald to-electric-500 rounded-full"></div>
-          <h4 className="text-lg font-heading font-semibold text-white">Key Performance Insights</h4>
+          <div className="w-2 h-8 bg-gradient-to-b from-emerald-500 to-indigo-500 rounded-full"></div>
+          <h4 className="text-lg font-semibold text-slate-100">Key Performance Insights</h4>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Performance Metrics - Elevated prominence */}
-          <Card variant="glow" className="shadow-card-primary">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <TrendingUp className="w-6 h-6 text-neon-emerald" />
-                <span className="text-lg">Performance Metrics</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <TrendingUp className="w-6 h-6 text-emerald-400" />
+                <span className="text-lg font-semibold text-slate-100">Performance Metrics</span>
+              </div>
+            </div>
+            <div>
               <div className="grid grid-cols-2 gap-6">
                 {Object.entries(snapshot.performance_metrics).map(([key, value]) => (
                   <div key={key} className="text-center">
-                    <p className="text-3xl font-mono font-bold text-neon-emerald mb-1">
+                    <p className="text-3xl font-mono font-bold text-emerald-400 mb-1">
                       {value}
                     </p>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">
+                    <p className="text-xs text-slate-400 uppercase tracking-wide">
                       {key.replace('_', ' ')}
                     </p>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </PremiumCard>
 
           {/* AI Recommendations - High priority */}
-          <Card variant="glow" className="shadow-card-elevated">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <Brain className="w-6 h-6 text-electric-500" />
-                <span className="text-lg">AI Recommendations</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Brain className="w-6 h-6 text-indigo-400" />
+                <span className="text-lg font-semibold text-slate-100">AI Recommendations</span>
+              </div>
+            </div>
+            <div>
               <div className="space-y-4">
                 {snapshot.recommendations.slice(0, 3).map((rec, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-electric-500 mt-2 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
                     <p className="text-sm text-gray-300 leading-relaxed">{rec}</p>
                   </div>
                 ))}
@@ -124,28 +124,28 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </PremiumCard>
         </div>
       </section>
 
       {/* Audience & Content Analysis */}
       <section className="space-y-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-2 h-8 bg-gradient-to-b from-electric-400 to-neon-cyan rounded-full"></div>
-          <h4 className="text-lg font-heading font-semibold text-white">Audience & Content Analysis</h4>
+          <div className="w-2 h-8 bg-gradient-to-b from-indigo-400 to-cyan-500 rounded-full"></div>
+          <h4 className="text-lg font-semibold text-slate-100">Audience & Content Analysis</h4>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Audience Segments */}
-          <Card variant="holo" className="shadow-card-elevated">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-electric-500" />
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Users className="w-5 h-5 text-indigo-400" />
                 <span>Audience Segments</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-6">
+              </div>
+            </div>
+            <div className=" space-y-6">
               {snapshot.audience_segments.map((segment, index) => (
                 <div key={index} className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-400">Size Estimate</span>
-                      <span className="text-neon-cyan font-mono font-medium">{segment.size_estimate}</span>
+                      <span className="text-cyan-400 font-mono font-medium">{segment.size_estimate}</span>
                     </div>
 
                     <div className="space-y-2">
@@ -189,18 +189,18 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   )}
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </PremiumCard>
 
           {/* Content Themes */}
-          <Card variant="holo" className="shadow-card-elevated">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <Zap className="w-5 h-5 text-neon-cyan" />
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Zap className="w-5 h-5 text-cyan-400" />
                 <span>Content Themes</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-5">
+              </div>
+            </div>
+            <div className=" space-y-5">
               {snapshot.content_themes.map((theme, index) => (
                 <div key={index} className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -231,15 +231,15 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   )}
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </PremiumCard>
         </div>
       </section>
 
       {/* Advanced Analytics */}
       <section className="space-y-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-2 h-8 bg-gradient-to-b from-neon-amber to-electric-400 rounded-full"></div>
+          <div className="w-2 h-8 bg-gradient-to-b from-amber-500 to-indigo-400 rounded-full"></div>
           <h4 className="text-lg font-heading font-semibold text-white">Advanced Analytics</h4>
         </div>
 
@@ -247,14 +247,14 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
 
 
           {/* Geographic Insights */}
-          <Card variant="holo" className="shadow-card-elevated">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-neon-amber" />
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin className="w-5 h-5 text-amber-400" />
                 <span>Geographic Insights</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-5">
+              </div>
+            </div>
+            <div className=" space-y-5">
               {snapshot.geographic_insights.map((geo, index) => (
                 <div key={index} className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -270,18 +270,18 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   )}
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </PremiumCard>
 
           {/* Temporal Patterns */}
-          <Card variant="holo" className="shadow-card-elevated">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-electric-400" />
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Clock className="w-5 h-5 text-indigo-400" />
                 <span>Temporal Patterns</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-5">
+              </div>
+            </div>
+            <div className=" space-y-5">
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-400 mb-3 font-medium">Optimal Days</p>
@@ -310,8 +310,8 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   <p className="text-sm text-gray-300 leading-relaxed">{snapshot.temporal_patterns.seasonal_trends}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </PremiumCard>
         </div>
       </section>
     </div>
