@@ -107,6 +107,7 @@ export default function WorkspacePage() {
               size="lg"
               glow
               onClick={startAnalysis}
+              className="btn-hover-lift"
             >
               <Play className="w-5 h-5" />
               Start Analysis
@@ -115,15 +116,15 @@ export default function WorkspacePage() {
         }
       />
 
-      <div className="p-6 space-y-8">
+      <div className="p-8 space-y-12 max-w-7xl mx-auto">
         {/* Upload Section */}
-        <section>
-          <div className="mb-6">
-            <h2 className="text-2xl font-heading font-bold text-white mb-2">
+        <section className="space-y-8">
+          <div className="text-center max-w-3xl mx-auto">
+            <h2 className="heading-xl text-white mb-4">
               Upload Data Artifacts
             </h2>
-            <p className="text-gray-400">
-              Upload sales data, customer reviews, marketing documents, and images for AI analysis
+            <p className="body-lg" style={{ color: 'var(--space-300)' }}>
+              Upload sales data, customer reviews, marketing documents, and images for comprehensive AI analysis
             </p>
           </div>
 
@@ -137,83 +138,91 @@ export default function WorkspacePage() {
 
         {/* Analysis Status */}
         {hasUploadedFiles && !analysisSnapshot && (
-          <section>
-            <Card variant="holo">
-              <CardContent className="p-6">
+          <section className="max-w-2xl mx-auto">
+            <div className="card-workspace">
+              <div className="p-8">
                 <div className="text-center">
                   {isAnalyzing ? (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex justify-center">
-                        <div className="w-8 h-8 border-2 border-electric-500 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-12 h-12 border-3 border-electric-500 border-t-transparent rounded-full animate-spin" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white">
-                        Analyzing Data Artifacts
-                      </h3>
-                      <p className="text-electric-500 font-mono text-sm">
-                        AI agents extracting features and generating insights...
-                      </p>
+                      <div className="space-y-3">
+                        <h3 className="heading-lg" style={{ color: 'var(--foreground)' }}>
+                          Analyzing Data Artifacts
+                        </h3>
+                        <p className="body-md font-mono" style={{ color: 'var(--electric)' }}>
+                          AI agents extracting features and generating insights...
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <>
-                      <h3 className="text-lg font-semibold text-white mb-2">
+                    <div className="space-y-4">
+                      <h3 className="heading-md" style={{ color: 'var(--foreground)' }}>
                         Ready for Analysis
                       </h3>
-                      <p className="text-gray-400 mb-4">
-                        Data artifacts uploaded. Analysis will start automatically or click the button above.
+                      <p className="body-md leading-relaxed" style={{ color: 'var(--space-300)' }}>
+                        Data artifacts uploaded successfully. Analysis will start automatically or click the button above.
                       </p>
-                    </>
+                    </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </section>
         )}
 
         {/* Analysis Snapshot */}
         {analysisSnapshot && (
-          <section>
-            <div className="mb-6">
-              <h2 className="text-2xl font-heading font-bold text-white mb-2">
+          <section className="space-y-8">
+            <div className="text-center max-w-3xl mx-auto">
+              <h2 className="heading-xl mb-4" style={{ color: 'var(--foreground)' }}>
                 Analysis Results
               </h2>
-              <p className="text-gray-400">
-                AI-generated insights from your uploaded data artifacts
+              <p className="body-lg leading-relaxed" style={{ color: 'var(--space-300)' }}>
+                AI-generated insights and recommendations from your uploaded data artifacts
               </p>
             </div>
-            <AnalysisSnapshot snapshot={analysisSnapshot} />
+            <div className="card-analysis">
+              <AnalysisSnapshot snapshot={analysisSnapshot} />
+            </div>
           </section>
         )}
 
         {/* Error Display */}
         {error && (
-          <section>
-            <Card variant="default" className="border-red-500 bg-red-500/10">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
+          <section className="max-w-2xl mx-auto">
+            <div className="card-workspace border-neon-rose bg-neon-rose/10">
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--neon-rose)', opacity: 0.2 }}>
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--neon-rose)' }} />
+                  </div>
                   <div>
-                    <h3 className="font-semibold text-red-400">Analysis Error</h3>
-                    <p className="text-sm text-red-300 mt-1">{error}</p>
+                    <h3 className="heading-sm mb-2" style={{ color: 'var(--neon-rose)' }}>Analysis Error</h3>
+                    <p className="body-sm leading-relaxed" style={{ color: 'var(--error)' }}>{error}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </section>
         )}
 
         {/* Empty State */}
         {!hasUploadedFiles && !analysisSnapshot && (
-          <section className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 rounded-full bg-space-200 flex items-center justify-center mx-auto mb-6">
-                <Rocket className="w-10 h-10 text-gray-400" />
+          <section className="text-center py-16">
+            <div className="max-w-lg mx-auto">
+              <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-card-elevated" style={{ background: 'linear-gradient(135deg, var(--space-200), var(--space-300))' }}>
+                <Rocket className="w-12 h-12" style={{ color: 'var(--electric)' }} />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Ready for Mission Launch
-              </h3>
-              <p className="text-gray-400">
-                Upload your marketing data artifacts to begin AI-powered analysis and strategy generation.
-              </p>
+              <div className="space-y-4">
+                <h3 className="heading-lg" style={{ color: 'var(--foreground)' }}>
+                  Ready for Mission Launch
+                </h3>
+                <p className="body-md leading-relaxed max-w-md mx-auto" style={{ color: 'var(--space-300)' }}>
+                  Upload your marketing data artifacts to begin AI-powered analysis and strategy generation.
+                </p>
+              </div>
             </div>
           </section>
         )}

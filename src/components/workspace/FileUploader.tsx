@@ -254,17 +254,17 @@ export function FileUploader({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Drop Zone */}
-      <Card variant="holo" className="relative overflow-hidden">
-        <CardContent className="p-8">
+      <div className="card-upload relative overflow-hidden">
+        <div className="p-8">
           <div
             {...getRootProps()}
             className={clsx(
-              'border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer',
-              'hover:border-electric-500/50 hover:bg-electric-500/5',
+              'border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 cursor-pointer',
+              'hover:border-electric-500/70 hover:bg-electric-500/8 hover:shadow-glow-subtle',
               {
-                'border-electric-500 bg-electric-500/10': isDragActive,
+                'border-electric-500 bg-electric-500/15 shadow-glow-subtle': isDragActive,
                 'border-space-300': !isDragActive,
                 'opacity-50 cursor-not-allowed': isUploading,
               }
@@ -272,30 +272,33 @@ export function FileUploader({
           >
             <input {...getInputProps()} />
 
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-6">
               <div className={clsx(
-                'w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300',
+                'w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300',
                 {
-                  'bg-electric-500/20 text-electric-500': isDragActive,
+                  'bg-electric-500/25 text-electric-500 shadow-glow-subtle': isDragActive,
                   'bg-space-200 text-gray-400': !isDragActive,
                 }
               )}>
-                <Upload className="w-8 h-8" />
+                <Upload className="w-10 h-10" />
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {isDragActive ? 'Drop files here' : 'Upload data artifacts'}
+              <div className="text-center max-w-md">
+                <h3 className="heading-md mb-3" style={{ color: 'var(--foreground)' }}>
+                  {isDragActive ? 'Drop files here' : 'Upload Data Artifacts'}
                 </h3>
-                <p className="text-gray-400 mb-4">
-                  Drag & drop files or click to browse
+                <p className="body-md mb-6 leading-relaxed" style={{ color: 'var(--space-400)' }}>
+                  Drag & drop your marketing data files or click to browse
                 </p>
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-wrap gap-2 justify-center mb-6">
                   {acceptedFileTypes.map(type => (
                     <Badge key={type} variant="info" className="text-xs">
                       {type}
                     </Badge>
                   ))}
+                </div>
+                <div className="caption" style={{ color: 'var(--space-500)' }}>
+                  Maximum {maxFiles} files • Up to 10MB each
                 </div>
               </div>
 
@@ -303,37 +306,47 @@ export function FileUploader({
                 variant="primary"
                 size="lg"
                 disabled={isUploading}
-                className="mt-4"
+                className="mt-2 btn-hover-lift"
+                glow
               >
-                Choose Files
+                {isUploading ? 'Uploading...' : 'Choose Files'}
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Uploaded Files List */}
       {uploadedFiles.length > 0 && (
-        <Card variant="default">
-          <CardContent className="p-6">
-            <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <File className="w-5 h-5" />
-              Uploaded Artifacts ({uploadedFiles.length})
-            </h4>
+        <div className="card-data">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-emerald to-electric-500 flex items-center justify-center">
+                <File className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h4 className="heading-md" style={{ color: 'var(--foreground)' }}>
+                  Uploaded Artifacts ({uploadedFiles.length})
+                </h4>
+                <p className="body-sm" style={{ color: 'var(--space-400)' }}>
+                  Files ready for analysis
+                </p>
+              </div>
+            </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {uploadedFiles.map((fileData) => (
                 <div
                   key={fileData.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-space-200/50 border border-space-300"
+                  className="flex items-center gap-4 p-5 rounded-xl bg-space-200/50 border border-space-300 hover:border-space-400 transition-colors"
                 >
                   <div className="flex-shrink-0">
                     {getFileTypeIcon(fileData.file.name)}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <p className="text-sm font-medium text-white truncate">
+                    <div className="flex items-center gap-3 mb-3">
+                      <p className="text-sm font-semibold text-white truncate">
                         {fileData.file.name}
                       </p>
                       <Badge
@@ -342,22 +355,44 @@ export function FileUploader({
                       >
                         {fileData.file.name.split('.').pop()?.toUpperCase()}
                       </Badge>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 font-mono">
                         {(fileData.file.size / 1024).toFixed(1)} KB
                       </span>
                     </div>
 
                     {fileData.status === 'uploading' && (
-                      <Progress value={fileData.progress} variant="default" animated />
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-400">Uploading...</span>
+                          <span className="text-electric-500 font-mono">{fileData.progress}%</span>
+                        </div>
+                        <Progress value={fileData.progress} variant="default" animated />
+                      </div>
+                    )}
+
+                    {fileData.status === 'error' && fileData.error && (
+                      <p className="text-xs text-neon-rose mt-1">{fileData.error}</p>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {fileData.status === 'success' && (
-                      <CheckCircle className="w-5 h-5 text-neon-emerald" />
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-neon-emerald" />
+                        <span className="text-xs text-neon-emerald font-medium">Ready</span>
+                      </div>
                     )}
                     {fileData.status === 'error' && (
-                      <AlertCircle className="w-5 h-5 text-neon-rose" />
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-neon-rose" />
+                        <span className="text-xs text-neon-rose font-medium">Failed</span>
+                      </div>
+                    )}
+                    {fileData.status === 'uploading' && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-electric-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs text-electric-500 font-medium">Processing</span>
+                      </div>
                     )}
 
                     <Button
@@ -365,6 +400,7 @@ export function FileUploader({
                       size="sm"
                       onClick={() => removeFile(fileData.id)}
                       disabled={fileData.status === 'uploading'}
+                      className="ml-2 interactive-scale"
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -372,8 +408,8 @@ export function FileUploader({
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   )

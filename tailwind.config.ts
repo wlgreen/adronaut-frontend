@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Premium SaaS color palette
+        // Premium SaaS color palette with futuristic accents
         'surface': {
           DEFAULT: '#374151',
           hover: '#4b5563',
@@ -46,6 +46,26 @@ const config: Config = {
           100: '#fef3c7',
           500: '#f59e0b',
         },
+        // Futuristic color system
+        'electric': {
+          400: '#818cf8',
+          500: '#6366f1',
+          600: '#4f46e5',
+        },
+        'neon': {
+          cyan: '#06b6d4',
+          emerald: '#10b981',
+          amber: '#f59e0b',
+          rose: '#f43f5e',
+        },
+        'space': {
+          100: '#1e293b',
+          200: '#334155',
+          300: '#475569',
+          400: '#64748b',
+          800: '#0f172a',
+          900: '#020617',
+        },
         'accent': {
           cyan: '#06b6d4',
         },
@@ -53,6 +73,7 @@ const config: Config = {
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
         'display': ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+        'heading': ['IBM Plex Sans', 'system-ui', 'sans-serif'],
         'mono': ['JetBrains Mono', 'monospace'],
       },
       animation: {
@@ -87,10 +108,17 @@ const config: Config = {
       },
       boxShadow: {
         'glow': '0 0 15px rgba(99, 102, 241, 0.5)',
+        'glow-subtle': '0 0 10px rgba(99, 102, 241, 0.3)',
         'glow-emerald': '0 0 15px rgba(52, 211, 153, 0.5)',
         'glow-rose': '0 0 15px rgba(251, 113, 133, 0.5)',
         'glow-cyan': '0 0 15px rgba(6, 182, 212, 0.5)',
         'inner-glow': 'inset 0 0 10px rgba(99, 102, 241, 0.3)',
+        'card-elevated': '0 8px 32px rgba(0, 0, 0, 0.12), 0 0 20px rgba(99, 102, 241, 0.1)',
+        'card-primary': '0 8px 32px rgba(0, 0, 0, 0.12), 0 0 25px rgba(99, 102, 241, 0.2)',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '22': '5.5rem',
       }
     },
   },

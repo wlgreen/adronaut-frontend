@@ -76,7 +76,7 @@ export default function ResultsPage() {
                 Analyzing Performance...
               </Badge>
             )}
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" className="btn-hover-lift" glow>
               <TrendingUp className="w-4 h-4" />
               Export Report
             </Button>
@@ -202,6 +202,8 @@ export default function ResultsPage() {
                   variant={selectedTimeRange === range ? 'primary' : 'secondary'}
                   size="sm"
                   onClick={() => setSelectedTimeRange(range)}
+                  className="interactive-scale"
+                  glow={selectedTimeRange === range}
                 >
                   {range}
                 </Button>

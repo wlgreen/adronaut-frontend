@@ -54,14 +54,14 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-electric-500 to-neon-cyan flex items-center justify-center shadow-glow">
-          <Brain className="w-5 h-5 text-white" />
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-electric-500 to-neon-cyan flex items-center justify-center shadow-glow-subtle">
+          <Brain className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-xl font-heading font-bold text-white glow-text">
+          <h3 className="text-2xl font-heading font-bold text-white">
             Analysis Snapshot
           </h3>
           <p className="text-sm text-gray-400 font-mono">
@@ -70,200 +70,250 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* Audience Segments */}
-        <Card variant="holo" className="col-span-1 lg:col-span-2 xl:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-electric-500" />
-              Audience Segments
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {snapshot.audience_segments.map((segment, index) => (
-              <div key={index} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-white">{segment.name}</h4>
-                  <Badge variant={getValueScoreColor(segment.value_score)} glow>
-                    Score: {segment.value_score}/10
-                  </Badge>
-                </div>
+      {/* Key Performance Insights - Top Priority */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-2 h-8 bg-gradient-to-b from-neon-emerald to-electric-500 rounded-full"></div>
+          <h4 className="text-lg font-heading font-semibold text-white">Key Performance Insights</h4>
+        </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">Size Estimate</span>
-                    <span className="text-neon-cyan font-mono">{segment.size_estimate}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Performance Metrics - Elevated prominence */}
+          <Card variant="glow" className="shadow-card-primary">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3">
+                <TrendingUp className="w-6 h-6 text-neon-emerald" />
+                <span className="text-lg">Performance Metrics</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 gap-6">
+                {Object.entries(snapshot.performance_metrics).map(([key, value]) => (
+                  <div key={key} className="text-center">
+                    <p className="text-3xl font-mono font-bold text-neon-emerald mb-1">
+                      {value}
+                    </p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">
+                      {key.replace('_', ' ')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Recommendations - High priority */}
+          <Card variant="glow" className="shadow-card-elevated">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3">
+                <Brain className="w-6 h-6 text-electric-500" />
+                <span className="text-lg">AI Recommendations</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                {snapshot.recommendations.slice(0, 3).map((rec, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-electric-500 mt-2 flex-shrink-0" />
+                    <p className="text-sm text-gray-300 leading-relaxed">{rec}</p>
+                  </div>
+                ))}
+                {snapshot.recommendations.length > 3 && (
+                  <div className="pt-2 border-t border-space-300">
+                    <p className="text-xs text-gray-400">+{snapshot.recommendations.length - 3} more recommendations</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Audience & Content Analysis */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-2 h-8 bg-gradient-to-b from-electric-400 to-neon-cyan rounded-full"></div>
+          <h4 className="text-lg font-heading font-semibold text-white">Audience & Content Analysis</h4>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Audience Segments */}
+          <Card variant="holo" className="shadow-card-elevated">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-electric-500" />
+                <span>Audience Segments</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-6">
+              {snapshot.audience_segments.map((segment, index) => (
+                <div key={index} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-semibold text-white text-base">{segment.name}</h5>
+                    <Badge variant={getValueScoreColor(segment.value_score)} glow>
+                      Score: {segment.value_score}/10
+                    </Badge>
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">Characteristics</p>
-                    <div className="flex flex-wrap gap-1">
-                      {segment.characteristics.map((char, idx) => (
-                        <Badge key={idx} variant="info" className="text-xs">
-                          {char}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Size Estimate</span>
+                      <span className="text-neon-cyan font-mono font-medium">{segment.size_estimate}</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Characteristics</p>
+                      <div className="flex flex-wrap gap-2">
+                        {segment.characteristics.slice(0, 4).map((char, idx) => (
+                          <Badge key={idx} variant="info" className="text-xs">
+                            {char}
+                          </Badge>
+                        ))}
+                        {segment.characteristics.length > 4 && (
+                          <Badge variant="default" className="text-xs">
+                            +{segment.characteristics.length - 4} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <Progress
+                      value={segment.value_score * 10}
+                      variant={getValueScoreColor(segment.value_score) as any}
+                      className="mt-3"
+                    />
+                  </div>
+
+                  {index < snapshot.audience_segments.length - 1 && (
+                    <div className="border-t border-space-300 pt-2" />
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Content Themes */}
+          <Card variant="holo" className="shadow-card-elevated">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3">
+                <Zap className="w-5 h-5 text-neon-cyan" />
+                <span>Content Themes</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-5">
+              {snapshot.content_themes.map((theme, index) => (
+                <div key={index} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-semibold text-white text-base">{theme.theme}</h5>
+                    <Badge variant={getPerformanceColor(theme.performance)} glow>
+                      {theme.performance.toUpperCase()}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Topics</p>
+                    <div className="flex flex-wrap gap-2">
+                      {theme.keywords.slice(0, 6).map((keyword, idx) => (
+                        <Badge key={idx} variant="default" className="text-xs">
+                          {keyword}
                         </Badge>
                       ))}
+                      {theme.keywords.length > 6 && (
+                        <Badge variant="default" className="text-xs opacity-60">
+                          +{theme.keywords.length - 6} more
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
-                  <Progress
-                    value={segment.value_score * 10}
-                    variant={getValueScoreColor(segment.value_score) as any}
-                    className="mt-2"
-                  />
+                  {index < snapshot.content_themes.length - 1 && (
+                    <div className="border-t border-space-300 pt-2" />
+                  )}
                 </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-                {index < snapshot.audience_segments.length - 1 && (
-                  <div className="border-t border-space-300 pt-4" />
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+      {/* Advanced Analytics */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-2 h-8 bg-gradient-to-b from-neon-amber to-electric-400 rounded-full"></div>
+          <h4 className="text-lg font-heading font-semibold text-white">Advanced Analytics</h4>
+        </div>
 
-        {/* Content Themes */}
-        <Card variant="holo">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-neon-cyan" />
-              Content Themes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {snapshot.content_themes.map((theme, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-white">{theme.theme}</h4>
-                  <Badge variant={getPerformanceColor(theme.performance)} glow>
-                    {theme.performance.toUpperCase()}
-                  </Badge>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <div className="flex flex-wrap gap-1">
-                  {theme.keywords.map((keyword, idx) => (
-                    <Badge key={idx} variant="default" className="text-xs">
-                      {keyword}
+
+          {/* Geographic Insights */}
+          <Card variant="holo" className="shadow-card-elevated">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-neon-amber" />
+                <span>Geographic Insights</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-5">
+              {snapshot.geographic_insights.map((geo, index) => (
+                <div key={index} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-semibold text-white text-base">{geo.region}</h5>
+                    <Badge variant={getPerformanceColor(geo.performance)} glow>
+                      {geo.performance.toUpperCase()}
                     </Badge>
-                  ))}
-                </div>
+                  </div>
+                  <p className="text-sm text-gray-300 leading-relaxed">{geo.opportunity}</p>
 
-                {index < snapshot.content_themes.length - 1 && (
-                  <div className="border-t border-space-300 pt-2" />
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Performance Metrics */}
-        <Card variant="glow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-neon-emerald" />
-              Performance Metrics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(snapshot.performance_metrics).map(([key, value]) => (
-                <div key={key} className="text-center">
-                  <p className="text-2xl font-mono font-bold text-neon-emerald glow-text">
-                    {value}
-                  </p>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">
-                    {key.replace('_', ' ')}
-                  </p>
+                  {index < snapshot.geographic_insights.length - 1 && (
+                    <div className="border-t border-space-300 pt-2" />
+                  )}
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Geographic Insights */}
-        <Card variant="holo">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-neon-amber" />
-              Geographic Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {snapshot.geographic_insights.map((geo, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-white">{geo.region}</h4>
-                  <Badge variant={getPerformanceColor(geo.performance)}>
-                    {geo.performance.toUpperCase()}
-                  </Badge>
+          {/* Temporal Patterns */}
+          <Card variant="holo" className="shadow-card-elevated">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-electric-400" />
+                <span>Temporal Patterns</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-5">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-400 mb-3 font-medium">Optimal Days</p>
+                  <div className="flex flex-wrap gap-2">
+                    {snapshot.temporal_patterns.best_days.map((day, idx) => (
+                      <Badge key={idx} variant="success" className="text-xs">
+                        {day}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-sm text-gray-400">{geo.opportunity}</p>
 
-                {index < snapshot.geographic_insights.length - 1 && (
-                  <div className="border-t border-space-300 pt-2" />
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Temporal Patterns */}
-        <Card variant="holo">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-electric-400" />
-              Temporal Patterns
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-400 mb-2">Best Days</p>
-              <div className="flex flex-wrap gap-1">
-                {snapshot.temporal_patterns.best_days.map((day, idx) => (
-                  <Badge key={idx} variant="success" className="text-xs">
-                    {day}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-400 mb-2">Best Hours</p>
-              <div className="flex flex-wrap gap-1">
-                {snapshot.temporal_patterns.best_hours.map((hour, idx) => (
-                  <Badge key={idx} variant="info" className="text-xs">
-                    {hour}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-400 mb-2">Seasonal Trends</p>
-              <p className="text-sm text-white">{snapshot.temporal_patterns.seasonal_trends}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recommendations */}
-        <Card variant="glow" className="col-span-1 lg:col-span-2 xl:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-electric-500" />
-              AI Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {snapshot.recommendations.map((rec, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-electric-500 mt-2 flex-shrink-0" />
-                  <p className="text-sm text-gray-300">{rec}</p>
+                <div>
+                  <p className="text-sm text-gray-400 mb-3 font-medium">Peak Hours</p>
+                  <div className="flex flex-wrap gap-2">
+                    {snapshot.temporal_patterns.best_hours.map((hour, idx) => (
+                      <Badge key={idx} variant="info" className="text-xs">
+                        {hour}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
+                <div className="pt-2 border-t border-space-300">
+                  <p className="text-sm text-gray-400 mb-2 font-medium">Seasonal Trends</p>
+                  <p className="text-sm text-gray-300 leading-relaxed">{snapshot.temporal_patterns.seasonal_trends}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   )
 }
