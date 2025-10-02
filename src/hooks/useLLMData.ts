@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { llmService, AnalysisSnapshot, Strategy, StrategyPatch, Campaign, PerformanceAlert } from '@/lib/llm-service'
-import { supabase } from '@/lib/supabase'
+import { supabaseLogger } from '@/lib/supabase-logger'
+import { logger } from '@/lib/logger'
 
 export function useWorkspaceData(projectId?: string) {
   const [analysisSnapshot, setAnalysisSnapshot] = useState<AnalysisSnapshot | null>(null)
@@ -18,13 +19,13 @@ export function useWorkspaceData(projectId?: string) {
       setAnalysisSnapshot(snapshot)
 
       // Save to Supabase
-      await supabase
-        .from('analysis_snapshots')
-        .upsert({
-          project_id: projectId,
-          snapshot_data: snapshot,
-          created_at: new Date().toISOString()
-        })
+      await supabaseLogger.upsert('analysis_snapshots', {
+        project_id: projectId,
+        snapshot_data: snapshot,
+        created_at: new Date().toISOString()
+      }, {
+        onConflict: 'project_id'
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed')
     } finally {
@@ -37,16 +38,22 @@ export function useWorkspaceData(projectId?: string) {
     if (!projectId) return
 
     const loadExistingAnalysis = async () => {
-      const { data, error } = await supabase
-        .from('analysis_snapshots')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
+      try {
+        const result = await supabaseLogger.select('analysis_snapshots', {
+          select: '*',
+          eq: { project_id: projectId },
+          orderBy: { column: 'created_at', ascending: false },
+          limit: 1
+        })
 
-      if (data && !error) {
-        setAnalysisSnapshot(data.snapshot_data)
+        if (result.data && result.data.length > 0) {
+          setAnalysisSnapshot(result.data[0].snapshot_data)
+        }
+      } catch (error) {
+        logger.warn('Failed to load existing analysis', {
+          projectId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
       }
     }
 

@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { errorLogger } from './error-logger'
+import { logger } from './logger'
 
 export interface AnalysisSnapshot {
   audience_segments: Array<{
@@ -124,63 +125,49 @@ export class LLMService {
   }
 
   async analyzeUploadedFiles(projectId: string): Promise<AnalysisSnapshot> {
+    const timer = logger.startTimer('LLM_ANALYZE_FILES')
+
     try {
+      logger.info('Starting file analysis', { projectId, operation: 'analyze_uploaded_files' })
+
       // Check if we should use real LLM analysis
       const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
       const useRealLLM = apiKey && apiKey.startsWith('sk-')
 
-      console.log('LLM Service Debug:', {
+      logger.debug('LLM Configuration', {
         hasApiKey: !!apiKey,
         keyPrefix: apiKey ? apiKey.substring(0, 7) + '...' : 'none',
-        useRealLLM
+        useRealLLM,
+        projectId
       })
 
       if (!useRealLLM) {
-        console.log('Using sample analysis (no valid OpenAI API key)')
+        logger.info('Using sample analysis (no valid OpenAI API key)', { projectId })
         // Simulate analysis time
         await new Promise(resolve => setTimeout(resolve, 2000))
-        return this.createSampleAnalysis()
+        const result = this.createSampleAnalysis()
+        const duration = logger.endTimer(timer)
+        logger.info('Sample analysis completed', { projectId, duration, segmentCount: result.audience_segments.length })
+        return result
       }
 
-      console.log('🤖 Using real OpenAI analysis!')
-      return await this.performRealAnalysis(projectId)
+      logger.info('Using real OpenAI analysis', { projectId })
+      const result = await this.performRealAnalysis(projectId)
+      const duration = logger.endTimer(timer)
+      logger.info('Real analysis completed', { projectId, duration, segmentCount: result.audience_segments.length })
+      return result
 
-      // Get uploaded files from Supabase
-      const { data: files, error } = await supabase
-        .from('artifacts')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
-
-      if (error || !files?.length) {
-        throw new Error('No files found for analysis')
-      }
-
-      // Call AutoGen service for analysis
-      const response = await fetch(`${AUTOGEN_SERVICE_URL}/autogen/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          project_id: projectId,
-          files: files.map(f => ({
-            file_id: f.artifact_id,
-            file_name: f.filename,
-            file_type: f.mime,
-            storage_url: f.storage_url
-          }))
-        })
+    } catch (error) {
+      const duration = logger.endTimer(timer)
+      logger.error('File analysis failed', {
+        projectId,
+        duration,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack?.substring(0, 500)
+        } : error
       })
 
-      if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.statusText}`)
-      }
-
-      const analysisResult = await response.json()
-      return this.parseAnalysisOutput(analysisResult.analysis_output)
-    } catch (error) {
-      console.error('Analysis failed:', error)
       errorLogger.logError('llm-analysis', 'File analysis failed', {
         projectId,
         error: error instanceof Error ? {
@@ -211,20 +198,44 @@ export class LLMService {
   }
 
   async generateStrategy(analysisSnapshot: AnalysisSnapshot, projectId: string): Promise<Strategy> {
+    const timer = logger.startTimer('LLM_GENERATE_STRATEGY')
+
     try {
+      logger.info('Starting strategy generation', {
+        projectId,
+        segmentCount: analysisSnapshot.audience_segments.length,
+        themeCount: analysisSnapshot.content_themes.length
+      })
+
       // Check if we should use real LLM
       const useRealLLM = process.env.NEXT_PUBLIC_OPENAI_API_KEY &&
                         process.env.NEXT_PUBLIC_OPENAI_API_KEY.startsWith('sk-')
 
       if (!useRealLLM) {
-        console.log('No OpenAI API key - generating sample strategy...')
+        logger.info('No OpenAI API key - generating sample strategy', { projectId })
         await new Promise(resolve => setTimeout(resolve, 1500))
-        return this.createSampleStrategy(analysisSnapshot)
+        const result = this.createSampleStrategy(analysisSnapshot)
+        const duration = logger.endTimer(timer)
+        logger.info('Sample strategy generated', { projectId, duration, version: result.version })
+        return result
       }
 
-      return await this.generateRealStrategy(analysisSnapshot, projectId)
+      logger.info('Generating real strategy with OpenAI', { projectId })
+      const result = await this.generateRealStrategy(analysisSnapshot, projectId)
+      const duration = logger.endTimer(timer)
+      logger.info('Real strategy generated', { projectId, duration, version: result.version })
+      return result
     } catch (error) {
-      console.error('Strategy generation failed:', error)
+      const duration = logger.endTimer(timer)
+      logger.error('Strategy generation failed', {
+        projectId,
+        duration,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack?.substring(0, 500)
+        } : error
+      })
+
       errorLogger.logError('llm-strategy', 'Strategy generation failed', {
         projectId,
         error: error instanceof Error ? {
@@ -436,8 +447,8 @@ export class LLMService {
   }
 
   private async performRealAnalysis(projectId: string): Promise<AnalysisSnapshot> {
-    // Since we're in development mode with file simulation, let's analyze based on project context
-    console.log('Performing real OpenAI analysis for project:', projectId)
+    const timer = logger.startTimer('OPENAI_ANALYSIS_CALL')
+    logger.info('Starting real OpenAI analysis', { projectId })
 
     const analysisPrompt = `
 You are a marketing analytics AI. Analyze the uploaded marketing data and provide insights in the following JSON format:
@@ -483,69 +494,91 @@ Based on the project context and typical marketing patterns, provide a realistic
 `
 
     try {
+      const requestBody = {
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a expert marketing analytics AI that provides detailed, actionable insights from marketing data.'
+          },
+          {
+            role: 'user',
+            content: analysisPrompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      }
+
+      logger.llmCall('ANALYSIS_REQUEST', requestBody)
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
         },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a expert marketing analytics AI that provides detailed, actionable insights from marketing data.'
-            },
-            {
-              role: 'user',
-              content: analysisPrompt
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 2000
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
+        const duration = logger.endTimer(timer)
         // Handle specific error cases
         if (response.status === 429) {
-          console.warn('OpenAI API rate limit reached. Using sample analysis...')
+          logger.warn('OpenAI API rate limit reached, falling back to sample', { status: response.status, duration })
           return this.createSampleAnalysis()
         } else if (response.status === 401) {
-          console.warn('OpenAI API authentication failed. Check API key. Using sample analysis...')
+          logger.warn('OpenAI API authentication failed, falling back to sample', { status: response.status, duration })
           return this.createSampleAnalysis()
         } else if (response.status === 403) {
-          console.warn('OpenAI API access forbidden. Using sample analysis...')
+          logger.warn('OpenAI API access forbidden, falling back to sample', { status: response.status, duration })
           return this.createSampleAnalysis()
         } else if (response.status === 500 || response.status === 502 || response.status === 503) {
-          console.warn('OpenAI API server error. Using sample analysis...')
+          logger.warn('OpenAI API server error, falling back to sample', { status: response.status, duration })
           return this.createSampleAnalysis()
         } else {
           const errorText = await response.text().catch(() => 'Unknown error')
+          logger.llmCall('ANALYSIS_REQUEST', requestBody, null, duration, new Error(`API Error ${response.status}: ${errorText}`))
           throw new Error(`OpenAI API error (${response.status}): ${errorText || response.statusText}`)
         }
       }
 
       const data = await response.json()
+      const duration = logger.endTimer(timer)
+
+      logger.llmCall('ANALYSIS_REQUEST', requestBody, data, duration)
+
       const content = data.choices[0]?.message?.content
 
       if (!content) {
-        console.warn('No content received from OpenAI. Using sample analysis...')
+        logger.warn('No content received from OpenAI, falling back to sample', { duration })
         return this.createSampleAnalysis()
       }
 
-      console.log('OpenAI response received, parsing...')
+      logger.info('OpenAI analysis response received, parsing', {
+        contentLength: content.length,
+        duration,
+        usage: data.usage
+      })
       return this.parseAnalysisOutput(content)
 
     } catch (error) {
-      console.error('Real LLM analysis failed:', error)
-      console.log('Falling back to sample analysis...')
+      const duration = logger.endTimer(timer)
+      logger.error('Real LLM analysis failed, falling back to sample', {
+        projectId,
+        duration,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack?.substring(0, 500)
+        } : error
+      })
       return this.createSampleAnalysis()
     }
   }
 
   private async generateRealStrategy(analysisSnapshot: AnalysisSnapshot, projectId: string): Promise<Strategy> {
-    console.log('Generating real strategy with OpenAI...')
+    const timer = logger.startTimer('OPENAI_STRATEGY_CALL')
+    logger.info('Starting real OpenAI strategy generation', { projectId })
 
     const strategyPrompt = `
 Based on the following marketing analysis, create a comprehensive marketing strategy in JSON format:
@@ -605,63 +638,84 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
 `
 
     try {
+      const requestBody = {
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a strategic marketing expert who creates data-driven marketing strategies based on audience insights and market analysis.'
+          },
+          {
+            role: 'user',
+            content: strategyPrompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 2500
+      }
+
+      logger.llmCall('STRATEGY_REQUEST', requestBody)
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
         },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a strategic marketing expert who creates data-driven marketing strategies based on audience insights and market analysis.'
-            },
-            {
-              role: 'user',
-              content: strategyPrompt
-            }
-          ],
-          temperature: 0.3, // Lower temperature for more consistent strategy output
-          max_tokens: 2500
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
+        const duration = logger.endTimer(timer)
         // Handle specific error cases for strategy generation
         if (response.status === 429) {
-          console.warn('OpenAI API rate limit reached during strategy generation. Using sample strategy...')
+          logger.warn('OpenAI API rate limit reached for strategy generation, falling back to sample', { status: response.status, duration })
           return this.createSampleStrategy(analysisSnapshot)
         } else if (response.status === 401) {
-          console.warn('OpenAI API authentication failed during strategy generation. Check API key. Using sample strategy...')
+          logger.warn('OpenAI API authentication failed for strategy generation, falling back to sample', { status: response.status, duration })
           return this.createSampleStrategy(analysisSnapshot)
         } else if (response.status === 403) {
-          console.warn('OpenAI API access forbidden during strategy generation. Using sample strategy...')
+          logger.warn('OpenAI API access forbidden for strategy generation, falling back to sample', { status: response.status, duration })
           return this.createSampleStrategy(analysisSnapshot)
         } else if (response.status === 500 || response.status === 502 || response.status === 503) {
-          console.warn('OpenAI API server error during strategy generation. Using sample strategy...')
+          logger.warn('OpenAI API server error for strategy generation, falling back to sample', { status: response.status, duration })
           return this.createSampleStrategy(analysisSnapshot)
         } else {
           const errorText = await response.text().catch(() => 'Unknown error')
+          logger.llmCall('STRATEGY_REQUEST', requestBody, null, duration, new Error(`API Error ${response.status}: ${errorText}`))
           throw new Error(`OpenAI API error (${response.status}): ${errorText || response.statusText}`)
         }
       }
 
       const data = await response.json()
+      const duration = logger.endTimer(timer)
+
+      logger.llmCall('STRATEGY_REQUEST', requestBody, data, duration)
+
       const content = data.choices[0]?.message?.content
 
       if (!content) {
-        console.warn('No strategy content received from OpenAI. Using sample strategy...')
+        logger.warn('No strategy content received from OpenAI, falling back to sample', { duration })
         return this.createSampleStrategy(analysisSnapshot)
       }
 
-      console.log('OpenAI strategy response received, parsing...')
+      logger.info('OpenAI strategy response received, parsing', {
+        contentLength: content.length,
+        duration,
+        usage: data.usage
+      })
       return this.parseStrategyOutput(content)
 
     } catch (error) {
-      console.error('Real strategy generation failed:', error)
-      console.log('Falling back to sample strategy...')
+      const duration = logger.endTimer(timer)
+      logger.error('Real strategy generation failed, falling back to sample', {
+        projectId,
+        duration,
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack?.substring(0, 500)
+        } : error
+      })
       return this.createSampleStrategy(analysisSnapshot)
     }
   }
