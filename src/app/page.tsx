@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Rocket, Play } from 'lucide-react'
+import { v4 as uuidv4 } from 'uuid'
 import { FileUploader } from '@/components/workspace/FileUploader'
 import { AnalysisSnapshot } from '@/components/workspace/AnalysisSnapshot'
 import { PremiumButton } from '@/components/ui/PremiumButton'
@@ -17,13 +18,17 @@ export default function WorkspacePage() {
     // Generate or retrieve project ID
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('adronaut_project_id')
-      if (saved) return saved
 
-      const newId = `proj_${Date.now()}`
+      // If we have a saved ID that's in the old proj_ format, generate a new UUID
+      if (saved && !saved.startsWith('proj_')) {
+        return saved
+      }
+
+      const newId = uuidv4()
       localStorage.setItem('adronaut_project_id', newId)
       return newId
     }
-    return `proj_${Date.now()}`
+    return uuidv4()
   })
 
   const {

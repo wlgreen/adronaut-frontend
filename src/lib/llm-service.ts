@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { supabase } from './supabase'
 import { errorLogger } from './error-logger'
 import { logger } from './logger'
@@ -370,7 +371,7 @@ export class LLMService {
     try {
       const parsed = JSON.parse(llmOutput)
       return {
-        strategy_id: `strat_${Date.now()}`,
+        strategy_id: uuidv4(),
         version: 1,
         created_at: new Date().toISOString(),
         ...parsed
@@ -589,7 +590,7 @@ ${JSON.stringify(analysisSnapshot, null, 2)}
 Please generate a strategy in this exact JSON format:
 
 {
-  "strategy_id": "strat_${Date.now()}",
+  "strategy_id": "<generated_uuid>",
   "version": 1,
   "created_at": "${new Date().toISOString()}",
   "audience_targeting": {
@@ -726,7 +727,7 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
     const topTheme = analysisSnapshot.content_themes.find(t => t.performance === 'high') || analysisSnapshot.content_themes[0]
 
     return {
-      strategy_id: `strat_${Date.now()}`,
+      strategy_id: uuidv4(),
       version: 1,
       created_at: new Date().toISOString(),
       audience_targeting: {

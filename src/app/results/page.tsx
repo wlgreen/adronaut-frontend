@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { BarChart3, TrendingUp, AlertTriangle, Zap, DollarSign, Users, MousePointer, Eye } from 'lucide-react'
+import { v4 as uuidv4 } from 'uuid'
 import { PremiumButton, ButtonGroup } from '@/components/ui/PremiumButton'
 import { PremiumCard, MetricCard } from '@/components/ui/PremiumCard'
 import { Badge } from '@/components/ui/Badge'
@@ -24,9 +25,18 @@ export default function ResultsPage() {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null)
   const [projectId, setProjectId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('adronaut_project_id') || `proj_${Date.now()}`
+      const saved = localStorage.getItem('adronaut_project_id')
+
+      // If we have a saved ID that's in the old proj_ format, generate a new UUID
+      if (saved && !saved.startsWith('proj_')) {
+        return saved
+      }
+
+      const newId = uuidv4()
+      localStorage.setItem('adronaut_project_id', newId)
+      return newId
     }
-    return `proj_${Date.now()}`
+    return uuidv4()
   })
 
   const {

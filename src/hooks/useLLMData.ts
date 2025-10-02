@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { llmService, AnalysisSnapshot, Strategy, StrategyPatch, Campaign, PerformanceAlert } from '@/lib/llm-service'
 import { supabaseLogger } from '@/lib/supabase-logger'
 import { logger } from '@/lib/logger'
@@ -86,15 +87,15 @@ export function useStrategyData(projectId?: string) {
       setActiveStrategy(strategy)
 
       // Save to Supabase
-      await supabase
-        .from('strategies')
-        .upsert({
-          project_id: projectId,
-          strategy_id: strategy.strategy_id,
-          version: strategy.version,
-          strategy_data: strategy,
-          created_at: strategy.created_at
-        })
+      await supabaseLogger.upsert('strategies', {
+        project_id: projectId,
+        strategy_id: strategy.strategy_id,
+        version: strategy.version,
+        strategy_data: strategy,
+        created_at: strategy.created_at
+      }, {
+        onConflict: 'strategy_id'
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Strategy generation failed')
     } finally {
@@ -114,18 +115,16 @@ export function useStrategyData(projectId?: string) {
 
       // Save patches to Supabase
       for (const patch of patches) {
-        await supabase
-          .from('strategy_patches')
-          .insert({
-            project_id: projectId,
-            patch_id: patch.patch_id,
-            strategy_id: activeStrategy.strategy_id,
-            source: patch.source,
-            status: patch.status,
-            patch_data: patch.patch_json,
-            justification: patch.justification,
-            created_at: patch.created_at
-          })
+        await supabaseLogger.insert('strategy_patches', {
+          project_id: projectId,
+          patch_id: patch.patch_id,
+          strategy_id: activeStrategy.strategy_id,
+          source: patch.source,
+          status: patch.status,
+          patch_data: patch.patch_json,
+          justification: patch.justification,
+          created_at: patch.created_at
+        })
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Patch generation failed')
@@ -146,28 +145,26 @@ export function useStrategyData(projectId?: string) {
           ...patch.patch_json,
           version: activeStrategy.version + 1,
           created_at: new Date().toISOString(),
-          strategy_id: `strat_${Date.now()}`
+          strategy_id: uuidv4()
         }
 
         setActiveStrategy(newStrategy)
 
         // Save new strategy version
-        await supabase
-          .from('strategies')
-          .insert({
-            project_id: projectId,
-            strategy_id: newStrategy.strategy_id,
-            version: newStrategy.version,
-            strategy_data: newStrategy,
-            created_at: newStrategy.created_at
-          })
+        await supabaseLogger.insert('strategies', {
+          project_id: projectId,
+          strategy_id: newStrategy.strategy_id,
+          version: newStrategy.version,
+          strategy_data: newStrategy,
+          created_at: newStrategy.created_at
+        })
       }
 
       // Update patch status
-      await supabase
-        .from('strategy_patches')
-        .update({ status: action === 'approve' ? 'approved' : 'rejected' })
-        .eq('patch_id', patchId)
+      await supabaseLogger.update('strategy_patches',
+        { status: action === 'approve' ? 'approved' : 'rejected' },
+        { eq: { patch_id: patchId } }
+      )
 
       // Remove from pending
       setPendingPatches(prev => prev.filter(p => p.patch_id !== patchId))
@@ -182,25 +179,27 @@ export function useStrategyData(projectId?: string) {
 
     const loadStrategyData = async () => {
       // Load latest strategy
-      const { data: strategyData } = await supabase
-        .from('strategies')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('version', { ascending: false })
-        .limit(1)
-        .single()
+      const result = await supabaseLogger.select('strategies', {
+        select: '*',
+        eq: { project_id: projectId },
+        orderBy: { column: 'version', ascending: false },
+        limit: 1
+      })
+
+      const strategyData = result.data && result.data.length > 0 ? result.data[0] : null
 
       if (strategyData) {
         setActiveStrategy(strategyData.strategy_data)
       }
 
       // Load pending patches
-      const { data: patchesData } = await supabase
-        .from('strategy_patches')
-        .select('*')
-        .eq('project_id', projectId)
-        .eq('status', 'proposed')
-        .order('created_at', { ascending: false })
+      const patchesResult = await supabaseLogger.select('strategy_patches', {
+        select: '*',
+        eq: { project_id: projectId, status: 'proposed' },
+        orderBy: { column: 'created_at', ascending: false }
+      })
+
+      const patchesData = patchesResult.data
 
       if (patchesData) {
         const patches: StrategyPatch[] = patchesData.map(p => ({
@@ -249,18 +248,16 @@ export function useResultsData(projectId?: string) {
 
       // Save alerts to Supabase
       for (const alert of alerts) {
-        await supabase
-          .from('performance_alerts')
-          .insert({
-            project_id: projectId,
-            alert_id: alert.id,
-            type: alert.type,
-            severity: alert.severity,
-            title: alert.title,
-            description: alert.description,
-            recommendation: alert.recommendation,
-            created_at: alert.created_at
-          })
+        await supabaseLogger.insert('performance_alerts', {
+          project_id: projectId,
+          alert_id: alert.id,
+          type: alert.type,
+          severity: alert.severity,
+          title: alert.title,
+          description: alert.description,
+          recommendation: alert.recommendation,
+          created_at: alert.created_at
+        })
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Performance analysis failed')
@@ -275,11 +272,12 @@ export function useResultsData(projectId?: string) {
 
     const loadResultsData = async () => {
       // Load campaigns
-      const { data: campaignData } = await supabase
-        .from('campaigns')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
+      const campaignResult = await supabaseLogger.select('campaigns', {
+        select: '*',
+        eq: { project_id: projectId },
+        orderBy: { column: 'created_at', ascending: false }
+      })
+      const campaignData = campaignResult.data
 
       if (campaignData) {
         const campaigns: Campaign[] = campaignData.map(c => ({
@@ -296,12 +294,13 @@ export function useResultsData(projectId?: string) {
       }
 
       // Load performance alerts
-      const { data: alertsData } = await supabase
-        .from('performance_alerts')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
-        .limit(10)
+      const alertsResult = await supabaseLogger.select('performance_alerts', {
+        select: '*',
+        eq: { project_id: projectId },
+        orderBy: { column: 'created_at', ascending: false },
+        limit: 10
+      })
+      const alertsData = alertsResult.data
 
       if (alertsData) {
         const alerts: PerformanceAlert[] = alertsData.map(a => ({
@@ -317,11 +316,12 @@ export function useResultsData(projectId?: string) {
       }
 
       // Load metrics time series
-      const { data: metricsData } = await supabase
-        .from('campaign_metrics')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('date', { ascending: true })
+      const metricsResult = await supabaseLogger.select('campaign_metrics', {
+        select: '*',
+        eq: { project_id: projectId },
+        orderBy: { column: 'date', ascending: true }
+      })
+      const metricsData = metricsResult.data
 
       if (metricsData) {
         setMetricsData(metricsData)

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Target, Settings, CheckCircle, XCircle, Edit3, Clock, Users, MessageSquare } from 'lucide-react'
+import { v4 as uuidv4 } from 'uuid'
 import { PremiumButton, ButtonGroup } from '@/components/ui/PremiumButton'
 import { PremiumCard } from '@/components/ui/PremiumCard'
 import { Badge } from '@/components/ui/Badge'
@@ -15,9 +16,18 @@ export default function StrategyPage() {
   const [editingPatch, setEditingPatch] = useState<any>(null)
   const [projectId, setProjectId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('adronaut_project_id') || `proj_${Date.now()}`
+      const saved = localStorage.getItem('adronaut_project_id')
+
+      // If we have a saved ID that's in the old proj_ format, generate a new UUID
+      if (saved && !saved.startsWith('proj_')) {
+        return saved
+      }
+
+      const newId = uuidv4()
+      localStorage.setItem('adronaut_project_id', newId)
+      return newId
     }
-    return `proj_${Date.now()}`
+    return uuidv4()
   })
 
   const { analysisSnapshot } = useWorkspaceData(projectId)

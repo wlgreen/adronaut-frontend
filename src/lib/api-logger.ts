@@ -80,13 +80,14 @@ export function withApiLogger<T extends any[]>(
           }
 
           // Recreate request with body for handler
-          request = new NextRequest(request.url, {
+          const newRequest = new NextRequest(request.url, {
             method: request.method,
             headers: request.headers,
             body: bodyText || undefined
           }) as NextRequest
 
           // Update the args array with the new request
+          request = newRequest
           args[0] = request as T[0]
         } catch (error) {
           logger.warn(`Failed to read request body for ${method} ${path}`, {
