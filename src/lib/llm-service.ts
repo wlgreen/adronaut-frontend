@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { supabase } from './supabase'
 import { errorLogger } from './error-logger'
 import { logger } from './logger'
+import { geminiService } from './gemini-service'
 
 export interface AnalysisSnapshot {
   audience_segments: Array<{
@@ -181,15 +182,15 @@ export class LLMService {
         if (error.message.includes('fetch')) {
           throw new Error('Network error: Unable to connect to analysis service. Please check your internet connection.')
         } else if (error.message.includes('API key')) {
-          throw new Error('Authentication error: OpenAI API key is invalid or missing. Please check your configuration.')
+          throw new Error('Authentication error: Gemini API key is invalid or missing. Please check your configuration.')
         } else if (error.message.includes('rate limit')) {
-          throw new Error('Rate limit error: Too many requests to OpenAI API. Please wait and try again.')
+          throw new Error('Rate limit error: Too many requests to Gemini API. Please wait and try again.')
         } else if (error.message.includes('401')) {
-          throw new Error('Authentication error: OpenAI API key is invalid. Please check your API key configuration.')
+          throw new Error('Authentication error: Gemini API key is invalid. Please check your API key configuration.')
         } else if (error.message.includes('429')) {
-          throw new Error('Rate limit exceeded: Please wait and try again. Consider upgrading your OpenAI plan.')
+          throw new Error('Rate limit exceeded: Please wait and try again. Consider upgrading your Gemini plan.')
         } else if (error.message.includes('500') || error.message.includes('502') || error.message.includes('503')) {
-          throw new Error('Service unavailable: OpenAI service is temporarily down. Please try again later.')
+          throw new Error('Service unavailable: Gemini service is temporarily down. Please try again later.')
         }
       }
 
@@ -208,11 +209,10 @@ export class LLMService {
       })
 
       // Check if we should use real LLM
-      const useRealLLM = process.env.NEXT_PUBLIC_OPENAI_API_KEY &&
-                        process.env.NEXT_PUBLIC_OPENAI_API_KEY.startsWith('sk-')
+      const useRealLLM = geminiService.isConfigured()
 
       if (!useRealLLM) {
-        logger.info('No OpenAI API key - generating sample strategy', { projectId })
+        logger.info('No Gemini API key - generating sample strategy', { projectId })
         await new Promise(resolve => setTimeout(resolve, 1500))
         const result = this.createSampleStrategy(analysisSnapshot)
         const duration = logger.endTimer(timer)
@@ -220,7 +220,7 @@ export class LLMService {
         return result
       }
 
-      logger.info('Generating real strategy with OpenAI', { projectId })
+      logger.info('Generating real strategy with Gemini', { projectId })
       const result = await this.generateRealStrategy(analysisSnapshot, projectId)
       const duration = logger.endTimer(timer)
       logger.info('Real strategy generated', { projectId, duration, version: result.version })
@@ -249,9 +249,9 @@ export class LLMService {
         if (error.message.includes('fetch')) {
           throw new Error('Network error: Unable to connect to strategy service. Please check your internet connection.')
         } else if (error.message.includes('API key')) {
-          throw new Error('Authentication error: OpenAI API key is invalid or missing. Please check your configuration.')
+          throw new Error('Authentication error: Gemini API key is invalid or missing. Please check your configuration.')
         } else if (error.message.includes('rate limit')) {
-          throw new Error('Rate limit error: Too many requests to OpenAI API. Please wait and try again.')
+          throw new Error('Rate limit error: Too many requests to Gemini API. Please wait and try again.')
         }
       }
 
@@ -447,8 +447,8 @@ export class LLMService {
   }
 
   private async performRealAnalysis(projectId: string): Promise<AnalysisSnapshot> {
-    const timer = logger.startTimer('OPENAI_ANALYSIS_CALL')
-    logger.info('Starting real OpenAI analysis', { projectId })
+    const timer = logger.startTimer('GEMINI_ANALYSIS_CALL')
+    logger.info('Starting real Gemini analysis', { projectId })
 
     const analysisPrompt = `
 You are a marketing analytics AI. Analyze the uploaded marketing data and provide insights in the following JSON format:
@@ -494,77 +494,33 @@ Based on the project context and typical marketing patterns, provide a realistic
 `
 
     try {
-      const requestBody = {
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a expert marketing analytics AI that provides detailed, actionable insights from marketing data.'
-          },
-          {
-            role: 'user',
-            content: analysisPrompt
-          }
-        ],
+      const systemInstruction = 'You are a expert marketing analytics AI that provides detailed, actionable insights from marketing data.'
+
+      logger.info('Making Gemini analysis request', { projectId })
+
+      const response = await geminiService.generateText(analysisPrompt, {
         temperature: 0.7,
-        max_tokens: 2000
-      }
-
-      logger.llmCall('ANALYSIS_REQUEST', requestBody)
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify(requestBody)
+        maxTokens: 2000,
+        systemInstruction
       })
 
-      if (!response.ok) {
-        const duration = logger.endTimer(timer)
-        // Handle specific error cases
-        if (response.status === 429) {
-          logger.warn('OpenAI API rate limit reached, falling back to sample', { status: response.status, duration })
-          return this.createSampleAnalysis()
-        } else if (response.status === 401) {
-          logger.warn('OpenAI API authentication failed, falling back to sample', { status: response.status, duration })
-          return this.createSampleAnalysis()
-        } else if (response.status === 403) {
-          logger.warn('OpenAI API access forbidden, falling back to sample', { status: response.status, duration })
-          return this.createSampleAnalysis()
-        } else if (response.status === 500 || response.status === 502 || response.status === 503) {
-          logger.warn('OpenAI API server error, falling back to sample', { status: response.status, duration })
-          return this.createSampleAnalysis()
-        } else {
-          const errorText = await response.text().catch(() => 'Unknown error')
-          logger.llmCall('ANALYSIS_REQUEST', requestBody, null, duration, new Error(`API Error ${response.status}: ${errorText}`))
-          throw new Error(`OpenAI API error (${response.status}): ${errorText || response.statusText}`)
-        }
-      }
-
-      const data = await response.json()
       const duration = logger.endTimer(timer)
 
-      logger.llmCall('ANALYSIS_REQUEST', requestBody, data, duration)
-
-      const content = data.choices[0]?.message?.content
-
-      if (!content) {
-        logger.warn('No content received from OpenAI, falling back to sample', { duration })
+      if (!response.text) {
+        logger.warn('No content received from Gemini, falling back to sample', { duration })
         return this.createSampleAnalysis()
       }
 
-      logger.info('OpenAI analysis response received, parsing', {
-        contentLength: content.length,
+      logger.info('Gemini analysis response received, parsing', {
+        contentLength: response.text.length,
         duration,
-        usage: data.usage
+        usage: response.usage
       })
-      return this.parseAnalysisOutput(content)
+      return this.parseAnalysisOutput(response.text)
 
     } catch (error) {
       const duration = logger.endTimer(timer)
-      logger.error('Real LLM analysis failed, falling back to sample', {
+      logger.error('Real Gemini analysis failed, falling back to sample', {
         projectId,
         duration,
         error: error instanceof Error ? {
@@ -577,8 +533,8 @@ Based on the project context and typical marketing patterns, provide a realistic
   }
 
   private async generateRealStrategy(analysisSnapshot: AnalysisSnapshot, projectId: string): Promise<Strategy> {
-    const timer = logger.startTimer('OPENAI_STRATEGY_CALL')
-    logger.info('Starting real OpenAI strategy generation', { projectId })
+    const timer = logger.startTimer('GEMINI_STRATEGY_CALL')
+    logger.info('Starting real Gemini strategy generation', { projectId })
 
     const strategyPrompt = `
 Based on the following marketing analysis, create a comprehensive marketing strategy in JSON format:
@@ -638,77 +594,33 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
 `
 
     try {
-      const requestBody = {
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a strategic marketing expert who creates data-driven marketing strategies based on audience insights and market analysis.'
-          },
-          {
-            role: 'user',
-            content: strategyPrompt
-          }
-        ],
+      const systemInstruction = 'You are a strategic marketing expert who creates data-driven marketing strategies based on audience insights and market analysis.'
+
+      logger.info('Making Gemini strategy request', { projectId })
+
+      const response = await geminiService.generateText(strategyPrompt, {
         temperature: 0.3,
-        max_tokens: 2500
-      }
-
-      logger.llmCall('STRATEGY_REQUEST', requestBody)
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify(requestBody)
+        maxTokens: 2500,
+        systemInstruction
       })
 
-      if (!response.ok) {
-        const duration = logger.endTimer(timer)
-        // Handle specific error cases for strategy generation
-        if (response.status === 429) {
-          logger.warn('OpenAI API rate limit reached for strategy generation, falling back to sample', { status: response.status, duration })
-          return this.createSampleStrategy(analysisSnapshot)
-        } else if (response.status === 401) {
-          logger.warn('OpenAI API authentication failed for strategy generation, falling back to sample', { status: response.status, duration })
-          return this.createSampleStrategy(analysisSnapshot)
-        } else if (response.status === 403) {
-          logger.warn('OpenAI API access forbidden for strategy generation, falling back to sample', { status: response.status, duration })
-          return this.createSampleStrategy(analysisSnapshot)
-        } else if (response.status === 500 || response.status === 502 || response.status === 503) {
-          logger.warn('OpenAI API server error for strategy generation, falling back to sample', { status: response.status, duration })
-          return this.createSampleStrategy(analysisSnapshot)
-        } else {
-          const errorText = await response.text().catch(() => 'Unknown error')
-          logger.llmCall('STRATEGY_REQUEST', requestBody, null, duration, new Error(`API Error ${response.status}: ${errorText}`))
-          throw new Error(`OpenAI API error (${response.status}): ${errorText || response.statusText}`)
-        }
-      }
-
-      const data = await response.json()
       const duration = logger.endTimer(timer)
 
-      logger.llmCall('STRATEGY_REQUEST', requestBody, data, duration)
-
-      const content = data.choices[0]?.message?.content
-
-      if (!content) {
-        logger.warn('No strategy content received from OpenAI, falling back to sample', { duration })
+      if (!response.text) {
+        logger.warn('No strategy content received from Gemini, falling back to sample', { duration })
         return this.createSampleStrategy(analysisSnapshot)
       }
 
-      logger.info('OpenAI strategy response received, parsing', {
-        contentLength: content.length,
+      logger.info('Gemini strategy response received, parsing', {
+        contentLength: response.text.length,
         duration,
-        usage: data.usage
+        usage: response.usage
       })
-      return this.parseStrategyOutput(content)
+      return this.parseStrategyOutput(response.text)
 
     } catch (error) {
       const duration = logger.endTimer(timer)
-      logger.error('Real strategy generation failed, falling back to sample', {
+      logger.error('Real Gemini strategy generation failed, falling back to sample', {
         projectId,
         duration,
         error: error instanceof Error ? {

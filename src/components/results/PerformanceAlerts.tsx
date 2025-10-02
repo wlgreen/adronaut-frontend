@@ -54,7 +54,7 @@ export function PerformanceAlerts({ alerts }: PerformanceAlertsProps) {
 
   if (visibleAlerts.length === 0) {
     return (
-      <Card variant="holo">
+      <Card variant="glass">
         <CardContent className="p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neon-emerald/20 flex items-center justify-center">
             <Brain className="w-8 h-8 text-neon-emerald" />
