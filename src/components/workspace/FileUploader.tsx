@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Progress } from '@/components/ui/Progress'
 import { Badge } from '@/components/ui/Badge'
-import { supabase } from '@/lib/supabase'
 import { v4 as uuidv4 } from 'uuid'
 
 interface UploadedFile {
@@ -67,49 +66,17 @@ export function FileUploader({
 
     setUploadedFiles(prev => [...prev, ...newFiles])
 
-    // Check if we're in development mode (force dev mode for now until Supabase is properly set up)
-    const isDevelopmentMode = true // TODO: Set to false when Supabase tables and storage are ready
+    // Use backend service for file uploads
+    const BACKEND_URL = process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL || 'https://adronaut-production.up.railway.app'
 
-    // Upload files to Supabase (or simulate in dev mode)
+    // Upload files to backend service
     for (const fileData of newFiles) {
       try {
         const artifactId = uuidv4()
         const fileExtension = fileData.file.name.split('.').pop()
         const storagePath = `${projectId}/${artifactId}.${fileExtension}`
 
-        if (isDevelopmentMode) {
-          // Simulate upload for development
-          console.log('Development mode: Simulating file upload for', fileData.file.name)
-
-          // Simulate progress
-          for (let progress = 25; progress <= 100; progress += 25) {
-            await new Promise(resolve => setTimeout(resolve, 300))
-            setUploadedFiles(prev =>
-              prev.map(f =>
-                f.id === fileData.id
-                  ? { ...f, progress }
-                  : f
-              )
-            )
-          }
-
-          // Mark as complete
-          setUploadedFiles(prev =>
-            prev.map(f =>
-              f.id === fileData.id
-                ? {
-                    ...f,
-                    status: 'success' as const,
-                    progress: 100,
-                    supabaseId: artifactId,
-                    storagePath: storagePath
-                  }
-                : f
-            )
-          )
-
-          continue
-        }
+        // Upload to backend service
 
         // Update progress to 25%
         setUploadedFiles(prev =>
@@ -120,66 +87,24 @@ export function FileUploader({
           )
         )
 
-        // Upload to Supabase Storage
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('artifacts')
-          .upload(storagePath, fileData.file)
+        // Create FormData for file upload
+        const formData = new FormData()
+        formData.append('file', fileData.file)
 
-        if (storageError) {
-          console.error('Storage error:', storageError)
-          // Check for common errors and provide helpful messages
-          if (storageError.message?.includes('bucket')) {
-            throw new Error('Storage bucket "artifacts" not found. Please create it in Supabase Dashboard.')
-          } else if (storageError.message?.includes('policy')) {
-            throw new Error('Storage policy not configured. Please set up storage policies in Supabase.')
-          } else {
-            throw new Error(`Storage upload failed: ${storageError.message || 'Unknown storage error'}`)
-          }
+        // Upload to backend
+        const uploadResponse = await fetch(`${BACKEND_URL}/upload?project_id=${projectId}`, {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text()
+          throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText} - ${errorText}`)
         }
 
-        // Update progress to 75%
-        setUploadedFiles(prev =>
-          prev.map(f =>
-            f.id === fileData.id
-              ? { ...f, progress: 75 }
-              : f
-          )
-        )
+        const uploadResult = await uploadResponse.json()
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('artifacts')
-          .getPublicUrl(storagePath)
-
-        // Save metadata to database
-        const dbPayload = {
-          artifact_id: artifactId,
-          project_id: projectId,
-          filename: fileData.file.name,
-          mime: fileData.file.type || 'application/octet-stream',
-          storage_url: publicUrl,
-          created_at: new Date().toISOString()
-        }
-
-        const { data: dbData, error: dbError } = await supabase
-          .from('artifacts')
-          .insert(dbPayload)
-          .select()
-          .single()
-
-        if (dbError) {
-          console.error('Database error:', dbError)
-          // Check for common database errors
-          if (dbError.message?.includes('relation') && dbError.message?.includes('does not exist')) {
-            throw new Error('Database table "artifacts" not found. Please run the database schema setup.')
-          } else if (dbError.message?.includes('policy')) {
-            throw new Error('Database policy not configured. Please set up RLS policies in Supabase.')
-          } else {
-            throw new Error(`Database insert failed: ${dbError.message || 'Unknown database error'}`)
-          }
-        }
-
-        // Mark as complete
+        // Update progress to 100%
         setUploadedFiles(prev =>
           prev.map(f =>
             f.id === fileData.id
@@ -188,11 +113,13 @@ export function FileUploader({
                   status: 'success' as const,
                   progress: 100,
                   supabaseId: artifactId,
-                  storagePath: storagePath
+                  storagePath: uploadResult.file_path || `${projectId}/${fileData.file.name}`
                 }
               : f
           )
         )
+
+        continue
 
       } catch (error) {
         console.error('Upload error details:', {

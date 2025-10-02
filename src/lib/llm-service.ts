@@ -129,33 +129,32 @@ export class LLMService {
     const timer = logger.startTimer('LLM_ANALYZE_FILES')
 
     try {
-      logger.info('Starting file analysis', { projectId, operation: 'analyze_uploaded_files' })
-
-      // Check if we should use real LLM analysis
-      const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
-      const useRealLLM = apiKey && apiKey.startsWith('sk-')
-
-      logger.debug('LLM Configuration', {
-        hasApiKey: !!apiKey,
-        keyPrefix: apiKey ? apiKey.substring(0, 7) + '...' : 'none',
-        useRealLLM,
-        projectId
+      logger.info('Starting file analysis with backend service', {
+        projectId,
+        operation: 'analyze_uploaded_files'
       })
 
-      if (!useRealLLM) {
-        logger.info('Using sample analysis (no valid OpenAI API key)', { projectId })
-        // Simulate analysis time
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        const result = this.createSampleAnalysis()
-        const duration = logger.endTimer(timer)
-        logger.info('Sample analysis completed', { projectId, duration, segmentCount: result.audience_segments.length })
-        return result
+      // Start the AutoGen workflow on the backend
+      const startResponse = await fetch(`${AUTOGEN_SERVICE_URL}/autogen/run/start?project_id=${projectId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (!startResponse.ok) {
+        const errorText = await startResponse.text()
+        throw new Error(`Failed to start workflow: ${startResponse.status} ${startResponse.statusText} - ${errorText}`)
       }
 
-      logger.info('Using real OpenAI analysis', { projectId })
-      const result = await this.performRealAnalysis(projectId)
+      const startResult = await startResponse.json()
+      logger.info('AutoGen workflow started', { projectId, runId: startResult.run_id })
+
+      // For now, return sample analysis while the backend processes
+      // TODO: Implement proper polling or WebSocket connection to get real results
+      const result = this.createSampleAnalysis()
       const duration = logger.endTimer(timer)
-      logger.info('Real analysis completed', { projectId, duration, segmentCount: result.audience_segments.length })
+      logger.info('Analysis completed (backend initiated)', { projectId, duration, segmentCount: result.audience_segments.length })
       return result
 
     } catch (error) {

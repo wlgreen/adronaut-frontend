@@ -38,9 +38,9 @@ export default function WorkspacePage() {
     analyzeFiles
   } = useWorkspaceData(projectId)
 
-  // Check for uploaded files - skip in development mode
+  // Check for uploaded files - now enabled for database use
   useEffect(() => {
-    const isDevelopmentMode = true // TODO: Set to false when Supabase is ready
+    const isDevelopmentMode = false // Database is now ready with tables created
 
     if (isDevelopmentMode) {
       // In development mode, don't check database
