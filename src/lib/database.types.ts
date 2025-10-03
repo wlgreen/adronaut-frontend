@@ -49,19 +49,19 @@ export interface Database {
       }
       analysis_snapshots: {
         Row: {
-          snapshot_id: string
+          id: string
           project_id: string
           snapshot_data: any
           created_at: string
         }
         Insert: {
-          snapshot_id?: string
+          id?: string
           project_id: string
           snapshot_data: any
           created_at?: string
         }
         Update: {
-          snapshot_id?: string
+          id?: string
           project_id?: string
           snapshot_data?: any
           created_at?: string
@@ -108,6 +108,7 @@ export interface Database {
         Row: {
           patch_id: string
           project_id: string
+          strategy_id: string | null
           source: 'insights' | 'reflection' | 'edited_llm'
           status: 'proposed' | 'approved' | 'rejected' | 'superseded'
           patch_data: any
@@ -117,6 +118,7 @@ export interface Database {
         Insert: {
           patch_id?: string
           project_id: string
+          strategy_id?: string | null
           source: 'insights' | 'reflection' | 'edited_llm'
           status?: 'proposed' | 'approved' | 'rejected' | 'superseded'
           patch_data: any
@@ -126,6 +128,7 @@ export interface Database {
         Update: {
           patch_id?: string
           project_id?: string
+          strategy_id?: string | null
           source?: 'insights' | 'reflection' | 'edited_llm'
           status?: 'proposed' | 'approved' | 'rejected' | 'superseded'
           patch_data?: any
