@@ -90,6 +90,29 @@ export interface Database {
           created_at?: string
         }
       }
+      strategies: {
+        Row: {
+          strategy_id: string
+          project_id: string
+          version: number
+          strategy_data: any
+          created_at: string
+        }
+        Insert: {
+          strategy_id?: string
+          project_id: string
+          version: number
+          strategy_data: any
+          created_at?: string
+        }
+        Update: {
+          strategy_id?: string
+          project_id?: string
+          version?: number
+          strategy_data?: any
+          created_at?: string
+        }
+      }
       strategy_active: {
         Row: {
           project_id: string
