@@ -51,19 +51,19 @@ export interface Database {
         Row: {
           snapshot_id: string
           project_id: string
-          result_json: any
+          snapshot_data: any
           created_at: string
         }
         Insert: {
           snapshot_id?: string
           project_id: string
-          result_json: any
+          snapshot_data: any
           created_at?: string
         }
         Update: {
           snapshot_id?: string
           project_id?: string
-          result_json?: any
+          snapshot_data?: any
           created_at?: string
         }
       }
@@ -110,7 +110,7 @@ export interface Database {
           project_id: string
           source: 'insights' | 'reflection' | 'edited_llm'
           status: 'proposed' | 'approved' | 'rejected' | 'superseded'
-          patch_json: any
+          patch_data: any
           justification: string
           created_at: string
         }
@@ -119,7 +119,7 @@ export interface Database {
           project_id: string
           source: 'insights' | 'reflection' | 'edited_llm'
           status?: 'proposed' | 'approved' | 'rejected' | 'superseded'
-          patch_json: any
+          patch_data: any
           justification: string
           created_at?: string
         }
@@ -128,7 +128,7 @@ export interface Database {
           project_id?: string
           source?: 'insights' | 'reflection' | 'edited_llm'
           status?: 'proposed' | 'approved' | 'rejected' | 'superseded'
-          patch_json?: any
+          patch_data?: any
           justification?: string
           created_at?: string
         }
