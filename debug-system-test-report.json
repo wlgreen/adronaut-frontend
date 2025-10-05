@@ -1,0 +1,387 @@
+{
+  "timestamp": "2025-10-05T04:18:30.980Z",
+  "summary": {
+    "total": 74,
+    "passed": 74,
+    "failed": 0,
+    "passRate": 100,
+    "systemReady": true
+  },
+  "tests": [
+    {
+      "name": "File exists: src/lib/debug/types.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/workflow-debugger.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/database-manager.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/llm-cache.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/scenario-manager.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/workflow-executor.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/index.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: src/lib/debug/README.md",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "File exists: .env.debug.example",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario exists: happy-path.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario valid JSON: happy-path.json",
+      "passed": "marketing_autogen_workflow",
+      "details": ""
+    },
+    {
+      "name": "Scenario has assertions: happy-path.json",
+      "passed": true,
+      "details": "6 assertions"
+    },
+    {
+      "name": "Scenario exists: approval-needed.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario valid JSON: approval-needed.json",
+      "passed": "marketing_autogen_workflow",
+      "details": ""
+    },
+    {
+      "name": "Scenario has assertions: approval-needed.json",
+      "passed": true,
+      "details": "4 assertions"
+    },
+    {
+      "name": "Scenario exists: llm-error.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario valid JSON: llm-error.json",
+      "passed": "marketing_autogen_workflow",
+      "details": ""
+    },
+    {
+      "name": "Scenario has assertions: llm-error.json",
+      "passed": true,
+      "details": "4 assertions"
+    },
+    {
+      "name": "Scenario exists: strategy-change.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario valid JSON: strategy-change.json",
+      "passed": "marketing_autogen_workflow",
+      "details": ""
+    },
+    {
+      "name": "Scenario has assertions: strategy-change.json",
+      "passed": true,
+      "details": "6 assertions"
+    },
+    {
+      "name": "Scenario exists: database-conflict.json",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario valid JSON: database-conflict.json",
+      "passed": "marketing_autogen_workflow",
+      "details": ""
+    },
+    {
+      "name": "Scenario has assertions: database-conflict.json",
+      "passed": true,
+      "details": "5 assertions"
+    },
+    {
+      "name": "TypeScript syntax: types.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "TypeScript syntax: index.ts",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: workflowDebugger",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: databaseManager",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: llmCache",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: scenarioManager",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: workflowExecutor",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: initializeDebugSystem",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: executeWorkflow",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Core export: runTestSuite",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Environment variable: NEXT_PUBLIC_DEBUG_WORKFLOWS",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Environment variable: NEXT_PUBLIC_LLM_CACHE_ENABLED",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Environment variable: NEXT_PUBLIC_USE_TEST_DB",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Environment variable: NEXT_PUBLIC_TEST_SUPABASE_URL",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Environment variable: NEXT_PUBLIC_SUPABASE_URL",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Features",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Architecture",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Setup",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Usage Examples",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Test Scenarios",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Performance Metrics",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation section: Integration",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Documentation has code examples",
+      "passed": true,
+      "details": "Multiple TypeScript examples found"
+    },
+    {
+      "name": "Integration example: exampleBasicIntegration",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Integration example: exampleTestExecution",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Integration example: examplePerformanceComparison",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Integration example: exampleBreakpointDebugging",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Integration example: exampleReplayWorkflow",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Cache directory structure",
+      "passed": true,
+      "details": "Directories created successfully"
+    },
+    {
+      "name": "Cache file creation",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario structure: happy-path",
+      "passed": "Complete successful workflow execution from file upload to campaign analysis",
+      "details": ""
+    },
+    {
+      "name": "LLM responses: happy-path",
+      "passed": true,
+      "details": "4 responses"
+    },
+    {
+      "name": "Assertions valid: happy-path",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario structure: approval-needed",
+      "passed": "Workflow pauses for human approval at strategy patch step",
+      "details": ""
+    },
+    {
+      "name": "LLM responses: approval-needed",
+      "passed": true,
+      "details": "2 responses"
+    },
+    {
+      "name": "Assertions valid: approval-needed",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario structure: llm-error",
+      "passed": "Test workflow behavior when LLM API calls fail",
+      "details": ""
+    },
+    {
+      "name": "LLM responses: llm-error",
+      "passed": true,
+      "details": "2 responses"
+    },
+    {
+      "name": "Assertions valid: llm-error",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario structure: strategy-change",
+      "passed": "Agent adapts strategy based on intermediate performance results",
+      "details": ""
+    },
+    {
+      "name": "LLM responses: strategy-change",
+      "passed": true,
+      "details": "3 responses"
+    },
+    {
+      "name": "Assertions valid: strategy-change",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Scenario structure: database-conflict",
+      "passed": "Test workflow behavior with concurrent access and database conflicts",
+      "details": ""
+    },
+    {
+      "name": "LLM responses: database-conflict",
+      "passed": true,
+      "details": "2 responses"
+    },
+    {
+      "name": "Assertions valid: database-conflict",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "System initialization available",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Quick setup utilities available",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Main API functions available",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Cleanup function available",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Performance improvement target",
+      "passed": true,
+      "details": "96.7% improvement (target: 95%+)"
+    }
+  ],
+  "criticalComponents": {
+    "required": 7,
+    "passed": 7,
+    "ready": true
+  }
+}
