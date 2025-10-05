@@ -75,7 +75,7 @@ export function PerformanceAlerts({ alerts }: PerformanceAlertsProps) {
         const colorVariant = getAlertColor(alert.type, alert.severity)
 
         return (
-          <Card key={alert.id} variant="holo" className="relative">
+          <Card key={alert.id} variant="glass" className="relative">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <CardTitle className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export function PerformanceAlerts({ alerts }: PerformanceAlertsProps) {
       })}
 
       {/* Summary Stats */}
-      <Card variant="glow">
+      <Card variant="elevated">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

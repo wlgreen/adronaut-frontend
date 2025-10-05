@@ -1,0 +1,58 @@
+{
+  "id": "llm-error-001",
+  "name": "LLM Error Handling",
+  "description": "Test workflow behavior when LLM API calls fail",
+  "workflow_name": "marketing_autogen_workflow",
+  "expected_llm_responses": {
+    "extract_features": "LLM_ERROR",
+    "generate_insights": {
+      "error": "Rate limit exceeded",
+      "retry_after": 60,
+      "fallback_strategy": "Use cached previous analysis"
+    }
+  },
+  "assertions": [
+    {
+      "id": "graceful-error-handling",
+      "step_name": "extract_features",
+      "type": "custom",
+      "condition": "execution => execution && execution.steps.some(s => s.name === 'extract_features' && s.error)",
+      "description": "Should handle LLM errors gracefully without crashing"
+    },
+    {
+      "id": "error-logged",
+      "step_name": "extract_features",
+      "type": "output_contains",
+      "condition": "error",
+      "description": "Error should be properly logged"
+    },
+    {
+      "id": "fallback-strategy",
+      "step_name": "extract_features",
+      "type": "custom",
+      "condition": "execution => execution && execution.steps.some(s => s.name.includes('fallback') || s.name.includes('retry'))",
+      "description": "Should implement fallback or retry strategy"
+    },
+    {
+      "id": "no-incomplete-data",
+      "step_name": "extract_features",
+      "type": "database_state",
+      "condition": {
+        "table": "analysis_snapshots",
+        "where": {
+          "status": "incomplete"
+        },
+        "count": 0
+      },
+      "description": "Should not save incomplete analysis to database"
+    }
+  ],
+  "expected_final_state": {
+    "workflow_status": "failed",
+    "output": {
+      "error": "LLM service unavailable",
+      "retry_suggested": true
+    }
+  },
+  "tags": ["error-handling", "llm", "resilience"]
+}

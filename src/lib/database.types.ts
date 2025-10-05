@@ -25,6 +25,8 @@ export interface Database {
           filename: string
           mime: string
           storage_url: string
+          file_content: string | null
+          file_size: number | null
           summary_json: any
           created_at: string
         }
@@ -34,6 +36,8 @@ export interface Database {
           filename: string
           mime: string
           storage_url: string
+          file_content?: string | null
+          file_size?: number | null
           summary_json?: any
           created_at?: string
         }
@@ -43,6 +47,8 @@ export interface Database {
           filename?: string
           mime?: string
           storage_url?: string
+          file_content?: string | null
+          file_size?: number | null
           summary_json?: any
           created_at?: string
         }

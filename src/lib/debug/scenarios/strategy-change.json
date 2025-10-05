@@ -1,0 +1,135 @@
+{
+  "id": "strategy-change-001",
+  "name": "Adaptive Strategy Change",
+  "description": "Agent adapts strategy based on intermediate performance results",
+  "workflow_name": "marketing_autogen_workflow",
+  "expected_llm_responses": {
+    "extract_features": {
+      "target_audience": {
+        "segments": [
+          {
+            "name": "Millennials",
+            "characteristics": ["Social media native", "Value-conscious", "Mobile-first"],
+            "size_estimate": "45% of customer base",
+            "value_score": 7
+          }
+        ]
+      },
+      "brand_positioning": "Affordable social-first platform",
+      "channels": ["Instagram", "TikTok", "Snapchat"],
+      "messaging": ["Authentic", "Affordable", "Trendy"],
+      "objectives": ["Viral growth", "Social engagement"],
+      "budget_insights": {
+        "recommended_allocation": {
+          "instagram": 40,
+          "tiktok": 35,
+          "snapchat": 25
+        }
+      },
+      "metrics": {
+        "conversion_rate": "1.8%",
+        "engagement_rate": "12.5%"
+      },
+      "competitive_insights": ["High engagement but low conversion"],
+      "recommendations": ["Focus on conversion optimization", "A/B test pricing"]
+    },
+    "generate_insights": {
+      "market_opportunities": ["Conversion optimization", "Pricing strategy"],
+      "strategy_recommendations": ["Shift focus from engagement to conversion"],
+      "patch": {
+        "audience_targeting": {
+          "primary_segment": "Millennials"
+        },
+        "channel_allocation": {
+          "instagram": 50,
+          "tiktok": 30,
+          "conversion_tracking": 20
+        }
+      },
+      "justification": "High engagement but poor conversion suggests need for optimization focus"
+    },
+    "analyze_performance": {
+      "performance_summary": {
+        "conversion_rate": "1.2%",
+        "engagement_rate": "15.8%",
+        "roi": "45%"
+      },
+      "needs_adjustment": true,
+      "strategy_change_required": true,
+      "patch": {
+        "audience_targeting": {
+          "primary_segment": "Gen Z",
+          "secondary_segment": "Young Millennials"
+        },
+        "channel_allocation": {
+          "tiktok": 60,
+          "instagram": 30,
+          "youtube_shorts": 10
+        },
+        "new_focus": "micro-influencer partnerships"
+      },
+      "justification": "Performance data shows Gen Z responds better to TikTok content and influencer partnerships"
+    }
+  },
+  "assertions": [
+    {
+      "id": "initial-strategy-created",
+      "step_name": "generate_insights",
+      "type": "output_contains",
+      "condition": "instagram",
+      "description": "Initial strategy should focus on Instagram"
+    },
+    {
+      "id": "performance-analysis-triggers-change",
+      "step_name": "analyze_performance",
+      "type": "output_contains",
+      "condition": "needs_adjustment",
+      "description": "Performance analysis should detect need for strategy change"
+    },
+    {
+      "id": "strategy-pivot-to-tiktok",
+      "step_name": "analyze_performance",
+      "type": "output_contains",
+      "condition": "tiktok",
+      "description": "Updated strategy should pivot to TikTok focus"
+    },
+    {
+      "id": "audience-shift-to-genz",
+      "step_name": "analyze_performance",
+      "type": "output_contains",
+      "condition": "Gen Z",
+      "description": "Should shift target audience to Gen Z"
+    },
+    {
+      "id": "multiple-patches-created",
+      "step_name": "analyze_performance",
+      "type": "database_state",
+      "condition": {
+        "table": "patches",
+        "count": 2
+      },
+      "description": "Should create both initial and updated strategy patches"
+    },
+    {
+      "id": "adaptive-behavior",
+      "step_name": "overall",
+      "type": "custom",
+      "condition": "execution => execution && execution.steps.filter(s => s.name.includes('patch')).length >= 2",
+      "description": "Should demonstrate adaptive behavior with multiple strategy iterations"
+    }
+  ],
+  "expected_final_state": {
+    "workflow_status": "completed",
+    "database": {
+      "patches": [
+        {
+          "source": "insights"
+        },
+        {
+          "source": "performance_analysis"
+        }
+      ]
+    }
+  },
+  "tags": ["adaptive", "strategy", "performance-driven"]
+}

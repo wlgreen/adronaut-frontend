@@ -1,0 +1,125 @@
+{
+  "id": "happy-path-001",
+  "name": "Happy Path - Complete Workflow",
+  "description": "Complete successful workflow execution from file upload to campaign analysis",
+  "workflow_name": "marketing_autogen_workflow",
+  "expected_llm_responses": {
+    "extract_features": {
+      "target_audience": {
+        "segments": [
+          {
+            "name": "Young Professionals",
+            "characteristics": ["Tech-savvy", "Urban", "High income"],
+            "size_estimate": "25% of customer base",
+            "value_score": 8
+          }
+        ]
+      },
+      "brand_positioning": "Premium marketing automation platform",
+      "channels": ["Social Media", "Email Marketing", "Content Marketing"],
+      "messaging": ["Efficiency focused", "Data-driven results", "Professional growth"],
+      "objectives": ["Increase conversions by 25%", "Improve engagement rates", "Reduce CAC"],
+      "budget_insights": {
+        "recommended_allocation": {
+          "social_media": 40,
+          "email": 30,
+          "content": 30
+        }
+      },
+      "metrics": {
+        "conversion_rate": "3.5%",
+        "engagement_rate": "8.2%"
+      },
+      "competitive_insights": ["Market leader in automation", "Strong brand recognition"],
+      "recommendations": ["Focus on mobile optimization", "Increase video content", "Implement personalization"]
+    },
+    "generate_insights": {
+      "market_opportunities": ["Untapped mobile market", "B2B expansion potential"],
+      "strategy_recommendations": ["Increase social media budget", "Launch mobile app"],
+      "patch": {
+        "audience_targeting": {
+          "primary_segment": "Young Professionals",
+          "secondary_segment": "Small Business Owners"
+        },
+        "channel_allocation": {
+          "social_media": 45,
+          "email": 35,
+          "content": 20
+        }
+      },
+      "justification": "Data shows strong performance in social media channels with young professional segment"
+    },
+    "compile_brief": {
+      "campaign_brief": {
+        "title": "Q1 2024 Marketing Campaign",
+        "objectives": ["Drive 25% conversion increase", "Expand mobile reach"],
+        "target_audience": "Young Professionals (25-35)",
+        "key_messages": ["Efficiency", "Growth", "Innovation"],
+        "timeline": "12 weeks",
+        "budget": "$50,000"
+      }
+    },
+    "analyze_performance": {
+      "performance_summary": {
+        "conversion_rate": "4.2%",
+        "engagement_rate": "9.1%",
+        "roi": "285%"
+      },
+      "needs_adjustment": false,
+      "recommendations": ["Continue current strategy", "Increase budget for top-performing channels"]
+    }
+  },
+  "assertions": [
+    {
+      "id": "features-extracted",
+      "step_name": "extract_features",
+      "type": "output_contains",
+      "condition": "target_audience",
+      "description": "Features should contain target audience data"
+    },
+    {
+      "id": "insights-generated",
+      "step_name": "generate_insights",
+      "type": "output_contains",
+      "condition": "patch",
+      "description": "Insights should contain strategy patch"
+    },
+    {
+      "id": "llm-calls-made",
+      "step_name": "extract_features",
+      "type": "llm_call_made",
+      "condition": {
+        "provider": "gemini"
+      },
+      "description": "Should make LLM calls using Gemini"
+    },
+    {
+      "id": "fast-execution",
+      "step_name": "overall",
+      "type": "duration_under",
+      "condition": 10000,
+      "description": "Workflow should complete in under 10 seconds with cache"
+    },
+    {
+      "id": "snapshot-saved",
+      "step_name": "extract_features",
+      "type": "database_state",
+      "condition": {
+        "table": "analysis_snapshots",
+        "count": 1
+      },
+      "description": "Should save analysis snapshot to database"
+    },
+    {
+      "id": "strategy-created",
+      "step_name": "generate_insights",
+      "type": "database_state",
+      "condition": {
+        "table": "strategies",
+        "count": 1
+      },
+      "description": "Should create strategy in database"
+    }
+  ],
+  "tags": ["core", "integration", "happy-path"]
+}

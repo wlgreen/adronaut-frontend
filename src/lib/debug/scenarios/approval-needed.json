@@ -1,0 +1,103 @@
+{
+  "id": "approval-needed-001",
+  "name": "Approval Required - HITL Workflow",
+  "description": "Workflow pauses for human approval at strategy patch step",
+  "workflow_name": "marketing_autogen_workflow",
+  "expected_llm_responses": {
+    "extract_features": {
+      "target_audience": {
+        "segments": [
+          {
+            "name": "Enterprise Customers",
+            "characteristics": ["Large budget", "Complex needs", "Long sales cycle"],
+            "size_estimate": "15% of customer base",
+            "value_score": 9
+          }
+        ]
+      },
+      "brand_positioning": "Enterprise-grade marketing platform",
+      "channels": ["LinkedIn", "Industry Publications", "Webinars"],
+      "messaging": ["Scalability", "Security", "ROI"],
+      "objectives": ["Increase enterprise deals", "Improve sales qualification"],
+      "budget_insights": {
+        "recommended_allocation": {
+          "linkedin": 50,
+          "content": 30,
+          "events": 20
+        }
+      },
+      "metrics": {
+        "conversion_rate": "2.1%",
+        "average_deal_size": "$25,000"
+      },
+      "competitive_insights": ["Strong in mid-market", "Weak in enterprise"],
+      "recommendations": ["Develop enterprise case studies", "Partner with system integrators"]
+    },
+    "generate_insights": {
+      "market_opportunities": ["Enterprise market expansion", "Partnership opportunities"],
+      "strategy_recommendations": ["Significant budget increase needed", "New sales process required"],
+      "patch": {
+        "audience_targeting": {
+          "primary_segment": "Enterprise Customers"
+        },
+        "channel_allocation": {
+          "linkedin": 60,
+          "content": 25,
+          "events": 15
+        },
+        "budget_increase": "300%",
+        "new_processes": ["Enterprise sales qualification", "Legal review process"]
+      },
+      "justification": "Major strategic pivot required to capture enterprise market - requires executive approval due to significant investment"
+    }
+  },
+  "breakpoints": ["generate_insights"],
+  "assertions": [
+    {
+      "id": "workflow-paused",
+      "step_name": "generate_insights",
+      "type": "custom",
+      "condition": "execution => execution && execution.status === 'paused'",
+      "description": "Workflow should pause after insights generation for approval"
+    },
+    {
+      "id": "patch-requires-approval",
+      "step_name": "generate_insights",
+      "type": "output_contains",
+      "condition": "budget_increase",
+      "description": "Generated patch should indicate significant changes requiring approval"
+    },
+    {
+      "id": "enterprise-targeting",
+      "step_name": "extract_features",
+      "type": "output_contains",
+      "condition": "Enterprise Customers",
+      "description": "Should identify enterprise segment"
+    },
+    {
+      "id": "pending-patch-in-db",
+      "step_name": "generate_insights",
+      "type": "database_state",
+      "condition": {
+        "table": "patches",
+        "where": {
+          "status": "pending"
+        },
+        "count": 1
+      },
+      "description": "Should create pending patch in database awaiting approval"
+    }
+  ],
+  "expected_final_state": {
+    "workflow_status": "paused",
+    "database": {
+      "patches": [
+        {
+          "status": "pending",
+          "source": "insights"
+        }
+      ]
+    }
+  },
+  "tags": ["hitl", "approval", "enterprise"]
+}

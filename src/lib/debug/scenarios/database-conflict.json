@@ -1,0 +1,112 @@
+{
+  "id": "database-conflict-001",
+  "name": "Database Conflict Handling",
+  "description": "Test workflow behavior with concurrent access and database conflicts",
+  "workflow_name": "marketing_autogen_workflow",
+  "initial_database_state": "concurrent_test_snapshot",
+  "expected_llm_responses": {
+    "extract_features": {
+      "target_audience": {
+        "segments": [
+          {
+            "name": "Tech Enthusiasts",
+            "characteristics": ["Early adopters", "High engagement"],
+            "size_estimate": "20% of customer base",
+            "value_score": 8
+          }
+        ]
+      },
+      "brand_positioning": "Cutting-edge marketing technology",
+      "channels": ["Twitter", "LinkedIn", "Tech Blogs"],
+      "messaging": ["Innovation", "Efficiency", "Results"],
+      "objectives": ["Increase tech market share"],
+      "budget_insights": {
+        "recommended_allocation": {
+          "twitter": 40,
+          "linkedin": 35,
+          "content": 25
+        }
+      },
+      "metrics": {
+        "conversion_rate": "4.2%",
+        "engagement_rate": "9.1%"
+      },
+      "competitive_insights": ["Strong tech credibility"],
+      "recommendations": ["Increase developer outreach"]
+    },
+    "generate_insights": {
+      "market_opportunities": ["Developer market expansion"],
+      "strategy_recommendations": ["Technical content strategy"],
+      "patch": {
+        "audience_targeting": {
+          "primary_segment": "Tech Enthusiasts"
+        },
+        "channel_allocation": {
+          "twitter": 45,
+          "linkedin": 35,
+          "github": 20
+        }
+      },
+      "justification": "Tech audience prefers developer-focused platforms"
+    }
+  },
+  "assertions": [
+    {
+      "id": "handles-concurrent-writes",
+      "step_name": "extract_features",
+      "type": "custom",
+      "condition": "execution => execution && !execution.steps.some(s => s.error && s.error.message.includes('conflict'))",
+      "description": "Should handle concurrent database writes without conflicts"
+    },
+    {
+      "id": "retry-on-conflict",
+      "step_name": "extract_features",
+      "type": "custom",
+      "condition": "execution => execution && execution.database_operations.some(op => op.execution_time > 1000)",
+      "description": "Should retry database operations on conflict (evidenced by longer execution times)"
+    },
+    {
+      "id": "data-consistency",
+      "step_name": "generate_insights",
+      "type": "database_state",
+      "condition": {
+        "table": "analysis_snapshots",
+        "count": 1
+      },
+      "description": "Should maintain data consistency despite concurrent access"
+    },
+    {
+      "id": "no-duplicate-strategies",
+      "step_name": "generate_insights",
+      "type": "database_state",
+      "condition": {
+        "table": "strategies",
+        "count": 1
+      },
+      "description": "Should not create duplicate strategies due to race conditions"
+    },
+    {
+      "id": "transaction-integrity",
+      "step_name": "overall",
+      "type": "custom",
+      "condition": "execution => execution && execution.database_operations.every(op => !op.error || op.error.includes('retry'))",
+      "description": "Should maintain transaction integrity with proper error handling"
+    }
+  ],
+  "expected_final_state": {
+    "workflow_status": "completed",
+    "database": {
+      "analysis_snapshots": [
+        {
+          "project_id": "test_project"
+        }
+      ],
+      "strategies": [
+        {
+          "project_id": "test_project"
+        }
+      ]
+    }
+  },
+  "tags": ["concurrency", "database", "race-conditions", "reliability"]
+}
