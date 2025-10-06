@@ -312,7 +312,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
 
                 <div className="pt-2 border-t border-space-300">
                   <p className="text-sm text-gray-400 mb-2 font-medium">Seasonal Trends</p>
-                  <p className="text-sm text-gray-300 leading-relaxed">{snapshot.temporal_patterns.seasonal_trends}</p>
+                  <p className="text-sm text-gray-300 leading-relaxed">{snapshot.temporal_patterns?.seasonal_trends || 'No seasonal data available'}</p>
                 </div>
               </div>
             </div>
