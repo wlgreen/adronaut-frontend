@@ -93,8 +93,8 @@ export function FileUploader({
         const formData = new FormData()
         formData.append('file', fileData.file)
 
-        // Upload to backend using faster direct endpoint
-        const uploadResponse = await fetch(`${BACKEND_URL}/upload-direct?project_id=${projectId}&process_immediately=true`, {
+        // Upload to backend using direct endpoint without immediate processing
+        const uploadResponse = await fetch(`${BACKEND_URL}/upload-direct?project_id=${projectId}&process_immediately=false`, {
           method: 'POST',
           body: formData
         })

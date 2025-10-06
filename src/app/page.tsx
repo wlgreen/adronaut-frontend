@@ -10,10 +10,18 @@ import { PremiumCard } from '@/components/ui/PremiumCard'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { useWorkspaceData } from '@/hooks/useLLMData'
 import { supabase } from '@/lib/supabase'
+import { supabaseLogger } from '@/lib/supabase-logger'
 
 export default function WorkspacePage() {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string; status: string}>>([])
   const [hasUploadedFiles, setHasUploadedFiles] = useState(false)
+  const [artifacts, setArtifacts] = useState<Array<{
+    id: string
+    filename: string
+    file_size: number
+    created_at: string
+  }>>([])
+  const [artifactsLoading, setArtifactsLoading] = useState(false)
   const [projectId, setProjectId] = useState<string>(() => {
     // Generate or retrieve project ID
     if (typeof window !== 'undefined') {
@@ -49,25 +57,35 @@ export default function WorkspacePage() {
 
     const checkUploadedFiles = async () => {
       try {
-        const { data: files, error } = await supabase
-          .from('artifacts')
-          .select('artifact_id')
-          .eq('project_id', projectId)
+        setArtifactsLoading(true)
 
-        if (!error && files && files.length > 0) {
+        // Use supabaseLogger to query artifacts with full details
+        const result = await supabaseLogger.select('artifacts', {
+          select: 'id, filename, file_size, created_at, project_id',
+          eq: { project_id: projectId },
+          orderBy: { column: 'created_at', ascending: false }
+        })
+
+        if (result.data && result.data.length > 0) {
           setHasUploadedFiles(true)
+          setArtifacts(result.data)
 
           // Update uploaded files count for display
-          setUploadedFiles(files.map((file: {artifact_id: string}) => ({
-            id: file.artifact_id,
+          setUploadedFiles(result.data.map((file: any) => ({
+            id: file.id,
             status: 'success'
           })))
         } else {
           setHasUploadedFiles(false)
+          setArtifacts([])
+          setUploadedFiles([])
         }
       } catch (error) {
         console.warn('Could not check for uploaded files:', error)
         setHasUploadedFiles(false)
+        setArtifacts([])
+      } finally {
+        setArtifactsLoading(false)
       }
     }
 
@@ -91,16 +109,7 @@ export default function WorkspacePage() {
     }
   }
 
-  // Separate effect to handle analysis triggering
-  useEffect(() => {
-    if (uploadedFiles.length > 0 && !analysisSnapshot && !isAnalyzing && hasUploadedFiles) {
-      const triggerAnalysis = setTimeout(async () => {
-        await analyzeFiles()
-      }, 1000) // Small delay to show upload completion
-
-      return () => clearTimeout(triggerAnalysis)
-    }
-  }, [uploadedFiles.length, analysisSnapshot, isAnalyzing, hasUploadedFiles, analyzeFiles])
+  // Auto-analysis removed - now manual only via button
 
   const startAnalysis = async () => {
     await analyzeFiles()
@@ -157,6 +166,52 @@ export default function WorkspacePage() {
           />
         </section>
 
+        {/* Existing Artifacts */}
+        {artifacts.length > 0 && (
+          <section className="space-y-6">
+            <div className="text-center max-w-3xl mx-auto">
+              <h3 className="text-2xl font-bold text-slate-100 mb-2">
+                Uploaded Artifacts ({artifacts.length})
+              </h3>
+              <p className="text-base text-slate-400">
+                Previously uploaded files available for analysis
+              </p>
+            </div>
+
+            <PremiumCard variant="elevated" className="max-w-4xl mx-auto">
+              <div className="p-6">
+                {artifactsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-slate-400">Loading artifacts...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {artifacts.map((artifact) => (
+                      <div key={artifact.id} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                        <div className="flex-1">
+                          <h4 className="text-slate-100 font-medium">{artifact.filename}</h4>
+                          <div className="flex items-center gap-4 mt-1 text-sm text-slate-400">
+                            <span>{(artifact.file_size / 1024).toFixed(1)} KB</span>
+                            <span>•</span>
+                            <span>{new Date(artifact.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => window.open(`${process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL}/artifact/${artifact.id}/download`, '_blank')}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors"
+                        >
+                          Download
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </PremiumCard>
+          </section>
+        )}
+
         {/* Analysis Status */}
         {hasUploadedFiles && !analysisSnapshot && (
           <section className="max-w-2xl mx-auto">
@@ -177,13 +232,23 @@ export default function WorkspacePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-slate-100">
-                      Ready for Analysis
-                    </h3>
-                    <p className="text-base leading-relaxed text-slate-400">
-                      Data artifacts uploaded successfully. Analysis will start automatically or click the button above.
-                    </p>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-100 mb-2">
+                        Ready for Analysis
+                      </h3>
+                      <p className="text-base leading-relaxed text-slate-400">
+                        Data artifacts uploaded successfully. Click the button below to start AI analysis.
+                      </p>
+                    </div>
+                    <PremiumButton
+                      onClick={startAnalysis}
+                      className="w-full sm:w-auto mx-auto"
+                      disabled={isAnalyzing}
+                    >
+                      <Play className="mr-2 h-4 w-4" />
+                      Start Analysis
+                    </PremiumButton>
                   </div>
                 )}
               </div>
