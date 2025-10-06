@@ -206,8 +206,8 @@ export class LLMService {
     try {
       logger.info('Starting strategy generation', {
         projectId,
-        segmentCount: analysisSnapshot.audience_segments.length,
-        themeCount: analysisSnapshot.content_themes.length
+        segmentCount: analysisSnapshot.audience_segments?.length || 0,
+        themeCount: analysisSnapshot.content_themes?.length || 0
       })
 
       // Check if we should use real LLM
