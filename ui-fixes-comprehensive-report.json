@@ -1,0 +1,947 @@
+{
+  "timestamp": "2025-10-06T05:15:19.700Z",
+  "testConfig": {
+    "backendUrl": "https://adronaut-production.up.railway.app",
+    "projectId": "ui-fixes-053fcd25-f8c0-47c2-b93d-45b594793bf4",
+    "testType": "COMPREHENSIVE_UI_FIXES_VALIDATION"
+  },
+  "summary": {
+    "total": 19,
+    "passed": 8,
+    "failed": 11,
+    "passRate": 42.1,
+    "allFixesWorking": false
+  },
+  "fixResults": {
+    "databaseLoading": {
+      "tests": 2,
+      "passed": 0,
+      "status": "ISSUES"
+    },
+    "manualAnalysis": {
+      "tests": 3,
+      "passed": 1,
+      "status": "ISSUES"
+    },
+    "artifactDisplay": {
+      "displayTests": 1,
+      "downloadTests": 1,
+      "displayPassed": 0,
+      "downloadPassed": 1,
+      "status": "ISSUES"
+    },
+    "uxWorkflow": {
+      "tests": 5,
+      "passed": 1,
+      "status": "ISSUES"
+    }
+  },
+  "detailedResults": {
+    "databaseLoadingTests": [
+      {
+        "name": "Database artifacts query endpoint",
+        "passed": false,
+        "details": "HTTP 404: Not Found",
+        "data": {
+          "success": false,
+          "artifacts": [],
+          "count": 0,
+          "error": "HTTP 404: Not Found"
+        },
+        "timestamp": "2025-10-06T05:15:01.139Z",
+        "category": "database"
+      },
+      {
+        "name": "Database contains uploaded artifacts",
+        "passed": false,
+        "details": "No artifacts found in database - frontend loading will show empty state",
+        "data": null,
+        "timestamp": "2025-10-06T05:15:01.139Z",
+        "category": "database"
+      }
+    ],
+    "manualAnalysisTests": [
+      {
+        "name": "Analysis endpoint accessible",
+        "passed": false,
+        "details": "Status: 404 - Endpoint may require specific parameters",
+        "data": {
+          "ok": false,
+          "status": 404,
+          "data": {
+            "detail": "Not Found"
+          },
+          "manual_trigger_works": false
+        },
+        "timestamp": "2025-10-06T05:15:01.158Z",
+        "category": "manual_analysis"
+      },
+      {
+        "name": "No auto-analysis trigger on upload",
+        "passed": true,
+        "details": "Upload responses clean - no automatic analysis triggered",
+        "data": {
+          "autoTriggerDetected": false,
+          "sampleResponses": [
+            {
+              "success": true,
+              "artifact_id": "1e4e56be-e923-4e50-8c9c-00ad71a6119c",
+              "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+              "features": {
+                "target_audience": {
+                  "demographics": "No demographic data (e.g., age, gender, location) is available in the provided artifact.",
+                  "assumptions": "Based on the digital campaign metrics (impressions, clicks), the audience is likely composed of online users targeted through specific interests, behaviors, or search keywords related to the product or service being advertised."
+                },
+                "brand_positioning": "Not clearly defined. The data provided is purely quantitative performance data and lacks any information about the brand, product, or market positioning.",
+                "channels": [
+                  "Digital Advertising",
+                  "Search Engine Marketing (SEM)",
+                  "Social Media Ads",
+                  "Display Advertising"
+                ],
+                "messaging": [
+                  "No specific messaging themes are present in the data.",
+                  "Given the focus on conversions, likely themes would be direct-response oriented, such as 'Shop Now', 'Limited Time Offer', 'Get a Free Quote', or 'Sign Up Today'."
+                ],
+                "objectives": [
+                  "Drive Conversions (e.g., sales, leads, or sign-ups) as indicated by the 'conversions' metric.",
+                  "Generate qualified website traffic, measured by 'clicks'.",
+                  "Maximize Return on Ad Spend (ROAS) by optimizing cost per conversion."
+                ],
+                "budget_insights": {
+                  "total_cost": 2705.5,
+                  "cost_range_per_campaign": "Costs range from $567.25 to $1245.75.",
+                  "summary": "The data provides cost per campaign, allowing for the calculation of efficiency metrics like Cost Per Click (CPC) and Cost Per Acquisition (CPA)."
+                },
+                "metrics": {
+                  "key_performance_indicators_summary": {
+                    "camp_001": {
+                      "CTR": "5.0%",
+                      "CPC": 1.19,
+                      "CVR": "6.0%",
+                      "CPA": 19.83
+                    },
+                    "camp_002": {
+                      "CTR": "5.0%",
+                      "CPC": 1.13,
+                      "CVR": "6.1%",
+                      "CPA": 18.59
+                    },
+                    "camp_003": {
+                      "CTR": "5.0%",
+                      "CPC": 1.33,
+                      "CVR": "5.4%",
+                      "CPA": 24.66
+                    }
+                  },
+                  "overall_performance": "Campaign 'camp_002' is the top performer, achieving the lowest Cost Per Acquisition (CPA) at $18.59 and the highest Conversion Rate (CVR) at 6.1%. Campaign 'camp_003' is the least efficient with the highest CPA ($24.66). All campaigns have an identical Click-Through Rate (CTR) of 5.0%."
+                },
+                "competitive_insights": [
+                  "The provided data contains no information about the competitive landscape.",
+                  "To gain insights, it would be beneficial to track competitor advertising strategies, messaging, and promotional offers within the same channels."
+                ],
+                "recommendations": [
+                  "Allocate more budget to 'camp_002' as it is the most efficient campaign, delivering the lowest Cost Per Acquisition (CPA).",
+                  "Conduct a detailed analysis of 'camp_003' to understand the reasons for its high CPA and low conversion rate. Review its targeting, ad creatives, and landing page experience.",
+                  "Since all campaigns have the same 5.0% CTR, initiate A/B testing of new ad copy, images, or calls-to-action to improve click-through rates and potentially lower CPC.",
+                  "Analyze the underlying audience segments within each campaign to identify which specific groups are driving the most cost-effective conversions and reallocate spend accordingly."
+                ]
+              },
+              "processing_time": "immediate",
+              "method": "direct_llm_processing"
+            },
+            {
+              "success": true,
+              "artifact_id": "302a2943-5a8e-4ff9-b45d-efe005f6bf42",
+              "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+              "features": {
+                "target_audience": {
+                  "demographics": "Not specified in the provided data. The audience consists of existing customers who have recently made a purchase or used a service.",
+                  "psychographics": "Likely values quality, good service, and value for money."
+                },
+                "brand_positioning": "The brand is positioned around three core pillars: superior product quality, good value for money, and excellent customer service. This suggests a customer-centric brand focused on delivering a high-quality overall experience.",
+                "channels": [
+                  "Customer Feedback Forms (implied)",
+                  "Email Surveys (likely)",
+                  "Website/App Review Section (likely)"
+                ],
+                "messaging": [
+                  "High Product Quality",
+                  "Good Value for Money",
+                  "Excellent Customer Service"
+                ],
+                "objectives": [
+                  "Measure overall customer satisfaction.",
+                  "Identify key drivers of positive customer sentiment.",
+                  "Gather qualitative feedback for product and service improvement."
+                ],
+                "budget_insights": {
+                  "status": "No budget data available."
+                },
+                "metrics": {
+                  "average_rating": 4.43,
+                  "total_responses": 3,
+                  "sentiment": "Overwhelmingly Positive"
+                },
+                "competitive_insights": [
+                  "No direct competitor data is available in the artifact.",
+                  "The brand's key strengths (quality, value, service) are common competitive differentiators, indicating it operates in a market where customer experience is crucial."
+                ],
+                "recommendations": [
+                  "Leverage the highly positive comments as testimonials in marketing campaigns (e.g., on the website, social media) to build social proof and trust.",
+                  "Double down on the identified strengths in marketing messaging; create campaigns specifically highlighting 'Great product quality' and 'Excellent customer service'.",
+                  "While feedback is positive, the sample size is extremely small. Implement a proactive strategy to increase the volume of feedback to gain more statistically significant insights and identify potential areas for improvement."
+                ]
+              },
+              "processing_time": "immediate",
+              "method": "direct_llm_processing"
+            }
+          ]
+        },
+        "timestamp": "2025-10-06T05:15:01.158Z",
+        "category": "manual_analysis"
+      },
+      {
+        "name": "Manual analysis button would work",
+        "passed": false,
+        "details": "Analysis endpoint not accessible: 404",
+        "data": {
+          "ok": false,
+          "status": 404,
+          "data": {
+            "detail": "Not Found"
+          },
+          "manual_trigger_works": false
+        },
+        "timestamp": "2025-10-06T05:15:01.158Z",
+        "category": "manual_analysis"
+      }
+    ],
+    "artifactDisplayTests": [
+      {
+        "name": "Artifact display tests",
+        "passed": false,
+        "details": "No artifacts available in database for display testing",
+        "data": null,
+        "timestamp": "2025-10-06T05:15:01.159Z",
+        "category": "artifact_display"
+      }
+    ],
+    "downloadTests": [
+      {
+        "name": "Invalid download handling",
+        "passed": true,
+        "details": "Invalid artifact ID properly rejected (Status: 405)",
+        "data": {
+          "accessible": false,
+          "status": 405,
+          "statusText": "Method Not Allowed",
+          "headers": {
+            "allow": "GET",
+            "content-length": "31",
+            "content-type": "application/json",
+            "date": "Mon, 06 Oct 2025 05:14:29 GMT",
+            "server": "railway-edge",
+            "x-railway-edge": "railway/us-west2",
+            "x-railway-request-id": "C7suMuYmQPOYbmCtnpoFkQ"
+          },
+          "url": "https://adronaut-production.up.railway.app/artifact/invalid-artifact-id/download"
+        },
+        "timestamp": "2025-10-06T05:15:19.693Z",
+        "category": "download"
+      }
+    ],
+    "uxWorkflowTests": [
+      {
+        "name": "UX Step 1: Page load shows existing artifacts",
+        "passed": false,
+        "details": "Page would show empty state (no existing artifacts)",
+        "data": {
+          "existingArtifactCount": 0
+        },
+        "timestamp": "2025-10-06T05:15:01.159Z",
+        "category": "ux_workflow"
+      },
+      {
+        "name": "UX Step 2: Upload adds to artifact list",
+        "passed": true,
+        "details": "New file uploaded successfully, would appear in artifact list",
+        "data": {
+          "ok": true,
+          "status": 200,
+          "statusText": "OK",
+          "data": {
+            "success": true,
+            "artifact_id": "9a7975f5-f785-4eed-a5ee-0b750b518d22",
+            "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+            "features": {
+              "target_audience": {
+                "summary": "The data does not contain demographic information. Based on the metrics (e.g., bounce rate, conversion rate), the audience consists of users interacting with a digital asset, such as a website or landing page.",
+                "age_range": "Not specified",
+                "gender": "Not specified",
+                "location": "Not specified",
+                "interests": "Not specified"
+              },
+              "brand_positioning": "Not clearly defined based on the provided data.",
+              "channels": [
+                "Website/Landing Page"
+              ],
+              "messaging": [
+                "Not specified. Messaging would likely be focused on driving specific actions, given the 'conversion_rate' metric."
+              ],
+              "objectives": [
+                "Increase user engagement",
+                "Maximize conversion rate",
+                "Reduce bounce rate"
+              ],
+              "budget_insights": {
+                "status": "No budget data available"
+              },
+              "metrics": {
+                "summary": "The artifact contains performance results from three separate tests, each measuring a key digital marketing metric.",
+                "key_metrics": [
+                  {
+                    "metric_name": "engagement_rate",
+                    "value": 0.045,
+                    "interpretation": "An engagement rate of 4.5% was recorded for test_id 1. This measures the level of user interaction with the content."
+                  },
+                  {
+                    "metric_name": "conversion_rate",
+                    "value": 0.023,
+                    "interpretation": "A conversion rate of 2.3% was achieved in test_id 2. This is a critical metric for measuring campaign success in driving desired actions."
+                  },
+                  {
+                    "metric_name": "bounce_rate",
+                    "value": 0.67,
+                    "interpretation": "A bounce rate of 67% was observed in test_id 3. This is a high value, indicating that a majority of visitors left after viewing only one page."
+                  }
+                ]
+              },
+              "competitive_insights": [
+                "No competitive data is available in the artifact. The provided metrics should be benchmarked against industry averages to gauge performance relative to competitors."
+              ],
+              "recommendations": [
+                "Address the high bounce rate (67%) immediately. Analyze the alignment between the traffic source (e.g., ad copy) and the landing page content to ensure user expectations are met. A/B test headlines, visuals, and calls-to-action.",
+                "Investigate the user journey to improve the 2.3% conversion rate. Identify potential friction points in the conversion funnel and simplify the process for users.",
+                "Establish a more comprehensive data tracking plan. While the metrics are valuable, collecting data across different segments, channels, and over time will provide a clearer picture of performance and enable more effective optimization."
+              ]
+            },
+            "processing_time": "immediate",
+            "method": "direct_llm_processing"
+          },
+          "uploadTime": 18449,
+          "headers": {
+            "content-length": "2524",
+            "content-type": "application/json",
+            "date": "Mon, 06 Oct 2025 05:14:29 GMT",
+            "server": "railway-edge",
+            "x-railway-edge": "railway/us-west2",
+            "x-railway-request-id": "-IOuahk6TqO0YlqwnpoFkQ"
+          },
+          "endpoint": "/upload-direct"
+        },
+        "timestamp": "2025-10-06T05:15:19.609Z",
+        "category": "ux_workflow"
+      },
+      {
+        "name": "UX Step 3: Analysis button would appear",
+        "passed": false,
+        "details": "No artifacts available → analysis button would not show",
+        "data": {
+          "artifactCount": 0
+        },
+        "timestamp": "2025-10-06T05:15:19.632Z",
+        "category": "ux_workflow"
+      },
+      {
+        "name": "UX Step 4: Manual analysis trigger works",
+        "passed": false,
+        "details": "Analysis trigger not available: 404",
+        "data": {
+          "ok": false,
+          "status": 404,
+          "data": {
+            "detail": "Not Found"
+          },
+          "manual_trigger_works": false
+        },
+        "timestamp": "2025-10-06T05:15:19.633Z",
+        "category": "ux_workflow"
+      },
+      {
+        "name": "UX Step 5: Download functionality works",
+        "passed": false,
+        "details": "Download functionality not working correctly",
+        "data": {
+          "downloadableArtifacts": 0
+        },
+        "timestamp": "2025-10-06T05:15:19.633Z",
+        "category": "ux_workflow"
+      }
+    ]
+  },
+  "artifacts": [],
+  "allTests": [
+    {
+      "name": "Backend health check",
+      "passed": false,
+      "details": "HTTP 404: Not Found",
+      "data": null,
+      "timestamp": "2025-10-06T05:14:05.851Z",
+      "category": "general"
+    },
+    {
+      "name": "Upload test artifact: marketing-data.csv",
+      "passed": true,
+      "details": "Size: 0.1 KB, Upload time: 23.23s",
+      "data": {
+        "success": true,
+        "artifact_id": "1e4e56be-e923-4e50-8c9c-00ad71a6119c",
+        "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+        "features": {
+          "target_audience": {
+            "demographics": "No demographic data (e.g., age, gender, location) is available in the provided artifact.",
+            "assumptions": "Based on the digital campaign metrics (impressions, clicks), the audience is likely composed of online users targeted through specific interests, behaviors, or search keywords related to the product or service being advertised."
+          },
+          "brand_positioning": "Not clearly defined. The data provided is purely quantitative performance data and lacks any information about the brand, product, or market positioning.",
+          "channels": [
+            "Digital Advertising",
+            "Search Engine Marketing (SEM)",
+            "Social Media Ads",
+            "Display Advertising"
+          ],
+          "messaging": [
+            "No specific messaging themes are present in the data.",
+            "Given the focus on conversions, likely themes would be direct-response oriented, such as 'Shop Now', 'Limited Time Offer', 'Get a Free Quote', or 'Sign Up Today'."
+          ],
+          "objectives": [
+            "Drive Conversions (e.g., sales, leads, or sign-ups) as indicated by the 'conversions' metric.",
+            "Generate qualified website traffic, measured by 'clicks'.",
+            "Maximize Return on Ad Spend (ROAS) by optimizing cost per conversion."
+          ],
+          "budget_insights": {
+            "total_cost": 2705.5,
+            "cost_range_per_campaign": "Costs range from $567.25 to $1245.75.",
+            "summary": "The data provides cost per campaign, allowing for the calculation of efficiency metrics like Cost Per Click (CPC) and Cost Per Acquisition (CPA)."
+          },
+          "metrics": {
+            "key_performance_indicators_summary": {
+              "camp_001": {
+                "CTR": "5.0%",
+                "CPC": 1.19,
+                "CVR": "6.0%",
+                "CPA": 19.83
+              },
+              "camp_002": {
+                "CTR": "5.0%",
+                "CPC": 1.13,
+                "CVR": "6.1%",
+                "CPA": 18.59
+              },
+              "camp_003": {
+                "CTR": "5.0%",
+                "CPC": 1.33,
+                "CVR": "5.4%",
+                "CPA": 24.66
+              }
+            },
+            "overall_performance": "Campaign 'camp_002' is the top performer, achieving the lowest Cost Per Acquisition (CPA) at $18.59 and the highest Conversion Rate (CVR) at 6.1%. Campaign 'camp_003' is the least efficient with the highest CPA ($24.66). All campaigns have an identical Click-Through Rate (CTR) of 5.0%."
+          },
+          "competitive_insights": [
+            "The provided data contains no information about the competitive landscape.",
+            "To gain insights, it would be beneficial to track competitor advertising strategies, messaging, and promotional offers within the same channels."
+          ],
+          "recommendations": [
+            "Allocate more budget to 'camp_002' as it is the most efficient campaign, delivering the lowest Cost Per Acquisition (CPA).",
+            "Conduct a detailed analysis of 'camp_003' to understand the reasons for its high CPA and low conversion rate. Review its targeting, ad creatives, and landing page experience.",
+            "Since all campaigns have the same 5.0% CTR, initiate A/B testing of new ad copy, images, or calls-to-action to improve click-through rates and potentially lower CPC.",
+            "Analyze the underlying audience segments within each campaign to identify which specific groups are driving the most cost-effective conversions and reallocate spend accordingly."
+          ]
+        },
+        "processing_time": "immediate",
+        "method": "direct_llm_processing"
+      },
+      "timestamp": "2025-10-06T05:14:29.123Z",
+      "category": "general"
+    },
+    {
+      "name": "Upload test artifact: customer-feedback.json",
+      "passed": true,
+      "details": "Size: 0.5 KB, Upload time: 11.12s",
+      "data": {
+        "success": true,
+        "artifact_id": "302a2943-5a8e-4ff9-b45d-efe005f6bf42",
+        "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+        "features": {
+          "target_audience": {
+            "demographics": "Not specified in the provided data. The audience consists of existing customers who have recently made a purchase or used a service.",
+            "psychographics": "Likely values quality, good service, and value for money."
+          },
+          "brand_positioning": "The brand is positioned around three core pillars: superior product quality, good value for money, and excellent customer service. This suggests a customer-centric brand focused on delivering a high-quality overall experience.",
+          "channels": [
+            "Customer Feedback Forms (implied)",
+            "Email Surveys (likely)",
+            "Website/App Review Section (likely)"
+          ],
+          "messaging": [
+            "High Product Quality",
+            "Good Value for Money",
+            "Excellent Customer Service"
+          ],
+          "objectives": [
+            "Measure overall customer satisfaction.",
+            "Identify key drivers of positive customer sentiment.",
+            "Gather qualitative feedback for product and service improvement."
+          ],
+          "budget_insights": {
+            "status": "No budget data available."
+          },
+          "metrics": {
+            "average_rating": 4.43,
+            "total_responses": 3,
+            "sentiment": "Overwhelmingly Positive"
+          },
+          "competitive_insights": [
+            "No direct competitor data is available in the artifact.",
+            "The brand's key strengths (quality, value, service) are common competitive differentiators, indicating it operates in a market where customer experience is crucial."
+          ],
+          "recommendations": [
+            "Leverage the highly positive comments as testimonials in marketing campaigns (e.g., on the website, social media) to build social proof and trust.",
+            "Double down on the identified strengths in marketing messaging; create campaigns specifically highlighting 'Great product quality' and 'Excellent customer service'.",
+            "While feedback is positive, the sample size is extremely small. Implement a proactive strategy to increase the volume of feedback to gain more statistically significant insights and identify potential areas for improvement."
+          ]
+        },
+        "processing_time": "immediate",
+        "method": "direct_llm_processing"
+      },
+      "timestamp": "2025-10-06T05:14:40.245Z",
+      "category": "general"
+    },
+    {
+      "name": "Upload test artifact: product-specs.txt",
+      "passed": true,
+      "details": "Size: 0.3 KB, Upload time: 20.86s",
+      "data": {
+        "success": true,
+        "artifact_id": "2544b82e-0da0-4f54-942f-7126e9ac4945",
+        "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+        "features": {
+          "target_audience": {
+            "demographic_details": "No specific demographic data is available in the provided artifact. Based on the product name 'Advanced Marketing Analytics Tool', the target audience is professional and B2B.",
+            "professional_profile": "Marketing Managers, Data Analysts, Digital Marketing Specialists, CMOs, and marketing agencies.",
+            "company_profile": "Likely mid-to-large sized companies with complex marketing operations and a need for in-depth data analysis, particularly in sectors like e-commerce, SaaS, and technology."
+          },
+          "brand_positioning": "The brand is positioned as a sophisticated, high-performance, and intelligent solution for advanced marketing analytics. The emphasis on 'AI-powered insights' and 'real-time data' positions it as a cutting-edge tool for data-driven professionals who require speed and deep analytical capabilities.",
+          "channels": [
+            "No marketing channels are explicitly mentioned in the artifact.",
+            "Suggested B2B Channels: Content Marketing (blogs, whitepapers), LinkedIn Ads, Search Engine Marketing (SEM), Industry Webinars, and professional networking events."
+          ],
+          "messaging": [
+            "Intelligence and Automation: Highlighted by the 'AI-powered insights' feature.",
+            "Speed and Immediacy: Communicated through 'Real-time data processing'.",
+            "Comprehensiveness: Emphasized by 'Multi-channel attribution', suggesting a holistic view of marketing efforts.",
+            "Customization and Control: Stated via the 'Custom dashboard creation' feature."
+          ],
+          "objectives": [
+            "No campaign objectives are stated. Inferred objectives would be:",
+            "To generate high-quality leads from the target professional audience.",
+            "To drive requests for product demonstrations or free trials.",
+            "To establish the brand as a thought leader in the advanced analytics space.",
+            "To educate potential customers on the value of AI in marketing attribution."
+          ],
+          "budget_insights": {
+            "budget": "No budget data available in the artifact."
+          },
+          "metrics": {
+            "available_metrics": "No performance metrics are available in the artifact.",
+            "suggested_metrics": [
+              "Marketing Qualified Leads (MQLs)",
+              "Lead-to-Demo Conversion Rate",
+              "Customer Acquisition Cost (CAC)",
+              "Customer Lifetime Value (CLV)",
+              "Website Engagement Rate"
+            ]
+          },
+          "competitive_insights": [
+            "No direct competitors are mentioned.",
+            "General Market Insight: The marketing analytics tool market is highly competitive, featuring major players like Google Analytics and Adobe Analytics, as well as specialized platforms. The key differentiators ('AI-powered', 'real-time') are crucial for standing out.",
+            "The product's features position it against other advanced, multi-channel attribution platforms."
+          ],
+          "recommendations": [
+            "Develop Case Studies: Create detailed case studies showcasing how specific features (e.g., 'Multi-channel attribution') solve real-world problems for target personas like a Marketing Manager.",
+            "Clarify the UVP: Sharpen marketing copy to focus on the unique value proposition that combines real-time data with AI-driven insights, as this is a powerful differentiator.",
+            "Launch a Demo Campaign: Since the product is technical, a campaign focused on driving live or recorded demos would be more effective than static ads. This could showcase the 'Custom dashboard' feature in action.",
+            "Target Niche Professional Groups: Utilize LinkedIn marketing to target users with job titles like 'Marketing Analyst' or 'Head of Digital Marketing' with content that speaks directly to their analytical needs."
+          ]
+        },
+        "processing_time": "immediate",
+        "method": "direct_llm_processing"
+      },
+      "timestamp": "2025-10-06T05:15:01.112Z",
+      "category": "general"
+    },
+    {
+      "name": "Database artifacts query endpoint",
+      "passed": false,
+      "details": "HTTP 404: Not Found",
+      "data": {
+        "success": false,
+        "artifacts": [],
+        "count": 0,
+        "error": "HTTP 404: Not Found"
+      },
+      "timestamp": "2025-10-06T05:15:01.139Z",
+      "category": "database"
+    },
+    {
+      "name": "Database contains uploaded artifacts",
+      "passed": false,
+      "details": "No artifacts found in database - frontend loading will show empty state",
+      "data": null,
+      "timestamp": "2025-10-06T05:15:01.139Z",
+      "category": "database"
+    },
+    {
+      "name": "Analysis endpoint accessible",
+      "passed": false,
+      "details": "Status: 404 - Endpoint may require specific parameters",
+      "data": {
+        "ok": false,
+        "status": 404,
+        "data": {
+          "detail": "Not Found"
+        },
+        "manual_trigger_works": false
+      },
+      "timestamp": "2025-10-06T05:15:01.158Z",
+      "category": "manual_analysis"
+    },
+    {
+      "name": "No auto-analysis trigger on upload",
+      "passed": true,
+      "details": "Upload responses clean - no automatic analysis triggered",
+      "data": {
+        "autoTriggerDetected": false,
+        "sampleResponses": [
+          {
+            "success": true,
+            "artifact_id": "1e4e56be-e923-4e50-8c9c-00ad71a6119c",
+            "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+            "features": {
+              "target_audience": {
+                "demographics": "No demographic data (e.g., age, gender, location) is available in the provided artifact.",
+                "assumptions": "Based on the digital campaign metrics (impressions, clicks), the audience is likely composed of online users targeted through specific interests, behaviors, or search keywords related to the product or service being advertised."
+              },
+              "brand_positioning": "Not clearly defined. The data provided is purely quantitative performance data and lacks any information about the brand, product, or market positioning.",
+              "channels": [
+                "Digital Advertising",
+                "Search Engine Marketing (SEM)",
+                "Social Media Ads",
+                "Display Advertising"
+              ],
+              "messaging": [
+                "No specific messaging themes are present in the data.",
+                "Given the focus on conversions, likely themes would be direct-response oriented, such as 'Shop Now', 'Limited Time Offer', 'Get a Free Quote', or 'Sign Up Today'."
+              ],
+              "objectives": [
+                "Drive Conversions (e.g., sales, leads, or sign-ups) as indicated by the 'conversions' metric.",
+                "Generate qualified website traffic, measured by 'clicks'.",
+                "Maximize Return on Ad Spend (ROAS) by optimizing cost per conversion."
+              ],
+              "budget_insights": {
+                "total_cost": 2705.5,
+                "cost_range_per_campaign": "Costs range from $567.25 to $1245.75.",
+                "summary": "The data provides cost per campaign, allowing for the calculation of efficiency metrics like Cost Per Click (CPC) and Cost Per Acquisition (CPA)."
+              },
+              "metrics": {
+                "key_performance_indicators_summary": {
+                  "camp_001": {
+                    "CTR": "5.0%",
+                    "CPC": 1.19,
+                    "CVR": "6.0%",
+                    "CPA": 19.83
+                  },
+                  "camp_002": {
+                    "CTR": "5.0%",
+                    "CPC": 1.13,
+                    "CVR": "6.1%",
+                    "CPA": 18.59
+                  },
+                  "camp_003": {
+                    "CTR": "5.0%",
+                    "CPC": 1.33,
+                    "CVR": "5.4%",
+                    "CPA": 24.66
+                  }
+                },
+                "overall_performance": "Campaign 'camp_002' is the top performer, achieving the lowest Cost Per Acquisition (CPA) at $18.59 and the highest Conversion Rate (CVR) at 6.1%. Campaign 'camp_003' is the least efficient with the highest CPA ($24.66). All campaigns have an identical Click-Through Rate (CTR) of 5.0%."
+              },
+              "competitive_insights": [
+                "The provided data contains no information about the competitive landscape.",
+                "To gain insights, it would be beneficial to track competitor advertising strategies, messaging, and promotional offers within the same channels."
+              ],
+              "recommendations": [
+                "Allocate more budget to 'camp_002' as it is the most efficient campaign, delivering the lowest Cost Per Acquisition (CPA).",
+                "Conduct a detailed analysis of 'camp_003' to understand the reasons for its high CPA and low conversion rate. Review its targeting, ad creatives, and landing page experience.",
+                "Since all campaigns have the same 5.0% CTR, initiate A/B testing of new ad copy, images, or calls-to-action to improve click-through rates and potentially lower CPC.",
+                "Analyze the underlying audience segments within each campaign to identify which specific groups are driving the most cost-effective conversions and reallocate spend accordingly."
+              ]
+            },
+            "processing_time": "immediate",
+            "method": "direct_llm_processing"
+          },
+          {
+            "success": true,
+            "artifact_id": "302a2943-5a8e-4ff9-b45d-efe005f6bf42",
+            "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+            "features": {
+              "target_audience": {
+                "demographics": "Not specified in the provided data. The audience consists of existing customers who have recently made a purchase or used a service.",
+                "psychographics": "Likely values quality, good service, and value for money."
+              },
+              "brand_positioning": "The brand is positioned around three core pillars: superior product quality, good value for money, and excellent customer service. This suggests a customer-centric brand focused on delivering a high-quality overall experience.",
+              "channels": [
+                "Customer Feedback Forms (implied)",
+                "Email Surveys (likely)",
+                "Website/App Review Section (likely)"
+              ],
+              "messaging": [
+                "High Product Quality",
+                "Good Value for Money",
+                "Excellent Customer Service"
+              ],
+              "objectives": [
+                "Measure overall customer satisfaction.",
+                "Identify key drivers of positive customer sentiment.",
+                "Gather qualitative feedback for product and service improvement."
+              ],
+              "budget_insights": {
+                "status": "No budget data available."
+              },
+              "metrics": {
+                "average_rating": 4.43,
+                "total_responses": 3,
+                "sentiment": "Overwhelmingly Positive"
+              },
+              "competitive_insights": [
+                "No direct competitor data is available in the artifact.",
+                "The brand's key strengths (quality, value, service) are common competitive differentiators, indicating it operates in a market where customer experience is crucial."
+              ],
+              "recommendations": [
+                "Leverage the highly positive comments as testimonials in marketing campaigns (e.g., on the website, social media) to build social proof and trust.",
+                "Double down on the identified strengths in marketing messaging; create campaigns specifically highlighting 'Great product quality' and 'Excellent customer service'.",
+                "While feedback is positive, the sample size is extremely small. Implement a proactive strategy to increase the volume of feedback to gain more statistically significant insights and identify potential areas for improvement."
+              ]
+            },
+            "processing_time": "immediate",
+            "method": "direct_llm_processing"
+          }
+        ]
+      },
+      "timestamp": "2025-10-06T05:15:01.158Z",
+      "category": "manual_analysis"
+    },
+    {
+      "name": "Manual analysis button would work",
+      "passed": false,
+      "details": "Analysis endpoint not accessible: 404",
+      "data": {
+        "ok": false,
+        "status": 404,
+        "data": {
+          "detail": "Not Found"
+        },
+        "manual_trigger_works": false
+      },
+      "timestamp": "2025-10-06T05:15:01.158Z",
+      "category": "manual_analysis"
+    },
+    {
+      "name": "Artifact display tests",
+      "passed": false,
+      "details": "No artifacts available in database for display testing",
+      "data": null,
+      "timestamp": "2025-10-06T05:15:01.159Z",
+      "category": "artifact_display"
+    },
+    {
+      "name": "UX Step 1: Page load shows existing artifacts",
+      "passed": false,
+      "details": "Page would show empty state (no existing artifacts)",
+      "data": {
+        "existingArtifactCount": 0
+      },
+      "timestamp": "2025-10-06T05:15:01.159Z",
+      "category": "ux_workflow"
+    },
+    {
+      "name": "UX Step 2: Upload adds to artifact list",
+      "passed": true,
+      "details": "New file uploaded successfully, would appear in artifact list",
+      "data": {
+        "ok": true,
+        "status": 200,
+        "statusText": "OK",
+        "data": {
+          "success": true,
+          "artifact_id": "9a7975f5-f785-4eed-a5ee-0b750b518d22",
+          "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+          "features": {
+            "target_audience": {
+              "summary": "The data does not contain demographic information. Based on the metrics (e.g., bounce rate, conversion rate), the audience consists of users interacting with a digital asset, such as a website or landing page.",
+              "age_range": "Not specified",
+              "gender": "Not specified",
+              "location": "Not specified",
+              "interests": "Not specified"
+            },
+            "brand_positioning": "Not clearly defined based on the provided data.",
+            "channels": [
+              "Website/Landing Page"
+            ],
+            "messaging": [
+              "Not specified. Messaging would likely be focused on driving specific actions, given the 'conversion_rate' metric."
+            ],
+            "objectives": [
+              "Increase user engagement",
+              "Maximize conversion rate",
+              "Reduce bounce rate"
+            ],
+            "budget_insights": {
+              "status": "No budget data available"
+            },
+            "metrics": {
+              "summary": "The artifact contains performance results from three separate tests, each measuring a key digital marketing metric.",
+              "key_metrics": [
+                {
+                  "metric_name": "engagement_rate",
+                  "value": 0.045,
+                  "interpretation": "An engagement rate of 4.5% was recorded for test_id 1. This measures the level of user interaction with the content."
+                },
+                {
+                  "metric_name": "conversion_rate",
+                  "value": 0.023,
+                  "interpretation": "A conversion rate of 2.3% was achieved in test_id 2. This is a critical metric for measuring campaign success in driving desired actions."
+                },
+                {
+                  "metric_name": "bounce_rate",
+                  "value": 0.67,
+                  "interpretation": "A bounce rate of 67% was observed in test_id 3. This is a high value, indicating that a majority of visitors left after viewing only one page."
+                }
+              ]
+            },
+            "competitive_insights": [
+              "No competitive data is available in the artifact. The provided metrics should be benchmarked against industry averages to gauge performance relative to competitors."
+            ],
+            "recommendations": [
+              "Address the high bounce rate (67%) immediately. Analyze the alignment between the traffic source (e.g., ad copy) and the landing page content to ensure user expectations are met. A/B test headlines, visuals, and calls-to-action.",
+              "Investigate the user journey to improve the 2.3% conversion rate. Identify potential friction points in the conversion funnel and simplify the process for users.",
+              "Establish a more comprehensive data tracking plan. While the metrics are valuable, collecting data across different segments, channels, and over time will provide a clearer picture of performance and enable more effective optimization."
+            ]
+          },
+          "processing_time": "immediate",
+          "method": "direct_llm_processing"
+        },
+        "uploadTime": 18449,
+        "headers": {
+          "content-length": "2524",
+          "content-type": "application/json",
+          "date": "Mon, 06 Oct 2025 05:14:29 GMT",
+          "server": "railway-edge",
+          "x-railway-edge": "railway/us-west2",
+          "x-railway-request-id": "-IOuahk6TqO0YlqwnpoFkQ"
+        },
+        "endpoint": "/upload-direct"
+      },
+      "timestamp": "2025-10-06T05:15:19.609Z",
+      "category": "ux_workflow"
+    },
+    {
+      "name": "UX Step 3: Analysis button would appear",
+      "passed": false,
+      "details": "No artifacts available → analysis button would not show",
+      "data": {
+        "artifactCount": 0
+      },
+      "timestamp": "2025-10-06T05:15:19.632Z",
+      "category": "ux_workflow"
+    },
+    {
+      "name": "UX Step 4: Manual analysis trigger works",
+      "passed": false,
+      "details": "Analysis trigger not available: 404",
+      "data": {
+        "ok": false,
+        "status": 404,
+        "data": {
+          "detail": "Not Found"
+        },
+        "manual_trigger_works": false
+      },
+      "timestamp": "2025-10-06T05:15:19.633Z",
+      "category": "ux_workflow"
+    },
+    {
+      "name": "UX Step 5: Download functionality works",
+      "passed": false,
+      "details": "Download functionality not working correctly",
+      "data": {
+        "downloadableArtifacts": 0
+      },
+      "timestamp": "2025-10-06T05:15:19.633Z",
+      "category": "ux_workflow"
+    },
+    {
+      "name": "Upload performance for UI updates",
+      "passed": true,
+      "details": "Average upload time: 0.00s (target: <10s)",
+      "data": {
+        "averageUploadTime": 0
+      },
+      "timestamp": "2025-10-06T05:15:19.633Z",
+      "category": "general"
+    },
+    {
+      "name": "Empty project handling",
+      "passed": false,
+      "details": "Unexpected response: HTTP 404: Not Found",
+      "data": {
+        "success": false,
+        "artifacts": [],
+        "count": 0,
+        "error": "HTTP 404: Not Found"
+      },
+      "timestamp": "2025-10-06T05:15:19.663Z",
+      "category": "general"
+    },
+    {
+      "name": "Invalid download handling",
+      "passed": true,
+      "details": "Invalid artifact ID properly rejected (Status: 405)",
+      "data": {
+        "accessible": false,
+        "status": 405,
+        "statusText": "Method Not Allowed",
+        "headers": {
+          "allow": "GET",
+          "content-length": "31",
+          "content-type": "application/json",
+          "date": "Mon, 06 Oct 2025 05:14:29 GMT",
+          "server": "railway-edge",
+          "x-railway-edge": "railway/us-west2",
+          "x-railway-request-id": "C7suMuYmQPOYbmCtnpoFkQ"
+        },
+        "url": "https://adronaut-production.up.railway.app/artifact/invalid-artifact-id/download"
+      },
+      "timestamp": "2025-10-06T05:15:19.693Z",
+      "category": "download"
+    },
+    {
+      "name": "Test cleanup",
+      "passed": true,
+      "details": "Temporary files removed",
+      "data": null,
+      "timestamp": "2025-10-06T05:15:19.699Z",
+      "category": "general"
+    }
+  ]
+}

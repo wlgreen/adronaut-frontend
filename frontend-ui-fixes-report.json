@@ -1,0 +1,493 @@
+{
+  "timestamp": "2025-10-06T05:27:31.880Z",
+  "testConfig": {
+    "backendUrl": "https://adronaut-production.up.railway.app",
+    "projectId": "frontend-test-32181291-9cfc-4520-ae41-7c1d8d7eadbf",
+    "testType": "FRONTEND_UI_FIXES_VALIDATION",
+    "focus": "Frontend implementation of three critical UI fixes"
+  },
+  "summary": {
+    "total": 18,
+    "passed": 12,
+    "failed": 6,
+    "passRate": 66.7,
+    "allFixesWorking": false,
+    "frontendImplementationSolid": false
+  },
+  "fixResults": {
+    "uploadIntegration": {
+      "tests": 2,
+      "passed": 1,
+      "status": "ISSUES"
+    },
+    "manualAnalysisControl": {
+      "tests": 3,
+      "passed": 1,
+      "status": "ISSUES"
+    },
+    "artifactDisplayDownload": {
+      "tests": 3,
+      "passed": 3,
+      "status": "WORKING"
+    }
+  },
+  "artifacts": [
+    {
+      "filename": "user-feedback.json",
+      "artifactId": "4328602f-8c47-4b09-8f99-dd0f3cc8e05b",
+      "projectId": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+      "downloadUrl": "https://adronaut-production.up.railway.app/artifact/4328602f-8c47-4b09-8f99-dd0f3cc8e05b/download",
+      "size": 406,
+      "uploadTime": 22322
+    }
+  ],
+  "detailedResults": {
+    "uploadTests": [
+      {
+        "name": "Upload success: campaign-data.csv",
+        "passed": false,
+        "details": "Status: 0, Error: network timeout at: https://adronaut-production.up.railway.app/upload-direct?project_id=frontend-test-32181291-9cfc-4520-ae41-7c1d8d7eadbf&process_immediately=true",
+        "data": null,
+        "timestamp": "2025-10-06T05:26:54.223Z",
+        "category": "upload"
+      },
+      {
+        "name": "Upload success: user-feedback.json",
+        "passed": true,
+        "details": "Status: 200, Time: 22.32s, Size: 0.4 KB",
+        "data": {
+          "success": true,
+          "artifact_id": "4328602f-8c47-4b09-8f99-dd0f3cc8e05b",
+          "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+          "features": {
+            "target_audience": {
+              "description": "The data represents existing customers who have used the product. No specific demographic information like age, gender, or location is available in the provided artifact."
+            },
+            "brand_positioning": "The brand is positioned around high product quality and customer satisfaction, as evidenced by the high ratings for 'Product satisfaction' (4.2) and 'Recommend to others' (4.1). However, the lower 'Value for money' score (3.8) suggests it may not be positioned as a budget or value-leader.",
+            "channels": [
+              "Customer Surveys (explicitly used)",
+              "Email (likely channel for survey distribution)",
+              "In-App Messaging (potential channel for survey distribution)"
+            ],
+            "messaging": [
+              "Product Quality and Satisfaction",
+              "Value Proposition",
+              "Customer Loyalty and Advocacy (Word-of-Mouth)"
+            ],
+            "objectives": [
+              "Measure customer satisfaction and loyalty.",
+              "Identify areas for product and marketing improvement.",
+              "Gather data to inform retention strategies.",
+              "Assess the perceived value for money of the product."
+            ],
+            "budget_insights": {
+              "status": "No budget data available"
+            },
+            "metrics": {
+              "product_satisfaction_rating": 4.2,
+              "value_for_money_rating": 3.8,
+              "recommend_to_others_rating": 4.1,
+              "satisfaction_survey_responses": 342,
+              "value_survey_responses": 298,
+              "recommendation_survey_responses": 315
+            },
+            "competitive_insights": [
+              "The 'Value for money' score of 3.8 is the lowest metric, indicating a potential vulnerability where competitors might be perceived as offering a better price-to-value ratio.",
+              "The high satisfaction and recommendation scores suggest the core product is strong and competitive on a quality/feature basis."
+            ],
+            "recommendations": [
+              "Create a targeted marketing campaign or content that reinforces the product's value proposition to address the lower 'Value for money' score. Focus on features, durability, or ROI.",
+              "Leverage the high 'Product satisfaction' (4.2) and 'Recommend to others' (4.1) scores in marketing materials. Use testimonials, reviews, and case studies to build social proof.",
+              "Conduct a follow-up qualitative analysis (e.g., open-ended questions) to understand the specific reasons behind the 'Value for money' rating.",
+              "Implement a Net Promoter Score (NPS) program to formalize the 'Recommend to others' metric and segment customers into Promoters, Passives, and Detractors for targeted engagement."
+            ]
+          },
+          "processing_time": "immediate",
+          "method": "direct_llm_processing"
+        },
+        "timestamp": "2025-10-06T05:27:16.558Z",
+        "category": "upload"
+      }
+    ],
+    "manualAnalysisTests": [
+      {
+        "name": "No auto-analysis on upload",
+        "passed": false,
+        "details": "Upload responses contain extensive analysis data (auto-trigger detected)",
+        "data": {
+          "autoAnalysisDetected": true,
+          "sampleCount": 1
+        },
+        "timestamp": "2025-10-06T05:27:16.558Z",
+        "category": "manual_analysis"
+      },
+      {
+        "name": "Manual analysis endpoint accessible",
+        "passed": false,
+        "details": "Endpoint not accessible: Not Found",
+        "data": {
+          "ok": false,
+          "status": 404,
+          "statusText": "Not Found",
+          "data": {
+            "detail": "Not Found"
+          },
+          "accessible": false
+        },
+        "timestamp": "2025-10-06T05:27:16.581Z",
+        "category": "manual_analysis"
+      },
+      {
+        "name": "Analysis requires manual trigger",
+        "passed": true,
+        "details": "Analysis endpoint exists but requires explicit POST request (manual control confirmed)",
+        "data": {
+          "endpointFormat": "/analyze/{project_id}",
+          "method": "POST"
+        },
+        "timestamp": "2025-10-06T05:27:16.581Z",
+        "category": "manual_analysis"
+      }
+    ],
+    "downloadTests": [
+      {
+        "name": "Download URL format: user-feedback.json",
+        "passed": true,
+        "details": "URL: https://adronaut-production.up.railway.app/artifact/4328602f-8c47-4b09-8f99-dd0f3cc8e05b/download",
+        "data": {
+          "url": "https://adronaut-production.up.railway.app/artifact/4328602f-8c47-4b09-8f99-dd0f3cc8e05b/download",
+          "isValid": true,
+          "baseUrl": "https://adronaut-production.up.railway.app",
+          "artifactId": "4328602f-8c47-4b09-8f99-dd0f3cc8e05b",
+          "pathStructure": "/artifact/{id}/download"
+        },
+        "timestamp": "2025-10-06T05:27:16.581Z",
+        "category": "download"
+      },
+      {
+        "name": "File size display: user-feedback.json",
+        "passed": true,
+        "details": "0.4 KB (406 bytes)",
+        "data": {
+          "originalSize": 406,
+          "displaySize": "0.4"
+        },
+        "timestamp": "2025-10-06T05:27:16.581Z",
+        "category": "download"
+      },
+      {
+        "name": "Date display format",
+        "passed": true,
+        "details": "Current date formats to: 10/5/2025",
+        "data": {
+          "currentDate": "2025-10-06T05:27:16.581Z",
+          "displayDate": "10/5/2025"
+        },
+        "timestamp": "2025-10-06T05:27:16.604Z",
+        "category": "download"
+      }
+    ]
+  },
+  "allTests": [
+    {
+      "name": "Backend service accessible",
+      "passed": true,
+      "details": "Service: Adronaut AutoGen Service",
+      "data": {
+        "message": "Adronaut AutoGen Service",
+        "status": "running"
+      },
+      "timestamp": "2025-10-06T05:26:24.191Z",
+      "category": "general"
+    },
+    {
+      "name": "Upload success: campaign-data.csv",
+      "passed": false,
+      "details": "Status: 0, Error: network timeout at: https://adronaut-production.up.railway.app/upload-direct?project_id=frontend-test-32181291-9cfc-4520-ae41-7c1d8d7eadbf&process_immediately=true",
+      "data": null,
+      "timestamp": "2025-10-06T05:26:54.223Z",
+      "category": "upload"
+    },
+    {
+      "name": "Upload success: user-feedback.json",
+      "passed": true,
+      "details": "Status: 200, Time: 22.32s, Size: 0.4 KB",
+      "data": {
+        "success": true,
+        "artifact_id": "4328602f-8c47-4b09-8f99-dd0f3cc8e05b",
+        "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+        "features": {
+          "target_audience": {
+            "description": "The data represents existing customers who have used the product. No specific demographic information like age, gender, or location is available in the provided artifact."
+          },
+          "brand_positioning": "The brand is positioned around high product quality and customer satisfaction, as evidenced by the high ratings for 'Product satisfaction' (4.2) and 'Recommend to others' (4.1). However, the lower 'Value for money' score (3.8) suggests it may not be positioned as a budget or value-leader.",
+          "channels": [
+            "Customer Surveys (explicitly used)",
+            "Email (likely channel for survey distribution)",
+            "In-App Messaging (potential channel for survey distribution)"
+          ],
+          "messaging": [
+            "Product Quality and Satisfaction",
+            "Value Proposition",
+            "Customer Loyalty and Advocacy (Word-of-Mouth)"
+          ],
+          "objectives": [
+            "Measure customer satisfaction and loyalty.",
+            "Identify areas for product and marketing improvement.",
+            "Gather data to inform retention strategies.",
+            "Assess the perceived value for money of the product."
+          ],
+          "budget_insights": {
+            "status": "No budget data available"
+          },
+          "metrics": {
+            "product_satisfaction_rating": 4.2,
+            "value_for_money_rating": 3.8,
+            "recommend_to_others_rating": 4.1,
+            "satisfaction_survey_responses": 342,
+            "value_survey_responses": 298,
+            "recommendation_survey_responses": 315
+          },
+          "competitive_insights": [
+            "The 'Value for money' score of 3.8 is the lowest metric, indicating a potential vulnerability where competitors might be perceived as offering a better price-to-value ratio.",
+            "The high satisfaction and recommendation scores suggest the core product is strong and competitive on a quality/feature basis."
+          ],
+          "recommendations": [
+            "Create a targeted marketing campaign or content that reinforces the product's value proposition to address the lower 'Value for money' score. Focus on features, durability, or ROI.",
+            "Leverage the high 'Product satisfaction' (4.2) and 'Recommend to others' (4.1) scores in marketing materials. Use testimonials, reviews, and case studies to build social proof.",
+            "Conduct a follow-up qualitative analysis (e.g., open-ended questions) to understand the specific reasons behind the 'Value for money' rating.",
+            "Implement a Net Promoter Score (NPS) program to formalize the 'Recommend to others' metric and segment customers into Promoters, Passives, and Detractors for targeted engagement."
+          ]
+        },
+        "processing_time": "immediate",
+        "method": "direct_llm_processing"
+      },
+      "timestamp": "2025-10-06T05:27:16.558Z",
+      "category": "upload"
+    },
+    {
+      "name": "No auto-analysis on upload",
+      "passed": false,
+      "details": "Upload responses contain extensive analysis data (auto-trigger detected)",
+      "data": {
+        "autoAnalysisDetected": true,
+        "sampleCount": 1
+      },
+      "timestamp": "2025-10-06T05:27:16.558Z",
+      "category": "manual_analysis"
+    },
+    {
+      "name": "Manual analysis endpoint accessible",
+      "passed": false,
+      "details": "Endpoint not accessible: Not Found",
+      "data": {
+        "ok": false,
+        "status": 404,
+        "statusText": "Not Found",
+        "data": {
+          "detail": "Not Found"
+        },
+        "accessible": false
+      },
+      "timestamp": "2025-10-06T05:27:16.581Z",
+      "category": "manual_analysis"
+    },
+    {
+      "name": "Analysis requires manual trigger",
+      "passed": true,
+      "details": "Analysis endpoint exists but requires explicit POST request (manual control confirmed)",
+      "data": {
+        "endpointFormat": "/analyze/{project_id}",
+        "method": "POST"
+      },
+      "timestamp": "2025-10-06T05:27:16.581Z",
+      "category": "manual_analysis"
+    },
+    {
+      "name": "Download URL format: user-feedback.json",
+      "passed": true,
+      "details": "URL: https://adronaut-production.up.railway.app/artifact/4328602f-8c47-4b09-8f99-dd0f3cc8e05b/download",
+      "data": {
+        "url": "https://adronaut-production.up.railway.app/artifact/4328602f-8c47-4b09-8f99-dd0f3cc8e05b/download",
+        "isValid": true,
+        "baseUrl": "https://adronaut-production.up.railway.app",
+        "artifactId": "4328602f-8c47-4b09-8f99-dd0f3cc8e05b",
+        "pathStructure": "/artifact/{id}/download"
+      },
+      "timestamp": "2025-10-06T05:27:16.581Z",
+      "category": "download"
+    },
+    {
+      "name": "File size display: user-feedback.json",
+      "passed": true,
+      "details": "0.4 KB (406 bytes)",
+      "data": {
+        "originalSize": 406,
+        "displaySize": "0.4"
+      },
+      "timestamp": "2025-10-06T05:27:16.581Z",
+      "category": "download"
+    },
+    {
+      "name": "Date display format",
+      "passed": true,
+      "details": "Current date formats to: 10/5/2025",
+      "data": {
+        "currentDate": "2025-10-06T05:27:16.581Z",
+        "displayDate": "10/5/2025"
+      },
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "download"
+    },
+    {
+      "name": "UX Workflow Step 1: Upload files successfully",
+      "passed": true,
+      "details": "1 files uploaded successfully",
+      "data": null,
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "workflow"
+    },
+    {
+      "name": "UX Workflow Step 2: No automatic analysis triggered",
+      "passed": false,
+      "details": "Analysis requires manual trigger (button click)",
+      "data": null,
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "workflow"
+    },
+    {
+      "name": "UX Workflow Step 3: Artifact IDs available for display",
+      "passed": true,
+      "details": "1 artifacts have valid IDs",
+      "data": null,
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "workflow"
+    },
+    {
+      "name": "UX Workflow Step 4: Download URLs can be constructed",
+      "passed": true,
+      "details": "Frontend can construct proper download URLs",
+      "data": null,
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "workflow"
+    },
+    {
+      "name": "UX Workflow Step 5: Manual analysis endpoint ready",
+      "passed": false,
+      "details": "Manual analysis button would work when clicked",
+      "data": null,
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "workflow"
+    },
+    {
+      "name": "Upload performance",
+      "passed": false,
+      "details": "Average: 22.32s, Max: 22.32s (target: <10s avg, <15s max)",
+      "data": {
+        "avgUploadTime": 22322,
+        "maxUploadTime": 22322,
+        "uploadCount": 1
+      },
+      "timestamp": "2025-10-06T05:27:16.604Z",
+      "category": "performance"
+    },
+    {
+      "name": "Invalid file handling",
+      "passed": true,
+      "details": "Empty file processed correctly",
+      "data": {
+        "ok": true,
+        "status": 200,
+        "statusText": "OK",
+        "data": {
+          "success": true,
+          "artifact_id": "4fa9220d-7968-4a6e-b31c-f2ee9fc1aa15",
+          "project_id": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+          "features": {
+            "target_audience": {
+              "age_range": "Not specified",
+              "gender": "Not specified",
+              "location": "Not specified",
+              "interests": "Not specified",
+              "summary": "No data available to determine the target audience as the provided artifact is empty."
+            },
+            "brand_positioning": "Not clearly defined due to the complete lack of content in the provided artifact.",
+            "channels": [
+              "Social Media Marketing (suggested)",
+              "Content Marketing (suggested)",
+              "Email Marketing (suggested)",
+              "Search Engine Marketing (SEM) (suggested)"
+            ],
+            "messaging": [
+              "Value Proposition (inferred)",
+              "Unique Selling Proposition (USP) (inferred)",
+              "Call to Action (inferred)"
+            ],
+            "objectives": [
+              "Increase Brand Awareness (inferred)",
+              "Generate Leads (inferred)",
+              "Drive Website Traffic (inferred)"
+            ],
+            "budget_insights": {
+              "status": "No budget data available in the provided artifact."
+            },
+            "metrics": {
+              "status": "No performance data available.",
+              "suggested_metrics": [
+                "Click-Through Rate (CTR)",
+                "Conversion Rate",
+                "Customer Acquisition Cost (CAC)",
+                "Return on Investment (ROI)",
+                "Engagement Rate"
+              ]
+            },
+            "competitive_insights": [
+              "No competitor information could be extracted from the empty artifact.",
+              "A general market recommendation is to conduct a competitive analysis to identify key players, their strategies, and market gaps."
+            ],
+            "recommendations": [
+              "The provided artifact 'invalid.txt' is empty and contains no information for analysis. Please provide a valid marketing document, such as a campaign brief, ad copy, or performance report.",
+              "Develop a foundational marketing strategy document that clearly defines the target audience, brand positioning, and key messaging themes.",
+              "Establish clear, measurable campaign objectives (KPIs) before launching any marketing initiatives to enable effective performance tracking."
+            ]
+          },
+          "processing_time": "immediate",
+          "method": "direct_llm_processing"
+        },
+        "uploadTime": 15270,
+        "headers": {
+          "content-length": "1922",
+          "content-type": "application/json",
+          "date": "Mon, 06 Oct 2025 05:26:23 GMT",
+          "server": "railway-edge",
+          "x-railway-edge": "railway/us-west2",
+          "x-railway-request-id": "oa11xkfGRx6fbK4Rn6XIxQ"
+        }
+      },
+      "timestamp": "2025-10-06T05:27:31.876Z",
+      "category": "error_handling"
+    },
+    {
+      "name": "Invalid download URL handling",
+      "passed": true,
+      "details": "Frontend can construct URLs even with invalid IDs (backend will handle rejection)",
+      "data": {
+        "url": "https://adronaut-production.up.railway.app/artifact/invalid-artifact-id/download",
+        "isValid": true,
+        "baseUrl": "https://adronaut-production.up.railway.app",
+        "artifactId": "invalid-artifact-id",
+        "pathStructure": "/artifact/{id}/download"
+      },
+      "timestamp": "2025-10-06T05:27:31.876Z",
+      "category": "error_handling"
+    },
+    {
+      "name": "Test cleanup",
+      "passed": true,
+      "details": "Temporary files removed",
+      "data": null,
+      "timestamp": "2025-10-06T05:27:31.879Z",
+      "category": "cleanup"
+    }
+  ]
+}
