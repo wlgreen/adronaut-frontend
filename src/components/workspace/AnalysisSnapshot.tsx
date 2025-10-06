@@ -88,7 +88,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
             </div>
             <div>
               <div className="grid grid-cols-2 gap-6">
-                {Object.entries(snapshot.performance_metrics).map(([key, value]) => (
+                {snapshot.performance_metrics && Object.entries(snapshot.performance_metrics).map(([key, value]) => (
                   <div key={key} className="text-center">
                     <p className="text-3xl font-mono font-bold text-emerald-400 mb-1">
                       {value}
@@ -98,6 +98,11 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                     </p>
                   </div>
                 ))}
+                {!snapshot.performance_metrics && (
+                  <div className="col-span-2 text-center py-4">
+                    <p className="text-slate-400">Performance metrics not available</p>
+                  </div>
+                )}
               </div>
             </div>
           </PremiumCard>
@@ -112,7 +117,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
             </div>
             <div>
               <div className="space-y-4">
-                {snapshot.recommendations.slice(0, 3).map((rec, index) => (
+                {snapshot.recommendations?.slice(0, 3).map((rec, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
                     <p className="text-sm text-gray-300 leading-relaxed">{rec}</p>
@@ -146,7 +151,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-6">
-              {snapshot.audience_segments.map((segment, index) => (
+              {snapshot.audience_segments?.map((segment, index) => (
                 <div key={index} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h5 className="font-semibold text-white text-base">{segment.name}</h5>
@@ -164,7 +169,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                     <div className="space-y-2">
                       <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Characteristics</p>
                       <div className="flex flex-wrap gap-2">
-                        {segment.characteristics.slice(0, 4).map((char, idx) => (
+                        {segment.characteristics?.slice(0, 4).map((char, idx) => (
                           <Badge key={idx} variant="info" className="text-xs">
                             {char}
                           </Badge>
@@ -201,7 +206,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-5">
-              {snapshot.content_themes.map((theme, index) => (
+              {snapshot.content_themes?.map((theme, index) => (
                 <div key={index} className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h5 className="font-semibold text-white text-base">{theme.theme}</h5>
@@ -213,7 +218,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   <div className="space-y-2">
                     <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Topics</p>
                     <div className="flex flex-wrap gap-2">
-                      {theme.keywords.slice(0, 6).map((keyword, idx) => (
+                      {theme.keywords?.slice(0, 6).map((keyword, idx) => (
                         <Badge key={idx} variant="default" className="text-xs">
                           {keyword}
                         </Badge>
@@ -255,7 +260,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-5">
-              {snapshot.geographic_insights.map((geo, index) => (
+              {snapshot.geographic_insights?.map((geo, index) => (
                 <div key={index} className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h5 className="font-semibold text-white text-base">{geo.region}</h5>
@@ -286,7 +291,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                 <div>
                   <p className="text-sm text-gray-400 mb-3 font-medium">Optimal Days</p>
                   <div className="flex flex-wrap gap-2">
-                    {snapshot.temporal_patterns.best_days.map((day, idx) => (
+                    {snapshot.temporal_patterns?.best_days?.map((day, idx) => (
                       <Badge key={idx} variant="success" className="text-xs">
                         {day}
                       </Badge>
@@ -297,7 +302,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                 <div>
                   <p className="text-sm text-gray-400 mb-3 font-medium">Peak Hours</p>
                   <div className="flex flex-wrap gap-2">
-                    {snapshot.temporal_patterns.best_hours.map((hour, idx) => (
+                    {snapshot.temporal_patterns?.best_hours?.map((hour, idx) => (
                       <Badge key={idx} variant="info" className="text-xs">
                         {hour}
                       </Badge>

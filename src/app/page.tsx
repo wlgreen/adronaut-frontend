@@ -16,7 +16,7 @@ export default function WorkspacePage() {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string; status: string}>>([])
   const [hasUploadedFiles, setHasUploadedFiles] = useState(false)
   const [artifacts, setArtifacts] = useState<Array<{
-    id: string
+    artifact_id: string
     filename: string
     file_size: number
     created_at: string
@@ -61,7 +61,7 @@ export default function WorkspacePage() {
 
         // Use supabaseLogger to query artifacts with full details
         const result = await supabaseLogger.select('artifacts', {
-          select: 'id, filename, file_size, created_at, project_id',
+          select: 'artifact_id, filename, file_size, created_at, project_id',
           eq: { project_id: projectId },
           orderBy: { column: 'created_at', ascending: false }
         })
@@ -72,7 +72,7 @@ export default function WorkspacePage() {
 
           // Update uploaded files count for display
           setUploadedFiles(result.data.map((file: any) => ({
-            id: file.id,
+            id: file.artifact_id,
             status: 'success'
           })))
         } else {
@@ -188,7 +188,7 @@ export default function WorkspacePage() {
                 ) : (
                   <div className="space-y-3">
                     {artifacts.map((artifact) => (
-                      <div key={artifact.id} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                      <div key={artifact.artifact_id} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
                         <div className="flex-1">
                           <h4 className="text-slate-100 font-medium">{artifact.filename}</h4>
                           <div className="flex items-center gap-4 mt-1 text-sm text-slate-400">
@@ -198,7 +198,7 @@ export default function WorkspacePage() {
                           </div>
                         </div>
                         <button
-                          onClick={() => window.open(`${process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL}/artifact/${artifact.id}/download`, '_blank')}
+                          onClick={() => window.open(`${process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL}/artifact/${artifact.artifact_id}/download`, '_blank')}
                           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors"
                         >
                           Download
