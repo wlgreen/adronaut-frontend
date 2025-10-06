@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-10-05T17:50:55.865Z",
+  "testConfig": {
+    "backendUrl": "https://adronaut-production.up.railway.app",
+    "projectId": "test-b4e914b3-eaf9-46d3-a08a-cad9c198aad4"
+  },
+  "summary": {
+    "total": 7,
+    "passed": 4,
+    "failed": 3,
+    "passRate": 57.1
+  },
+  "keyFindings": {
+    "backendConnectivity": true,
+    "fileUpload": false,
+    "databaseAccess": false
+  },
+  "tests": [
+    {
+      "name": "Backend reachable",
+      "passed": true,
+      "details": "HTTP 200"
+    },
+    {
+      "name": "Root endpoint accessible",
+      "passed": true,
+      "details": "HTTP 200, Response: {\"message\":\"Adronaut AutoGen Service\",\"status\":\"running\"}"
+    },
+    {
+      "name": "Upload endpoint exists",
+      "passed": true,
+      "details": "HTTP 405, Response: {\"detail\":\"Method Not Allowed\"}"
+    },
+    {
+      "name": "File upload",
+      "passed": false,
+      "details": "Error: Command failed: curl -s -w \"HTTPSTATUS:%{http_code}\" -X POST -F \"file=@/tmp/adronaut-test/test-upload.csv\" \"https://adronaut-production.up.railway.app/upload?project_id=test-b4e914b3-eaf9-46d3-a08a-cad9c198aad4\" --connect-timeout 30 --max-time 60"
+    },
+    {
+      "name": "Artifacts listing endpoint",
+      "passed": false,
+      "details": "HTTP 404, Response: {\"detail\":\"Not Found\"}"
+    },
+    {
+      "name": "Database test endpoint",
+      "passed": false,
+      "details": "HTTP 404, Response: {\"detail\":\"Not Found\"}"
+    },
+    {
+      "name": "Test cleanup",
+      "passed": true,
+      "details": "Temporary files removed"
+    }
+  ]
+}

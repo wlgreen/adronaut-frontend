@@ -1,0 +1,100 @@
+{
+  "timestamp": "2025-10-05T17:46:38.491Z",
+  "testConfig": {
+    "backendUrl": "https://adronaut-production.up.railway.app",
+    "projectId": "test-81c106e7-3e1a-49bb-a5b5-b52dc4d72d5a"
+  },
+  "summary": {
+    "total": 13,
+    "passed": 7,
+    "failed": 6,
+    "passRate": 53.8,
+    "workflowHealthy": false
+  },
+  "artifacts": [],
+  "tests": [
+    {
+      "name": "Backend health check",
+      "passed": false,
+      "details": "Network error: fetch is not a function",
+      "data": null
+    },
+    {
+      "name": "Created test file: test-data.csv",
+      "passed": true,
+      "details": "Size: 78 bytes",
+      "data": null
+    },
+    {
+      "name": "Created test file: config.json",
+      "passed": true,
+      "details": "Size: 149 bytes",
+      "data": null
+    },
+    {
+      "name": "Created test file: small-image.txt",
+      "passed": true,
+      "details": "Size: 39 bytes",
+      "data": null
+    },
+    {
+      "name": "Upload file: test-data.csv",
+      "passed": false,
+      "details": "HTTP 0: Network Error. Response: \"fetch is not a function\"",
+      "data": null
+    },
+    {
+      "name": "Upload file: config.json",
+      "passed": false,
+      "details": "HTTP 0: Network Error. Response: \"fetch is not a function\"",
+      "data": null
+    },
+    {
+      "name": "Upload file: small-image.txt",
+      "passed": false,
+      "details": "HTTP 0: Network Error. Response: \"fetch is not a function\"",
+      "data": null
+    },
+    {
+      "name": "Database storage verification",
+      "passed": false,
+      "details": "Network error: fetch is not a function",
+      "data": null
+    },
+    {
+      "name": "Upload performance",
+      "passed": true,
+      "details": "Upload time: 0ms (target: <30000ms)",
+      "data": null
+    },
+    {
+      "name": "Timing test upload success",
+      "passed": false,
+      "details": "Upload failed: 0",
+      "data": null
+    },
+    {
+      "name": "Invalid project ID handling",
+      "passed": true,
+      "details": "Status: 0, handles gracefully",
+      "data": null
+    },
+    {
+      "name": "Large file handling",
+      "passed": true,
+      "details": "Status: 0 - Rejected gracefully",
+      "data": null
+    },
+    {
+      "name": "Test cleanup",
+      "passed": true,
+      "details": "Temporary files removed",
+      "data": null
+    }
+  ],
+  "criticalWorkflowStatus": {
+    "criticalTestsPassed": 0,
+    "totalCriticalTests": 4,
+    "status": "ISSUES_DETECTED"
+  }
+}

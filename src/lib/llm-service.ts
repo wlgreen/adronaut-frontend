@@ -799,6 +799,30 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
       // Import supabaseLogger here to avoid circular dependency
       const { supabaseLogger } = await import('./supabase-logger')
 
+      // First try to get the latest strategy patch (where real insights are stored)
+      const strategyResult = await supabaseLogger.select('strategy_patches', {
+        select: '*',
+        eq: { project_id: projectId },
+        orderBy: { column: 'created_at', ascending: false },
+        limit: 1
+      })
+
+      if (strategyResult.data && strategyResult.data.length > 0) {
+        const patch = strategyResult.data[0]
+        const patchData = patch.patch_data
+
+        logger.info('Found strategy patch with real insights', {
+          projectId,
+          patchId: patch.id,
+          patchDataKeys: patchData ? Object.keys(patchData) : []
+        })
+
+        if (patchData && typeof patchData === 'object') {
+          return this.transformStrategyPatchToAnalysis(patchData)
+        }
+      }
+
+      // Fallback to analysis_snapshots if no strategy patch found
       const result = await supabaseLogger.select('analysis_snapshots', {
         select: '*',
         eq: { project_id: projectId },
@@ -816,12 +840,35 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
       }
 
       // If no real data found, return sample as fallback
-      logger.warn('No analysis snapshot found in database, using sample data', { projectId })
+      logger.warn('No analysis data found in database, using sample data', { projectId })
       return this.createSampleAnalysis()
 
     } catch (error) {
       logger.error('Error fetching analysis from database', { projectId, error })
       return this.createSampleAnalysis()
+    }
+  }
+
+  private transformStrategyPatchToAnalysis(patchData: any): AnalysisSnapshot {
+    logger.info('Transforming strategy patch data to analysis format', {
+      patchDataKeys: Object.keys(patchData),
+      hasValue: !!patchData.value,
+      hasPath: !!patchData.path
+    })
+
+    // The strategy patch has a different structure: path, value, operation
+    // Real insights are in the value and operation fields
+    const value = patchData.value || {}
+    const operation = patchData.operation || ''
+    const path = patchData.path || ''
+
+    return {
+      audience_segments: this.extractAudienceSegmentsFromStrategyPatch(value, path, operation),
+      content_themes: this.extractContentThemesFromStrategyPatch(value, path, operation),
+      performance_metrics: this.extractPerformanceMetricsFromStrategyPatch(value),
+      geographic_insights: this.extractGeographicInsightsFromStrategyPatch(value),
+      temporal_patterns: this.extractTemporalPatternsFromStrategyPatch(value),
+      recommendations: this.extractRecommendationsFromStrategyPatch(value, operation)
     }
   }
 
@@ -990,6 +1037,153 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
       'Develop segment-specific messaging',
       'Expand high-performing geographic regions'
     ]
+  }
+
+  // Strategy Patch Extraction Functions
+  private extractAudienceSegmentsFromStrategyPatch(value: any, path: string, operation: string): AnalysisSnapshot['audience_segments'] {
+    const segments = []
+
+    // Extract from the path and description
+    if (path.includes('discovery') || path.includes('target')) {
+      segments.push({
+        name: 'Discovery Phase Target',
+        characteristics: [value.description || 'Strategic audience identification in progress'],
+        size_estimate: 'Medium',
+        value_score: 0.8
+      })
+    }
+
+    // Extract from tasks if they mention audience/targeting
+    if (value.tasks && Array.isArray(value.tasks)) {
+      const audienceTask = value.tasks.find((task: string) =>
+        task.toLowerCase().includes('stakeholder') ||
+        task.toLowerCase().includes('interview') ||
+        task.toLowerCase().includes('target')
+      )
+
+      if (audienceTask) {
+        segments.push({
+          name: 'Stakeholder Insights',
+          characteristics: [audienceTask],
+          size_estimate: 'Small',
+          value_score: 0.9
+        })
+      }
+    }
+
+    if (segments.length === 0) {
+      return [{
+        name: 'Strategic Focus',
+        characteristics: ['Data-driven audience analysis underway'],
+        size_estimate: 'Medium',
+        value_score: 0.7
+      }]
+    }
+
+    return segments
+  }
+
+  private extractContentThemesFromStrategyPatch(value: any, path: string, operation: string): AnalysisSnapshot['content_themes'] {
+    const themes = []
+
+    // Extract from operation type
+    if (operation === 'INITIATE') {
+      themes.push({
+        theme: 'Strategic Initiative',
+        performance: 'high' as const,
+        keywords: [operation, 'launch', 'implementation']
+      })
+    }
+
+    // Extract from path
+    if (path.includes('discovery')) {
+      themes.push({
+        theme: 'Discovery Phase',
+        performance: 'high' as const,
+        keywords: ['research', 'analysis', 'data collection']
+      })
+    }
+
+    // Extract themes from tasks
+    if (value.tasks && Array.isArray(value.tasks)) {
+      value.tasks.forEach((task: string, index: number) => {
+        if (index < 3) { // Limit to first 3 tasks
+          const keywords = task.split(' ').slice(0, 3)
+          themes.push({
+            theme: `Task ${index + 1}`,
+            performance: 'medium' as const,
+            keywords: keywords
+          })
+        }
+      })
+    }
+
+    if (themes.length === 0) {
+      return [{
+        theme: 'Strategic Analysis',
+        performance: 'high' as const,
+        keywords: ['strategic', 'analysis', 'planning']
+      }]
+    }
+
+    return themes.slice(0, 5)
+  }
+
+  private extractPerformanceMetricsFromStrategyPatch(value: any): AnalysisSnapshot['performance_metrics'] {
+    return {
+      conversion_rate: 'Analysis Pending',
+      engagement_rate: 'Discovery Phase',
+      cost_per_acquisition: 'Data Collection',
+      roi: 'TBD'
+    }
+  }
+
+  private extractGeographicInsightsFromStrategyPatch(value: any): AnalysisSnapshot['geographic_insights'] {
+    return [
+      {
+        region: 'Primary Market',
+        performance: 'medium' as const,
+        opportunity: 'Data collection and analysis in progress'
+      }
+    ]
+  }
+
+  private extractTemporalPatternsFromStrategyPatch(value: any): AnalysisSnapshot['temporal_patterns'] {
+    return {
+      best_days: ['Pending Analysis'],
+      best_hours: ['Data Collection Phase'],
+      seasonal_trends: 'Analysis in progress - requires historical data'
+    }
+  }
+
+  private extractRecommendationsFromStrategyPatch(value: any, operation: string): string[] {
+    const recommendations = []
+
+    // Add the operation as primary recommendation
+    if (operation) {
+      recommendations.push(`${operation}: ${value.description || 'Strategic action required'}`)
+    }
+
+    // Add tasks as recommendations
+    if (value.tasks && Array.isArray(value.tasks)) {
+      recommendations.push(...value.tasks.slice(0, 4))
+    }
+
+    // Add priority information
+    if (value.priority) {
+      recommendations.push(`Priority Level: ${value.priority}`)
+    }
+
+    if (recommendations.length === 0) {
+      return [
+        'Initiate comprehensive data collection',
+        'Conduct stakeholder interviews',
+        'Analyze historical performance data',
+        'Develop data-driven strategy framework'
+      ]
+    }
+
+    return recommendations.slice(0, 6)
   }
 }
 

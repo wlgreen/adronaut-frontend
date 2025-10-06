@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-10-06T04:53:16.846Z",
+  "summary": {
+    "total": 5,
+    "passed": 3,
+    "failed": 2,
+    "passRate": 60
+  },
+  "keyFindings": {
+    "fileUpload": true,
+    "databaseStorage": false,
+    "performance": true
+  },
+  "uploadedArtifacts": [
+    {
+      "projectId": "f5b370e0-7225-4650-bfd2-d7d38dabf860",
+      "artifactId": "5200415e-5e45-4fbd-a21f-05d4d403a8fc",
+      "backendProjectId": "b2c45411-a852-4d22-8a3b-a8dfb930dc77",
+      "uploadTime": 1750
+    }
+  ],
+  "tests": [
+    {
+      "name": "File upload successful",
+      "passed": true,
+      "details": "Response: {\"success\":true,\"artifact_id\":\"5200415e-5e45-4fbd-a21f-05d4d403a8fc\",\"project_id\":\"b2c45411-a852-4d22-8a3b-a8dfb930dc77\"} (1750ms)"
+    },
+    {
+      "name": "Database verification test",
+      "passed": false,
+      "details": "Error: Command failed: cd /Users/liangwang/adronaut/web && node /tmp/supabase-test.js\nnode:internal/modules/cjs/loader:1386\n  throw err;\n  ^\n\nError: Cannot find module '@supabase/supabase-js'\nRequire stack:\n- /private/tmp/supabase-test.js\n    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)\n    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)\n    at Function._load (node:internal/modules/cjs/loader:1192:37)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)\n    at Module.require (node:internal/modules/cjs/loader:1463:12)\n    at require (node:internal/modules/helpers:147:16)\n    at Object.<anonymous> (/private/tmp/supabase-test.js:2:32)\n    at Module._compile (node:internal/modules/cjs/loader:1706:14) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [ '/private/tmp/supabase-test.js' ]\n}\n\nNode.js v22.20.0\n"
+    },
+    {
+      "name": "Artifact metadata complete: 5200415e-5e45-4fbd-a21f-05d4d403a8fc",
+      "passed": true,
+      "details": "artifact_id: 5200415e-5e45-4fbd-a21f-05d4d403a8fc, project_id: b2c45411-a852-4d22-8a3b-a8dfb930dc77"
+    },
+    {
+      "name": "Project ID consistency: 5200415e-5e45-4fbd-a21f-05d4d403a8fc",
+      "passed": false,
+      "details": "Frontend: f5b370e0-7225-4650-bfd2-d7d38dabf860, Backend: b2c45411-a852-4d22-8a3b-a8dfb930dc77"
+    },
+    {
+      "name": "Upload performance acceptable",
+      "passed": true,
+      "details": "Average upload time: 1750ms (target: <30000ms)"
+    }
+  ]
+}
