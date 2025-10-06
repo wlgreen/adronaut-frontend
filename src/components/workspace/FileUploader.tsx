@@ -22,6 +22,7 @@ interface UploadedFile {
 
 interface FileUploaderProps {
   onUploadComplete: (files: UploadedFile[]) => void
+  onProjectIdUpdate?: (projectId: string) => void
   maxFiles?: number
   acceptedFileTypes?: string[]
   projectId: string
@@ -29,6 +30,7 @@ interface FileUploaderProps {
 
 export function FileUploader({
   onUploadComplete,
+  onProjectIdUpdate,
   maxFiles = 10,
   acceptedFileTypes = ['.csv', '.json', '.pdf', '.png', '.jpg', '.jpeg'],
   projectId
@@ -91,8 +93,8 @@ export function FileUploader({
         const formData = new FormData()
         formData.append('file', fileData.file)
 
-        // Upload to backend
-        const uploadResponse = await fetch(`${BACKEND_URL}/upload?project_id=${projectId}`, {
+        // Upload to backend using faster direct endpoint
+        const uploadResponse = await fetch(`${BACKEND_URL}/upload-direct?project_id=${projectId}&process_immediately=true`, {
           method: 'POST',
           body: formData
         })
@@ -103,6 +105,11 @@ export function FileUploader({
         }
 
         const uploadResult = await uploadResponse.json()
+
+        // Update project ID if the backend returned a different one
+        if (uploadResult.project_id && uploadResult.project_id !== projectId && onProjectIdUpdate) {
+          onProjectIdUpdate(uploadResult.project_id)
+        }
 
         // Update progress to 100%
         setUploadedFiles(prev =>

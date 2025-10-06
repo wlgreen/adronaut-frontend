@@ -84,6 +84,13 @@ export default function WorkspacePage() {
     }, 0)
   }
 
+  const handleProjectIdUpdate = (newProjectId: string) => {
+    setProjectId(newProjectId)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('adronaut_project_id', newProjectId)
+    }
+  }
+
   // Separate effect to handle analysis triggering
   useEffect(() => {
     if (uploadedFiles.length > 0 && !analysisSnapshot && !isAnalyzing && hasUploadedFiles) {
@@ -143,6 +150,7 @@ export default function WorkspacePage() {
 
           <FileUploader
             onUploadComplete={handleUploadComplete}
+            onProjectIdUpdate={handleProjectIdUpdate}
             maxFiles={10}
             acceptedFileTypes={['.csv', '.json', '.pdf', '.png', '.jpg', '.jpeg']}
             projectId={projectId}
