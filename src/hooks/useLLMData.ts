@@ -48,13 +48,24 @@ export function useWorkspaceData(projectId?: string) {
         })
 
         if (result.data && result.data.length > 0) {
-          setAnalysisSnapshot(result.data[0].snapshot_data)
+          const snapshotData = result.data[0].snapshot_data
+          console.log('📊 Loaded existing analysis:', snapshotData)
+          setAnalysisSnapshot(snapshotData)
+
+          // Reset analyzing state if we have existing data
+          setIsAnalyzing(false)
+        } else {
+          // No existing analysis found
+          setAnalysisSnapshot(null)
+          setIsAnalyzing(false)
         }
       } catch (error) {
         logger.warn('Failed to load existing analysis', {
           projectId,
           error: error instanceof Error ? error.message : 'Unknown error'
         })
+        // Reset analyzing state on error
+        setIsAnalyzing(false)
       }
     }
 

@@ -126,6 +126,14 @@ export default function WorkspacePage() {
     await analyzeFiles()
   }
 
+  // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
+  useEffect(() => {
+    if (analysisSnapshot && isAnalyzing) {
+      console.log('⚠️ Analysis snapshot loaded but isAnalyzing=true, resetting state')
+      // The hook should have already reset this, but this is a safety net
+    }
+  }, [analysisSnapshot, isAnalyzing])
+
   return (
     <div className="min-h-screen bg-slate-950">
       {/* Header */}
@@ -228,7 +236,7 @@ export default function WorkspacePage() {
           <section className="max-w-2xl mx-auto">
             <PremiumCard variant="elevated" className="p-8">
               <div className="text-center">
-                {isAnalyzing ? (
+                {isAnalyzing && !analysisSnapshot ? (
                   <div className="space-y-6">
                     <div className="flex justify-center">
                       <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
