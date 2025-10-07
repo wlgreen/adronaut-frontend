@@ -838,16 +838,21 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
             step: data.current_step
           })
 
-          // Update progress callback
-          if (onProgress && data.current_step) {
-            const stepLabels: Record<string, string> = {
-              'INGEST': 'Loading artifacts...',
-              'FEATURES': 'Extracting features...',
-              'INSIGHTS': 'Generating insights...',
-              'PATCH_PROPOSED': 'Creating strategy...',
-              'HITL_PATCH': 'Awaiting approval...',
+          // Update progress callback with status_message from backend
+          if (onProgress) {
+            // Use status_message if available, otherwise fall back to step labels
+            if (data.status_message) {
+              onProgress(data.status_message)
+            } else if (data.current_step) {
+              const stepLabels: Record<string, string> = {
+                'INGEST': 'Loading artifacts...',
+                'FEATURES': 'Feature extraction...',
+                'INSIGHTS': 'Insights building...',
+                'PATCH_PROPOSED': 'Strategy building...',
+                'HITL_PATCH': 'Awaiting approval...',
+              }
+              onProgress(stepLabels[data.current_step] || data.current_step)
             }
-            onProgress(stepLabels[data.current_step] || data.current_step)
           }
 
           if (data.status === 'completed') {
