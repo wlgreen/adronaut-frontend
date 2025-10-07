@@ -150,14 +150,14 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            {hasUploadedFiles && !analysisSnapshot && !isAnalyzing && (
+            {hasUploadedFiles && !isAnalyzing && (
               <PremiumButton
                 variant="primary"
                 size="lg"
                 onClick={startAnalysis}
                 icon={<Play className="w-5 h-5" />}
               >
-                Start Analysis
+                {analysisSnapshot ? 'Re-analyze' : 'Start Analysis'}
               </PremiumButton>
             )}
           </div>
@@ -232,51 +232,51 @@ export default function WorkspacePage() {
         )}
 
         {/* Analysis Status */}
-        {hasUploadedFiles && !analysisSnapshot && (
+        {hasUploadedFiles && (
           <section className="max-w-2xl mx-auto">
-            <PremiumCard variant="elevated" className="p-8">
-              <div className="text-center">
-                {isAnalyzing && !analysisSnapshot ? (
-                  <div className="space-y-6">
-                    <div className="flex justify-center">
-                      <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-semibold text-slate-100">
-                        Analyzing Data Artifacts
-                      </h3>
-                      <p className="text-base font-mono text-indigo-400">
-                        AI agents extracting features and generating insights...
-                      </p>
-                    </div>
+            {isAnalyzing ? (
+              <PremiumCard variant="elevated" className="p-8">
+                <div className="text-center space-y-6">
+                  <div className="flex justify-center">
+                    <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-slate-100 mb-2">
-                        Ready for Analysis
-                      </h3>
-                      <p className="text-base leading-relaxed text-slate-400">
-                        Data artifacts uploaded successfully. Click the button below to start AI analysis.
-                      </p>
-                    </div>
-                    <PremiumButton
-                      onClick={startAnalysis}
-                      className="w-full sm:w-auto mx-auto"
-                      disabled={isAnalyzing}
-                    >
-                      <Play className="mr-2 h-4 w-4" />
-                      Start Analysis
-                    </PremiumButton>
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-semibold text-slate-100">
+                      {analysisSnapshot ? 'Re-analyzing Data Artifacts' : 'Analyzing Data Artifacts'}
+                    </h3>
+                    <p className="text-base font-mono text-indigo-400">
+                      AI agents extracting features and generating insights...
+                    </p>
                   </div>
-                )}
-              </div>
-            </PremiumCard>
+                </div>
+              </PremiumCard>
+            ) : !analysisSnapshot && (
+              <PremiumCard variant="elevated" className="p-8">
+                <div className="text-center space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-100 mb-2">
+                      Ready for Analysis
+                    </h3>
+                    <p className="text-base leading-relaxed text-slate-400">
+                      Data artifacts uploaded successfully. Click the button to start AI analysis.
+                    </p>
+                  </div>
+                  <PremiumButton
+                    onClick={startAnalysis}
+                    className="w-full sm:w-auto mx-auto"
+                    disabled={isAnalyzing}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Analysis
+                  </PremiumButton>
+                </div>
+              </PremiumCard>
+            )}
           </section>
         )}
 
         {/* Analysis Snapshot */}
-        {analysisSnapshot && (
+        {analysisSnapshot && !isAnalyzing && (
           <section className="space-y-8">
             <div className="text-center max-w-3xl mx-auto">
               <h2 className="text-3xl font-bold text-slate-100 mb-4">
