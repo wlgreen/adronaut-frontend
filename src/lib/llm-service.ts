@@ -170,9 +170,13 @@ export class LLMService {
 
       // If we got a run_id, use SSE to monitor progress
       if (startResult?.run_id) {
+        console.log('✅ [analyzeUploadedFiles] Got run_id:', startResult.run_id)
+        console.log('🔌 [analyzeUploadedFiles] Starting SSE monitoring...')
         await this.monitorWorkflowWithSSE(startResult.run_id, projectId)
       } else {
         // If start failed, wait and check database directly
+        console.log('⚠️ [analyzeUploadedFiles] No run_id available, using database polling fallback')
+        console.log('🔍 [analyzeUploadedFiles] Error was:', startError?.message)
         logger.info('No run_id available, polling database for completion', { projectId })
         await this.pollDatabaseForCompletion(projectId, 30) // Poll for 5 minutes
       }
@@ -880,20 +884,25 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
   }
 
   private async pollDatabaseForCompletion(projectId: string, maxAttempts: number): Promise<void> {
+    console.log(`🔍 [DB Polling] Starting database polling for ${maxAttempts} attempts (${maxAttempts * 10}s total)`)
     logger.info('Polling database for workflow completion', { projectId, maxAttempts })
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      console.log(`🔍 [DB Polling] Attempt ${attempt + 1}/${maxAttempts} - Checking database...`)
       const completed = await this.checkDatabaseForCompletion(projectId, 'no-run-id')
 
       if (completed) {
+        console.log(`✅ [DB Polling] Workflow completion detected! (attempt ${attempt + 1})`)
         logger.info('Workflow completion detected in database', { projectId, attempt })
         return
       }
 
+      console.log(`⏳ [DB Polling] Not complete yet, waiting 10 seconds... (attempt ${attempt + 1}/${maxAttempts})`)
       logger.info('Workflow not yet complete, waiting...', { projectId, attempt, maxAttempts })
       await new Promise(resolve => setTimeout(resolve, 10000)) // Wait 10 seconds
     }
 
+    console.error(`❌ [DB Polling] Timeout after ${maxAttempts} attempts`)
     throw new Error('Workflow completion polling timeout')
   }
 
@@ -989,6 +998,7 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
     try {
       const { supabaseLogger } = await import('./supabase-logger')
 
+      console.log('🔍 [DB Check] Querying analysis_snapshots for project:', projectId)
       // Check for analysis snapshot
       const snapshotResult = await supabaseLogger.select('analysis_snapshots', {
         select: 'created_at',
@@ -997,24 +1007,42 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
         limit: 1
       })
 
+      console.log('🔍 [DB Check] Query result:', {
+        hasData: !!snapshotResult.data,
+        rowCount: snapshotResult.data?.length || 0
+      })
+
       if (snapshotResult.data && snapshotResult.data.length > 0) {
         const snapshot = snapshotResult.data[0]
         const snapshotTime = new Date(snapshot.created_at).getTime()
         const now = Date.now()
+        const ageSeconds = Math.floor((now - snapshotTime) / 1000)
+
+        console.log('🔍 [DB Check] Snapshot found:', {
+          created_at: snapshot.created_at,
+          ageSeconds,
+          isRecent: ageSeconds < 300
+        })
 
         // If snapshot was created in the last 5 minutes, consider workflow complete
         if (now - snapshotTime < 5 * 60 * 1000) {
+          console.log(`✅ [DB Check] Recent snapshot found (${ageSeconds}s old) - marking as complete`)
           logger.info('Recent analysis snapshot found in database', {
             projectId,
             runId,
-            snapshotAge: Math.floor((now - snapshotTime) / 1000)
+            snapshotAge: ageSeconds
           })
           return true
+        } else {
+          console.log(`⏰ [DB Check] Snapshot too old (${ageSeconds}s) - not considering as complete`)
         }
+      } else {
+        console.log('❌ [DB Check] No snapshot found in database yet')
       }
 
       return false
     } catch (error) {
+      console.error('❌ [DB Check] Error querying database:', error)
       logger.warn('Error checking database for completion', { projectId, runId, error })
       return false
     }
