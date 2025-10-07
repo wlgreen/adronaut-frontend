@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Rocket, Play } from 'lucide-react'
+import { Rocket, Play, Trash2 } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { FileUploader } from '@/components/workspace/FileUploader'
 import { AnalysisSnapshot } from '@/components/workspace/AnalysisSnapshot'
@@ -22,6 +22,8 @@ export default function WorkspacePage() {
     created_at: string
   }>>([])
   const [artifactsLoading, setArtifactsLoading] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ artifactId: string; filename: string } | null>(null)
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null)
   const [projectId, setProjectId] = useState<string>(() => {
     // Generate or retrieve project ID
     if (typeof window !== 'undefined') {
@@ -141,6 +143,42 @@ export default function WorkspacePage() {
     }
   }
 
+  const handleDeleteArtifact = async (artifactId: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL}/artifact/${artifactId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete artifact')
+      }
+
+      // Show success message
+      const deletedFilename = deleteConfirm?.filename || 'Artifact'
+      setDeleteSuccess(`${deletedFilename} deleted successfully`)
+      setTimeout(() => setDeleteSuccess(null), 3000)
+
+      // Refresh artifacts list
+      const result = await supabaseLogger.select('artifacts', {
+        select: 'artifact_id, filename, file_size, created_at, project_id',
+        eq: { project_id: projectId },
+        orderBy: { column: 'created_at', ascending: false }
+      })
+
+      if (result.data) {
+        setArtifacts(result.data)
+        if (result.data.length === 0) {
+          setHasUploadedFiles(false)
+          setUploadedFiles([])
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete artifact:', error)
+    } finally {
+      setDeleteConfirm(null)
+    }
+  }
+
   // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
   useEffect(() => {
     console.log('📊 [Workspace] State changed:', {
@@ -238,12 +276,21 @@ export default function WorkspacePage() {
                             <span>{new Date(artifact.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
-                        <button
-                          onClick={() => window.open(`${process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL}/artifact/${artifact.artifact_id}/download`, '_blank')}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors"
-                        >
-                          Download
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => window.open(`${process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL}/artifact/${artifact.artifact_id}/download`, '_blank')}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors"
+                          >
+                            Download
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm({ artifactId: artifact.artifact_id, filename: artifact.filename })}
+                            className="p-2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-slate-100 rounded-md transition-colors"
+                            title="Delete artifact"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -346,6 +393,44 @@ export default function WorkspacePage() {
           </section>
         )}
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-xl font-semibold text-slate-100 mb-3">
+              Confirm Deletion
+            </h3>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to delete <span className="font-medium text-slate-100">{deleteConfirm.filename}</span>?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteArtifact(deleteConfirm.artifactId)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message Toast */}
+      {deleteSuccess && (
+        <div className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3">
+          <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+            ✓
+          </div>
+          <span className="font-medium">{deleteSuccess}</span>
+        </div>
+      )}
     </div>
   )
 }
