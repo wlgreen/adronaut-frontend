@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Rocket, Play } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { FileUploader } from '@/components/workspace/FileUploader'
@@ -92,15 +92,26 @@ export default function WorkspacePage() {
     checkUploadedFiles()
   }, [projectId])
 
-  const handleUploadComplete = (files: Array<{id: string; status: string}>) => {
-    // Use setTimeout to defer state updates to avoid rendering conflicts
-    setTimeout(() => {
-      setUploadedFiles(files)
-      if (files.length > 0) {
-        setHasUploadedFiles(true)
+  const handleUploadComplete = useCallback(async (files: Array<{id: string; status: string}>) => {
+    // Optimistic update: immediately mark as uploaded to prevent blinking
+    setHasUploadedFiles(true)
+    setUploadedFiles(files)
+
+    // Refresh artifacts list in background without showing loading state
+    try {
+      const result = await supabaseLogger.select('artifacts', {
+        select: 'artifact_id, filename, file_size, created_at, project_id',
+        eq: { project_id: projectId },
+        orderBy: { column: 'created_at', ascending: false }
+      })
+
+      if (result.data && result.data.length > 0) {
+        setArtifacts(result.data)
       }
-    }, 0)
-  }
+    } catch (error) {
+      console.warn('Could not refresh artifacts after upload:', error)
+    }
+  }, [projectId])
 
   const handleProjectIdUpdate = (newProjectId: string) => {
     setProjectId(newProjectId)

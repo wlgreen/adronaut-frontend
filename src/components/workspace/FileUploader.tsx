@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { clsx } from 'clsx'
 import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react'
@@ -37,21 +37,30 @@ export function FileUploader({
 }: FileUploaderProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const notifiedFilesRef = useRef<Set<string>>(new Set())
 
   // Effect to notify parent when files are uploaded successfully
   useEffect(() => {
     const successfulFiles = uploadedFiles.filter(f => f.status === 'success')
-    if (successfulFiles.length > 0 && !isUploading) {
-      // Use setTimeout to prevent blocking navigation
-      const timeout = setTimeout(() => {
-        onUploadComplete(successfulFiles)
-      }, 100)
+    const newSuccessfulFiles = successfulFiles.filter(f => !notifiedFilesRef.current.has(f.id))
 
-      return () => clearTimeout(timeout)
+    if (newSuccessfulFiles.length > 0 && !isUploading) {
+      // Mark these files as notified
+      newSuccessfulFiles.forEach(f => notifiedFilesRef.current.add(f.id))
+
+      // Notify parent immediately (no setTimeout to prevent blinking)
+      onUploadComplete(successfulFiles)
     }
   }, [uploadedFiles, isUploading, onUploadComplete])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    console.log('🎯 onDrop called with:', {
+      filesCount: acceptedFiles.length,
+      projectId,
+      projectIdType: typeof projectId,
+      projectIdValue: projectId
+    })
+
     if (uploadedFiles.length + acceptedFiles.length > maxFiles) {
       alert(`Maximum ${maxFiles} files allowed`)
       return
@@ -70,15 +79,22 @@ export function FileUploader({
 
     // Use backend service for file uploads
     const BACKEND_URL = process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL || 'https://adronaut-production.up.railway.app'
+    console.log('🔧 Backend URL:', BACKEND_URL)
 
     // Upload files to backend service
     for (const fileData of newFiles) {
       try {
+        // Validate projectId
+        if (!projectId || projectId.trim() === '') {
+          throw new Error('Project ID is missing or invalid')
+        }
+
         const artifactId = uuidv4()
         const fileExtension = fileData.file.name.split('.').pop()
         const storagePath = `${projectId}/${artifactId}.${fileExtension}`
 
         // Upload to backend service
+        console.log(`📤 Uploading file: ${fileData.file.name} (${(fileData.file.size / 1024).toFixed(2)} KB)`)
 
         // Update progress to 25%
         setUploadedFiles(prev =>
@@ -93,11 +109,23 @@ export function FileUploader({
         const formData = new FormData()
         formData.append('file', fileData.file)
 
+        // Build upload URL
+        const uploadUrl = `${BACKEND_URL}/upload-direct?project_id=${encodeURIComponent(projectId)}&process_immediately=false`
+        console.log(`🔗 Upload URL: ${uploadUrl}`)
+
         // Upload to backend using direct endpoint without immediate processing
-        const uploadResponse = await fetch(`${BACKEND_URL}/upload-direct?project_id=${projectId}&process_immediately=false`, {
-          method: 'POST',
-          body: formData
-        })
+        let uploadResponse
+        try {
+          console.log('⏳ Fetching...')
+          uploadResponse = await fetch(uploadUrl, {
+            method: 'POST',
+            body: formData
+          })
+          console.log('✅ Fetch completed:', uploadResponse.status, uploadResponse.statusText)
+        } catch (fetchError) {
+          console.error('❌ Fetch failed:', fetchError)
+          throw new Error(`Network error: ${fetchError instanceof Error ? fetchError.message : 'Could not reach backend server'}`)
+        }
 
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text()
@@ -106,7 +134,8 @@ export function FileUploader({
 
         const uploadResult = await uploadResponse.json()
 
-        // Update project ID if the backend returned a different one
+        // Keep the project ID stable; backend should respect provided ID
+        // Only update if explicitly different and callback provided
         if (uploadResult.project_id && uploadResult.project_id !== projectId && onProjectIdUpdate) {
           onProjectIdUpdate(uploadResult.project_id)
         }
@@ -129,13 +158,36 @@ export function FileUploader({
         continue
 
       } catch (error) {
-        console.error('Upload error details:', {
-          error,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        // Enhanced error logging for debugging
+        const errorString = JSON.stringify(error, Object.getOwnPropertyNames(error))
+        const errorDetails = {
+          errorStringified: errorString,
+          errorType: typeof error,
+          errorConstructor: error?.constructor?.name,
+          errorMessage: error instanceof Error ? error.message : String(error),
           errorStack: error instanceof Error ? error.stack : undefined,
+          errorToString: error?.toString(),
           fileName: fileData.file.name,
-          projectId
-        })
+          projectId,
+          backendUrl: BACKEND_URL,
+          timestamp: new Date().toISOString()
+        }
+
+        console.error('❌ Upload error details:', errorDetails)
+        console.error('❌ Raw error object:', error)
+        console.error('❌ Error JSON:', errorString)
+
+        // Get user-friendly error message
+        let userMessage = 'Upload failed'
+        if (error instanceof Error) {
+          userMessage = error.message
+        } else if (error instanceof TypeError) {
+          userMessage = 'Network error - check backend connectivity'
+        } else if (typeof error === 'string') {
+          userMessage = error
+        } else {
+          userMessage = `Upload failed - see console for details (error type: ${typeof error})`
+        }
 
         setUploadedFiles(prev =>
           prev.map(f =>
@@ -143,7 +195,7 @@ export function FileUploader({
               ? {
                   ...f,
                   status: 'error' as const,
-                  error: error instanceof Error ? error.message : `Upload failed: ${JSON.stringify(error)}`
+                  error: userMessage
                 }
               : f
           )
