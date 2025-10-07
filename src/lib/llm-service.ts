@@ -114,7 +114,7 @@ export interface PerformanceAlert {
   created_at: string
 }
 
-const AUTOGEN_SERVICE_URL = process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL || 'http://localhost:8000'
+const AUTOGEN_SERVICE_URL = process.env.NEXT_PUBLIC_AUTOGEN_SERVICE_URL || 'https://adronaut-production.up.railway.app'
 
 export class LLMService {
   private static instance: LLMService
@@ -157,7 +157,7 @@ export class LLMService {
       // Fetch the real analysis results from the database
       const result = await this.fetchAnalysisFromDatabase(projectId)
       const duration = logger.endTimer(timer)
-      logger.info('Analysis completed with real results', { projectId, duration, segmentCount: result.audience_segments.length })
+      logger.info('Analysis completed with real results', { projectId, duration, segmentCount: result.audience_segments?.length || 0 })
       return result
 
     } catch (error) {
@@ -763,13 +763,16 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
   private async pollForWorkflowCompletion(runId: string, projectId: string): Promise<void> {
     const maxAttempts = 30 // 5 minutes with 10-second intervals
     let attempts = 0
+    let consecutiveErrors = 0
 
     while (attempts < maxAttempts) {
       try {
+        // Try to fetch status from backend
         const statusResponse = await fetch(`${AUTOGEN_SERVICE_URL}/autogen/run/status/${runId}`)
 
         if (statusResponse.ok) {
           const status = await statusResponse.json()
+          consecutiveErrors = 0 // Reset error counter on success
 
           if (status.status === 'completed') {
             logger.info('Workflow completed successfully', { runId, projectId, attempts })
@@ -777,21 +780,99 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
           } else if (status.status === 'failed') {
             throw new Error(`Workflow failed: ${status.error || 'Unknown error'}`)
           }
+
+          logger.info('Workflow still running', { runId, projectId, attempts, status: status.status, step: status.current_step })
+        } else if (statusResponse.status === 404) {
+          // 404 might mean workflow completed and was removed from active_runs
+          // Check database directly for completion
+          logger.info('Status endpoint returned 404, checking database directly', { runId, projectId, attempts })
+
+          const dbCheckResult = await this.checkDatabaseForCompletion(projectId, runId)
+          if (dbCheckResult) {
+            logger.info('Workflow found completed in database', { runId, projectId, attempts })
+            return
+          }
+
+          consecutiveErrors++
         }
 
-        // Wait 10 seconds before next attempt
+        // If we get too many consecutive errors, check database
+        if (consecutiveErrors >= 3) {
+          logger.info('Multiple errors, checking database for completion', { runId, projectId, attempts, consecutiveErrors })
+          const dbCheckResult = await this.checkDatabaseForCompletion(projectId, runId)
+          if (dbCheckResult) {
+            logger.info('Workflow found completed in database after errors', { runId, projectId, attempts })
+            return
+          }
+        }
+
+        // Wait before next attempt
         await new Promise(resolve => setTimeout(resolve, 10000))
         attempts++
 
-        logger.info('Polling workflow status', { runId, projectId, attempts, maxAttempts })
       } catch (error) {
         logger.warn('Error polling workflow status', { runId, projectId, attempts, error })
+        consecutiveErrors++
+
+        // Check database on error
+        if (consecutiveErrors >= 3) {
+          logger.info('Multiple errors, checking database for completion', { runId, projectId, attempts, consecutiveErrors })
+          const dbCheckResult = await this.checkDatabaseForCompletion(projectId, runId)
+          if (dbCheckResult) {
+            logger.info('Workflow found completed in database after errors', { runId, projectId, attempts })
+            return
+          }
+        }
+
         attempts++
         await new Promise(resolve => setTimeout(resolve, 5000))
       }
     }
 
+    // Final check in database before throwing timeout error
+    logger.info('Polling timeout, doing final database check', { runId, projectId })
+    const finalCheck = await this.checkDatabaseForCompletion(projectId, runId)
+    if (finalCheck) {
+      logger.info('Workflow found completed in database on final check', { runId, projectId })
+      return
+    }
+
     throw new Error(`Workflow polling timeout after ${maxAttempts} attempts`)
+  }
+
+  private async checkDatabaseForCompletion(projectId: string, runId: string): Promise<boolean> {
+    try {
+      const { supabaseLogger } = await import('./supabase-logger')
+
+      // Check for analysis snapshot
+      const snapshotResult = await supabaseLogger.select('analysis_snapshots', {
+        select: 'created_at',
+        eq: { project_id: projectId },
+        orderBy: { column: 'created_at', ascending: false },
+        limit: 1
+      })
+
+      if (snapshotResult.data && snapshotResult.data.length > 0) {
+        const snapshot = snapshotResult.data[0]
+        const snapshotTime = new Date(snapshot.created_at).getTime()
+        const now = Date.now()
+
+        // If snapshot was created in the last 5 minutes, consider workflow complete
+        if (now - snapshotTime < 5 * 60 * 1000) {
+          logger.info('Recent analysis snapshot found in database', {
+            projectId,
+            runId,
+            snapshotAge: Math.floor((now - snapshotTime) / 1000)
+          })
+          return true
+        }
+      }
+
+      return false
+    } catch (error) {
+      logger.warn('Error checking database for completion', { projectId, runId, error })
+      return false
+    }
   }
 
   private async fetchAnalysisFromDatabase(projectId: string): Promise<AnalysisSnapshot> {
