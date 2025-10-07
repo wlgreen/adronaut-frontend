@@ -827,10 +827,15 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
             cleanup()
             reject(new Error(`Workflow failed: ${data.error || 'Unknown error'}`))
           } else if (data.status === 'hitl_required') {
-            logger.info('Workflow requires HITL approval', { runId, projectId, step: data.current_step })
-            // For analysis, we don't expect HITL, so treat as error
+            logger.info('Workflow reached HITL checkpoint - analysis phase complete', {
+              runId,
+              projectId,
+              step: data.current_step
+            })
+            // HITL means analysis is done and waiting for human review
+            // This is a success state for the analysis phase
             cleanup()
-            reject(new Error('Workflow requires human approval - unexpected for analysis'))
+            resolve()
           }
         } catch (error) {
           logger.warn('Error parsing SSE message', { error, rawData: event.data })
@@ -891,6 +896,14 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
 
           if (status.status === 'completed') {
             logger.info('Workflow completed successfully', { runId, projectId, attempts })
+            return
+          } else if (status.status === 'hitl_required') {
+            logger.info('Workflow reached HITL checkpoint - analysis phase complete', {
+              runId,
+              projectId,
+              attempts,
+              step: status.current_step
+            })
             return
           } else if (status.status === 'failed') {
             throw new Error(`Workflow failed: ${status.error || 'Unknown error'}`)
