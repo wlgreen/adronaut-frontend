@@ -34,7 +34,7 @@ interface AnalysisSnapshotProps {
       best_hours: string[]
       seasonal_trends: string
     }
-    recommendations: string[]
+    recommendations: Array<string | { action?: string; recommendation?: string; [key: string]: any }>
   }
 }
 
@@ -117,13 +117,17 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
             </div>
             <div>
               <div className="space-y-4">
-                {snapshot.recommendations?.slice(0, 3).map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
-                    <p className="text-sm text-gray-300 leading-relaxed">{rec}</p>
-                  </div>
-                ))}
-                {snapshot.recommendations.length > 3 && (
+                {snapshot.recommendations?.slice(0, 3).map((rec, index) => {
+                  // Handle both string and object formats
+                  const text = typeof rec === 'string' ? rec : rec.recommendation || rec.action || JSON.stringify(rec)
+                  return (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
+                      <p className="text-sm text-gray-300 leading-relaxed">{text}</p>
+                    </div>
+                  )
+                })}
+                {snapshot.recommendations && snapshot.recommendations.length > 3 && (
                   <div className="pt-2 border-t border-space-300">
                     <p className="text-xs text-gray-400">+{snapshot.recommendations.length - 3} more recommendations</p>
                   </div>

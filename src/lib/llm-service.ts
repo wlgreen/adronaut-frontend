@@ -32,7 +32,7 @@ export interface AnalysisSnapshot {
     best_hours: string[]
     seasonal_trends: string
   }
-  recommendations: string[]
+  recommendations: Array<string | { action?: string; recommendation?: string; [key: string]: any }>
 }
 
 export interface Strategy {
