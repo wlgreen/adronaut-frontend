@@ -135,24 +135,47 @@ export class LLMService {
         operation: 'analyze_uploaded_files'
       })
 
-      // Start the AutoGen workflow on the backend
-      const startResponse = await fetch(`${AUTOGEN_SERVICE_URL}/autogen/run/start?project_id=${projectId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
+      // Start the AutoGen workflow on the backend with timeout and retry
+      let startResult: { success: boolean; run_id: string } | null = null
+      let startError: Error | null = null
 
-      if (!startResponse.ok) {
-        const errorText = await startResponse.text()
-        throw new Error(`Failed to start workflow: ${startResponse.status} ${startResponse.statusText} - ${errorText}`)
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+        const startResponse = await fetch(`${AUTOGEN_SERVICE_URL}/autogen/run/start?project_id=${projectId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!startResponse.ok) {
+          const errorText = await startResponse.text()
+          throw new Error(`Failed to start workflow: ${startResponse.status} ${startResponse.statusText} - ${errorText}`)
+        }
+
+        startResult = await startResponse.json()
+        logger.info('AutoGen workflow started', { projectId, runId: startResult.run_id })
+      } catch (error) {
+        startError = error instanceof Error ? error : new Error('Unknown error starting workflow')
+        logger.warn('Failed to start workflow or get run_id, will check database directly', {
+          projectId,
+          error: startError.message
+        })
       }
 
-      const startResult = await startResponse.json()
-      logger.info('AutoGen workflow started', { projectId, runId: startResult.run_id })
-
-      // Poll for completion and get real results from database
-      await this.pollForWorkflowCompletion(startResult.run_id, projectId)
+      // If we got a run_id, use SSE to monitor progress
+      if (startResult?.run_id) {
+        await this.monitorWorkflowWithSSE(startResult.run_id, projectId)
+      } else {
+        // If start failed, wait and check database directly
+        logger.info('No run_id available, polling database for completion', { projectId })
+        await this.pollDatabaseForCompletion(projectId, 30) // Poll for 5 minutes
+      }
 
       // Fetch the real analysis results from the database
       const result = await this.fetchAnalysisFromDatabase(projectId)
@@ -758,6 +781,98 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
         "Expand geographic targeting to emerging markets"
       ]
     }
+  }
+
+  private async monitorWorkflowWithSSE(runId: string, projectId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const maxDuration = 5 * 60 * 1000 // 5 minutes
+      const startTime = Date.now()
+
+      logger.info('Starting SSE connection for workflow monitoring', { runId, projectId })
+
+      const eventSource = new EventSource(`${AUTOGEN_SERVICE_URL}/events/${runId}`)
+
+      const cleanup = () => {
+        eventSource.close()
+        clearTimeout(timeoutHandle)
+      }
+
+      const timeoutHandle = setTimeout(() => {
+        logger.warn('SSE connection timeout, checking database', { runId, projectId })
+        cleanup()
+        // Check database before rejecting
+        this.checkDatabaseForCompletion(projectId, runId).then(completed => {
+          if (completed) {
+            resolve()
+          } else {
+            reject(new Error('Workflow monitoring timeout'))
+          }
+        })
+      }, maxDuration)
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          logger.info('SSE event received', {
+            runId: data.run_id,
+            status: data.status,
+            step: data.current_step
+          })
+
+          if (data.status === 'completed') {
+            logger.info('Workflow completed via SSE', { runId, projectId })
+            cleanup()
+            resolve()
+          } else if (data.status === 'failed') {
+            cleanup()
+            reject(new Error(`Workflow failed: ${data.error || 'Unknown error'}`))
+          } else if (data.status === 'hitl_required') {
+            logger.info('Workflow requires HITL approval', { runId, projectId, step: data.current_step })
+            // For analysis, we don't expect HITL, so treat as error
+            cleanup()
+            reject(new Error('Workflow requires human approval - unexpected for analysis'))
+          }
+        } catch (error) {
+          logger.warn('Error parsing SSE message', { error, rawData: event.data })
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        logger.warn('SSE connection error, checking database', { runId, projectId, error })
+        cleanup()
+
+        // Check database before rejecting
+        this.checkDatabaseForCompletion(projectId, runId).then(completed => {
+          if (completed) {
+            resolve()
+          } else {
+            // Fallback to polling if SSE fails
+            logger.info('SSE failed, falling back to polling', { runId, projectId })
+            this.pollForWorkflowCompletion(runId, projectId)
+              .then(resolve)
+              .catch(reject)
+          }
+        })
+      }
+    })
+  }
+
+  private async pollDatabaseForCompletion(projectId: string, maxAttempts: number): Promise<void> {
+    logger.info('Polling database for workflow completion', { projectId, maxAttempts })
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const completed = await this.checkDatabaseForCompletion(projectId, 'no-run-id')
+
+      if (completed) {
+        logger.info('Workflow completion detected in database', { projectId, attempt })
+        return
+      }
+
+      logger.info('Workflow not yet complete, waiting...', { projectId, attempt, maxAttempts })
+      await new Promise(resolve => setTimeout(resolve, 10000)) // Wait 10 seconds
+    }
+
+    throw new Error('Workflow completion polling timeout')
   }
 
   private async pollForWorkflowCompletion(runId: string, projectId: string): Promise<void> {
