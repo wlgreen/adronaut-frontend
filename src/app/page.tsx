@@ -43,6 +43,7 @@ export default function WorkspacePage() {
     analysisSnapshot,
     isAnalyzing,
     error,
+    currentStep,
     analyzeFiles
   } = useWorkspaceData(projectId)
 
@@ -123,7 +124,21 @@ export default function WorkspacePage() {
   // Auto-analysis removed - now manual only via button
 
   const startAnalysis = async () => {
-    await analyzeFiles()
+    console.log('🎯 [startAnalysis] Button clicked! Starting analysis flow...')
+    console.log('🎯 [startAnalysis] Current state:', {
+      projectId,
+      hasUploadedFiles,
+      isAnalyzing,
+      analysisSnapshot: !!analysisSnapshot
+    })
+
+    try {
+      console.log('🎯 [startAnalysis] Calling analyzeFiles()...')
+      await analyzeFiles()
+      console.log('🎯 [startAnalysis] analyzeFiles() completed successfully')
+    } catch (error) {
+      console.error('🎯 [startAnalysis] Error in analyzeFiles():', error)
+    }
   }
 
   // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
@@ -164,7 +179,7 @@ export default function WorkspacePage() {
                 onClick={startAnalysis}
                 icon={<Play className="w-5 h-5" />}
               >
-                {analysisSnapshot ? 'Re-analyze' : 'Start Analysis'}
+                Analyze
               </PremiumButton>
             )}
           </div>
@@ -249,10 +264,10 @@ export default function WorkspacePage() {
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-xl font-semibold text-slate-100">
-                      {analysisSnapshot ? 'Re-analyzing Data Artifacts' : 'Analyzing Data Artifacts'}
+                      Analyzing Data Artifacts
                     </h3>
                     <p className="text-base font-mono text-indigo-400">
-                      AI agents extracting features and generating insights...
+                      {currentStep || 'AI agents extracting features and generating insights...'}
                     </p>
                   </div>
                 </div>
@@ -274,7 +289,7 @@ export default function WorkspacePage() {
                     disabled={isAnalyzing}
                   >
                     <Play className="mr-2 h-4 w-4" />
-                    Start Analysis
+                    Analyze
                   </PremiumButton>
                 </div>
               </PremiumCard>

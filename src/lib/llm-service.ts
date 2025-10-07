@@ -126,7 +126,7 @@ export class LLMService {
     return LLMService.instance
   }
 
-  async analyzeUploadedFiles(projectId: string): Promise<AnalysisSnapshot> {
+  async analyzeUploadedFiles(projectId: string, onProgress?: (step: string) => void): Promise<AnalysisSnapshot> {
     const timer = logger.startTimer('LLM_ANALYZE_FILES')
 
     try {
@@ -179,12 +179,13 @@ export class LLMService {
       if (startResult?.run_id) {
         console.log('✅ [analyzeUploadedFiles] Got run_id:', startResult.run_id)
         console.log('🔌 [analyzeUploadedFiles] Starting SSE monitoring...')
-        await this.monitorWorkflowWithSSE(startResult.run_id, projectId)
+        await this.monitorWorkflowWithSSE(startResult.run_id, projectId, onProgress)
       } else {
         // If start failed, wait and check database directly
         console.log('⚠️ [analyzeUploadedFiles] No run_id available, using database polling fallback')
         console.log('🔍 [analyzeUploadedFiles] Error was:', startError?.message)
         logger.info('No run_id available, polling database for completion', { projectId })
+        if (onProgress) onProgress('Checking database for results...')
         await this.pollDatabaseForCompletion(projectId, 30) // Poll for 5 minutes
       }
 
@@ -794,7 +795,7 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
     }
   }
 
-  private async monitorWorkflowWithSSE(runId: string, projectId: string): Promise<void> {
+  private async monitorWorkflowWithSSE(runId: string, projectId: string, onProgress?: (step: string) => void): Promise<void> {
     return new Promise((resolve, reject) => {
       const maxDuration = 5 * 60 * 1000 // 5 minutes
       const startTime = Date.now()
@@ -836,6 +837,18 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
             status: data.status,
             step: data.current_step
           })
+
+          // Update progress callback
+          if (onProgress && data.current_step) {
+            const stepLabels: Record<string, string> = {
+              'INGEST': 'Loading artifacts...',
+              'FEATURES': 'Extracting features...',
+              'INSIGHTS': 'Generating insights...',
+              'PATCH_PROPOSED': 'Creating strategy...',
+              'HITL_PATCH': 'Awaiting approval...',
+            }
+            onProgress(stepLabels[data.current_step] || data.current_step)
+          }
 
           if (data.status === 'completed') {
             console.log('✅ [SSE] Workflow completed!')

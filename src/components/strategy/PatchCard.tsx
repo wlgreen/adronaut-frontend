@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, Edit3, Brain, AlertCircle, Code, Users, DollarSign } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/PremiumCard'
-import { PremiumPremiumButton } from '@/components/ui/PremiumPremiumButton'
+import { PremiumButton } from '@/components/ui/PremiumButton'
 import { Badge } from '@/components/ui/Badge'
 
 interface PatchCardProps {

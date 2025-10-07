@@ -37,6 +37,15 @@ interface StrategyOverviewProps {
 }
 
 export function StrategyOverview({ strategy }: StrategyOverviewProps) {
+  // Add comprehensive safety check for strategy object
+  if (!strategy) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-slate-400">No strategy data available</p>
+      </div>
+    )
+  }
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'danger'
@@ -70,7 +79,7 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {strategy.audience_targeting.segments.map((segment, index) => (
+          {strategy.audience_targeting?.segments?.map((segment, index) => (
             <div key={index} className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-white">{segment.name}</h4>
@@ -103,11 +112,16 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
                 </div>
               </div>
 
-              {index < strategy.audience_targeting.segments.length - 1 && (
+              {index < (strategy.audience_targeting?.segments?.length || 0) - 1 && (
                 <div className="border-t border-space-300" />
               )}
             </div>
           ))}
+          {(!strategy.audience_targeting?.segments || strategy.audience_targeting.segments.length === 0) && (
+            <div className="text-center py-8">
+              <p className="text-slate-400">No audience segments available</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -120,30 +134,42 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium text-gray-400 mb-2">Primary Message</h4>
-            <p className="text-white font-medium leading-relaxed">
-              "{strategy.messaging_strategy.primary_message}"
-            </p>
-          </div>
+          {strategy.messaging_strategy ? (
+            <>
+              <div>
+                <h4 className="text-sm font-medium text-gray-400 mb-2">Primary Message</h4>
+                <p className="text-white font-medium leading-relaxed">
+                  "{strategy.messaging_strategy.primary_message || 'No primary message available'}"
+                </p>
+              </div>
 
-          <div>
-            <h4 className="text-sm font-medium text-gray-400 mb-2">Tone</h4>
-            <Badge variant="info" className="capitalize">
-              {strategy.messaging_strategy.tone}
-            </Badge>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium text-gray-400 mb-2">Key Themes</h4>
-            <div className="flex flex-wrap gap-2">
-              {strategy.messaging_strategy.key_themes.map((theme, idx) => (
-                <Badge key={idx} variant="default" className="text-xs capitalize">
-                  {theme}
+              <div>
+                <h4 className="text-sm font-medium text-gray-400 mb-2">Tone</h4>
+                <Badge variant="info" className="capitalize">
+                  {strategy.messaging_strategy.tone || 'Default'}
                 </Badge>
-              ))}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium text-gray-400 mb-2">Key Themes</h4>
+                <div className="flex flex-wrap gap-2">
+                  {strategy.messaging_strategy.key_themes?.map((theme, idx) => (
+                    <Badge key={idx} variant="default" className="text-xs capitalize">
+                      {theme}
+                    </Badge>
+                  )) || (
+                    <Badge variant="default" className="text-xs">
+                      No themes available
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-slate-400">No messaging strategy available</p>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -156,50 +182,72 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium text-gray-400 mb-3">Channel Distribution</h4>
-            <div className="space-y-3">
-              {Object.entries(strategy.channel_strategy.budget_split).map(([channel, percentage]) => (
-                <div key={channel} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white">{formatChannelName(channel)}</span>
-                    <span className="text-neon-emerald font-mono">{percentage}</span>
-                  </div>
-                  <Progress
-                    value={parseInt(percentage.replace('%', ''))}
-                    variant="warning"
-                    className="h-1"
-                  />
+          {strategy.channel_strategy ? (
+            <>
+              <div>
+                <h4 className="text-sm font-medium text-gray-400 mb-3">Channel Distribution</h4>
+                <div className="space-y-3">
+                  {strategy.channel_strategy.budget_split ?
+                    Object.entries(strategy.channel_strategy.budget_split).map(([channel, percentage]) => (
+                      <div key={channel} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white">{formatChannelName(channel)}</span>
+                          <span className="text-neon-emerald font-mono">{percentage}</span>
+                        </div>
+                        <Progress
+                          value={parseInt(String(percentage).replace('%', ''))}
+                          variant="warning"
+                          className="h-1"
+                        />
+                      </div>
+                    )) : (
+                      <div className="text-center py-4">
+                        <p className="text-slate-400">No channel distribution available</p>
+                      </div>
+                    )
+                  }
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="border-t border-space-300 pt-4">
-            <h4 className="text-sm font-medium text-gray-400 mb-2">Optimal Schedule</h4>
-            <div className="space-y-2">
-              <div>
-                <p className="text-xs text-gray-500">Peak Days</p>
-                <div className="flex flex-wrap gap-1">
-                  {strategy.channel_strategy.scheduling.peak_days.map((day, idx) => (
-                    <Badge key={idx} variant="success" className="text-xs">
-                      {day}
-                    </Badge>
-                  ))}
+              <div className="border-t border-space-300 pt-4">
+                <h4 className="text-sm font-medium text-gray-400 mb-2">Optimal Schedule</h4>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs text-gray-500">Peak Days</p>
+                    <div className="flex flex-wrap gap-1">
+                      {strategy.channel_strategy.scheduling?.peak_days?.map((day, idx) => (
+                        <Badge key={idx} variant="success" className="text-xs">
+                          {day}
+                        </Badge>
+                      )) || (
+                        <Badge variant="default" className="text-xs">
+                          No peak days available
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Peak Hours</p>
+                    <div className="flex flex-wrap gap-1">
+                      {strategy.channel_strategy.scheduling?.peak_hours?.map((hour, idx) => (
+                        <Badge key={idx} variant="info" className="text-xs">
+                          {hour}
+                        </Badge>
+                      )) || (
+                        <Badge variant="default" className="text-xs">
+                          No peak hours available
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Peak Hours</p>
-                <div className="flex flex-wrap gap-1">
-                  {strategy.channel_strategy.scheduling.peak_hours.map((hour, idx) => (
-                    <Badge key={idx} variant="info" className="text-xs">
-                      {hour}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-slate-400">No channel strategy available</p>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -210,7 +258,7 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
             <DollarSign className="w-5 h-5 text-neon-emerald" />
             Budget Allocation
             <Badge variant="success" glow>
-              {strategy.budget_allocation.total_budget}
+              {strategy.budget_allocation?.total_budget || 'No budget set'}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -219,8 +267,8 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
             <div>
               <h4 className="text-sm font-medium text-gray-400 mb-4">Channel Breakdown</h4>
               <div className="space-y-4">
-                {strategy.budget_allocation.channel_breakdown ?
-                  Object.entries(strategy.budget_allocation.channel_breakdown).map(([channel, amount]) => (
+                {strategy.budget_allocation?.channel_breakdown ?
+                  Object.entries(strategy.budget_allocation?.channel_breakdown || {}).map(([channel, amount]) => (
                     <div key={channel} className="flex items-center justify-between p-3 rounded-lg bg-space-200/50">
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-neon-emerald" />
@@ -229,7 +277,7 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
                       <div className="text-right">
                         <p className="text-neon-emerald font-mono font-bold">{amount}</p>
                         <p className="text-xs text-gray-400">
-                          {getBudgetPercentage(amount, strategy.budget_allocation.total_budget)}%
+                          {getBudgetPercentage(amount, strategy.budget_allocation?.total_budget || '0')}%
                         </p>
                       </div>
                     </div>
@@ -250,7 +298,7 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
                 <div className="flex items-start gap-3">
                   <Target className="w-5 h-5 text-electric-500 mt-0.5" />
                   <p className="text-sm text-gray-300 leading-relaxed">
-                    {strategy.budget_allocation.optimization_strategy}
+                    {strategy.budget_allocation?.optimization_strategy || 'No optimization strategy available'}
                   </p>
                 </div>
               </div>

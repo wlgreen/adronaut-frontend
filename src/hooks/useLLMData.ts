@@ -8,6 +8,7 @@ export function useWorkspaceData(projectId?: string) {
   const [analysisSnapshot, setAnalysisSnapshot] = useState<AnalysisSnapshot | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentStep, setCurrentStep] = useState<string>('')
 
   const analyzeFiles = useCallback(async () => {
     if (!projectId) return
@@ -15,10 +16,14 @@ export function useWorkspaceData(projectId?: string) {
     console.log('🚀 [analyzeFiles] Starting analysis', { projectId })
     setIsAnalyzing(true)
     setError(null)
+    setCurrentStep('Starting analysis...')
 
     try {
       console.log('📡 [analyzeFiles] Calling llmService.analyzeUploadedFiles')
-      const snapshot = await llmService.analyzeUploadedFiles(projectId)
+      const snapshot = await llmService.analyzeUploadedFiles(projectId, (step: string) => {
+        console.log('📊 [analyzeFiles] Progress update:', step)
+        setCurrentStep(step)
+      })
       console.log('✅ [analyzeFiles] Analysis completed, snapshot received:', {
         hasAudienceSegments: !!snapshot.audience_segments,
         hasRecommendations: !!snapshot.recommendations,
@@ -43,6 +48,7 @@ export function useWorkspaceData(projectId?: string) {
     } finally {
       console.log('🏁 [analyzeFiles] Setting isAnalyzing to false')
       setIsAnalyzing(false)
+      setCurrentStep('')
     }
   }, [projectId])
 
@@ -88,6 +94,7 @@ export function useWorkspaceData(projectId?: string) {
     analysisSnapshot,
     isAnalyzing,
     error,
+    currentStep,
     analyzeFiles
   }
 }
