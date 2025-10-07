@@ -128,11 +128,18 @@ export default function WorkspacePage() {
 
   // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
   useEffect(() => {
+    console.log('📊 [Workspace] State changed:', {
+      hasUploadedFiles,
+      analysisSnapshot: !!analysisSnapshot,
+      isAnalyzing,
+      error: !!error
+    })
+
     if (analysisSnapshot && isAnalyzing) {
-      console.log('⚠️ Analysis snapshot loaded but isAnalyzing=true, resetting state')
+      console.log('⚠️ [Workspace] Analysis snapshot loaded but isAnalyzing=true, resetting state')
       // The hook should have already reset this, but this is a safety net
     }
-  }, [analysisSnapshot, isAnalyzing])
+  }, [analysisSnapshot, isAnalyzing, hasUploadedFiles, error])
 
   return (
     <div className="min-h-screen bg-slate-950">

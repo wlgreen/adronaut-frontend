@@ -12,12 +12,21 @@ export function useWorkspaceData(projectId?: string) {
   const analyzeFiles = useCallback(async () => {
     if (!projectId) return
 
+    console.log('🚀 [analyzeFiles] Starting analysis', { projectId })
     setIsAnalyzing(true)
     setError(null)
 
     try {
+      console.log('📡 [analyzeFiles] Calling llmService.analyzeUploadedFiles')
       const snapshot = await llmService.analyzeUploadedFiles(projectId)
+      console.log('✅ [analyzeFiles] Analysis completed, snapshot received:', {
+        hasAudienceSegments: !!snapshot.audience_segments,
+        hasRecommendations: !!snapshot.recommendations,
+        segmentCount: snapshot.audience_segments?.length
+      })
+
       setAnalysisSnapshot(snapshot)
+      console.log('📊 [analyzeFiles] Snapshot state updated')
 
       // Save to Supabase
       await supabaseLogger.upsert('analysis_snapshots', {
@@ -27,9 +36,12 @@ export function useWorkspaceData(projectId?: string) {
       }, {
         onConflict: 'project_id'
       })
+      console.log('💾 [analyzeFiles] Snapshot saved to Supabase')
     } catch (err) {
+      console.error('❌ [analyzeFiles] Analysis failed:', err)
       setError(err instanceof Error ? err.message : 'Analysis failed')
     } finally {
+      console.log('🏁 [analyzeFiles] Setting isAnalyzing to false')
       setIsAnalyzing(false)
     }
   }, [projectId])

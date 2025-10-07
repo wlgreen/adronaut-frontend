@@ -788,7 +788,8 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
       const maxDuration = 5 * 60 * 1000 // 5 minutes
       const startTime = Date.now()
 
-      logger.info('Starting SSE connection for workflow monitoring', { runId, projectId })
+      logger.info('🔌 [SSE] Starting SSE connection for workflow monitoring', { runId, projectId })
+      console.log('🔌 [SSE] Connecting to:', `${AUTOGEN_SERVICE_URL}/events/${runId}`)
 
       const eventSource = new EventSource(`${AUTOGEN_SERVICE_URL}/events/${runId}`)
 
@@ -813,6 +814,12 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
+          console.log('📨 [SSE] Event received:', {
+            runId: data.run_id,
+            status: data.status,
+            step: data.current_step,
+            timestamp: data.timestamp
+          })
           logger.info('SSE event received', {
             runId: data.run_id,
             status: data.status,
@@ -820,13 +827,16 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
           })
 
           if (data.status === 'completed') {
+            console.log('✅ [SSE] Workflow completed!')
             logger.info('Workflow completed via SSE', { runId, projectId })
             cleanup()
             resolve()
           } else if (data.status === 'failed') {
+            console.log('❌ [SSE] Workflow failed:', data.error)
             cleanup()
             reject(new Error(`Workflow failed: ${data.error || 'Unknown error'}`))
           } else if (data.status === 'hitl_required') {
+            console.log('⏸️ [SSE] HITL checkpoint reached - treating as complete for analysis')
             logger.info('Workflow reached HITL checkpoint - analysis phase complete', {
               runId,
               projectId,
@@ -836,22 +846,29 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
             // This is a success state for the analysis phase
             cleanup()
             resolve()
+          } else {
+            console.log('⏳ [SSE] Workflow in progress:', data.status, '-', data.current_step)
           }
         } catch (error) {
+          console.error('⚠️ [SSE] Error parsing message:', error, 'Raw data:', event.data)
           logger.warn('Error parsing SSE message', { error, rawData: event.data })
         }
       }
 
       eventSource.onerror = (error) => {
+        console.error('⚠️ [SSE] Connection error:', error)
         logger.warn('SSE connection error, checking database', { runId, projectId, error })
         cleanup()
 
+        console.log('🔍 [SSE] Checking database for completion after error...')
         // Check database before rejecting
         this.checkDatabaseForCompletion(projectId, runId).then(completed => {
           if (completed) {
+            console.log('✅ [SSE] Found completion in database after error')
             resolve()
           } else {
             // Fallback to polling if SSE fails
+            console.log('🔄 [SSE] SSE failed, falling back to HTTP polling')
             logger.info('SSE failed, falling back to polling', { runId, projectId })
             this.pollForWorkflowCompletion(runId, projectId)
               .then(resolve)
