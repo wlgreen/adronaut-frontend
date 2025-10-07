@@ -141,7 +141,10 @@ export class LLMService {
 
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout (backend responds in <1s)
+
+        console.log('🌐 [HTTP] Sending POST to /autogen/run/start...')
+        const startTime = Date.now()
 
         const startResponse = await fetch(`${AUTOGEN_SERVICE_URL}/autogen/run/start?project_id=${projectId}`, {
           method: 'POST',
@@ -152,6 +155,8 @@ export class LLMService {
         })
 
         clearTimeout(timeoutId)
+        const duration = Date.now() - startTime
+        console.log(`✅ [HTTP] Response received in ${duration}ms, status: ${startResponse.status}`)
 
         if (!startResponse.ok) {
           const errorText = await startResponse.text()
@@ -159,9 +164,11 @@ export class LLMService {
         }
 
         startResult = await startResponse.json()
+        console.log('✅ [HTTP] run_id received:', startResult.run_id)
         logger.info('AutoGen workflow started', { projectId, runId: startResult.run_id })
       } catch (error) {
         startError = error instanceof Error ? error : new Error('Unknown error starting workflow')
+        console.log('⚠️ [HTTP] Request failed, using database polling fallback')
         logger.warn('Failed to start workflow or get run_id, will check database directly', {
           projectId,
           error: startError.message
