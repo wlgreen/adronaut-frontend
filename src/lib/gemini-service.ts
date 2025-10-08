@@ -36,8 +36,8 @@ export class GeminiService {
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey)
-    // Use model from environment variable, default to gemini-2.5-pro
-    const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || 'gemini-exp-1206'
+    // Use model from environment variable, default to gemini-2.5-pro (stable, most advanced)
+    const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || 'gemini-2.5-pro'
     this.model = this.genAI.getGenerativeModel({ model: modelName })
 
     logger.info('Gemini service initialized', { model: modelName })
@@ -74,7 +74,7 @@ export class GeminiService {
         duration,
         promptLength: prompt.length,
         responseLength: text.length,
-        model: process.env.NEXT_PUBLIC_GEMINI_MODEL || 'gemini-exp-1206'
+        model: process.env.NEXT_PUBLIC_GEMINI_MODEL || 'gemini-2.5-pro'
       })
 
       return {
