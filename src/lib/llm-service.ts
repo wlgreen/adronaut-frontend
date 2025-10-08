@@ -535,8 +535,8 @@ Based on the project context and typical marketing patterns, provide a realistic
 
       logger.info('Making Gemini analysis request', { projectId })
 
+      // Note: Gemini 2.5 Pro only supports default temperature (1.0), don't set it
       const response = await geminiService.generateText(analysisPrompt, {
-        temperature: 0.7,
         maxTokens: 2000,
         systemInstruction
       })
@@ -635,8 +635,8 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
 
       logger.info('Making Gemini strategy request', { projectId })
 
+      // Note: Gemini 2.5 Pro only supports default temperature (1.0), don't set it
       const response = await geminiService.generateText(strategyPrompt, {
-        temperature: 0.3,
         maxTokens: 2500,
         systemInstruction
       })
