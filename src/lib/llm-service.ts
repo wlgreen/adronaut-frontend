@@ -830,18 +830,21 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
             runId: data.run_id,
             status: data.status,
             step: data.current_step,
+            status_message: data.status_message,
             timestamp: data.timestamp
           })
           logger.info('SSE event received', {
             runId: data.run_id,
             status: data.status,
-            step: data.current_step
+            step: data.current_step,
+            status_message: data.status_message
           })
 
           // Update progress callback with status_message from backend
           if (onProgress) {
             // Use status_message if available, otherwise fall back to step labels
             if (data.status_message) {
+              console.log('✅ [SSE] Using status_message from backend:', data.status_message)
               onProgress(data.status_message)
             } else if (data.current_step) {
               const stepLabels: Record<string, string> = {
@@ -851,8 +854,12 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
                 'PATCH_PROPOSED': 'Strategy building...',
                 'HITL_PATCH': 'Awaiting approval...',
               }
-              onProgress(stepLabels[data.current_step] || data.current_step)
+              const message = stepLabels[data.current_step] || data.current_step
+              console.log('⚠️ [SSE] No status_message, using fallback:', message)
+              onProgress(message)
             }
+          } else {
+            console.log('⚠️ [SSE] No onProgress callback provided')
           }
 
           if (data.status === 'completed') {
