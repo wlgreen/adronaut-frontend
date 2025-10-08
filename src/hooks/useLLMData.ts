@@ -21,8 +21,10 @@ export function useWorkspaceData(projectId?: string) {
     try {
       console.log('📡 [analyzeFiles] Calling llmService.analyzeUploadedFiles')
       const snapshot = await llmService.analyzeUploadedFiles(projectId, (step: string) => {
-        console.log('📊 [analyzeFiles] Progress update:', step)
+        console.log('📊 [analyzeFiles] Progress update received:', step)
+        console.log('📊 [analyzeFiles] Calling setCurrentStep...')
         setCurrentStep(step)
+        console.log('📊 [analyzeFiles] setCurrentStep completed, new value:', step)
       })
       console.log('✅ [analyzeFiles] Analysis completed, snapshot received:', {
         hasAudienceSegments: !!snapshot.audience_segments,

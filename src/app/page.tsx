@@ -49,6 +49,11 @@ export default function WorkspacePage() {
     analyzeFiles
   } = useWorkspaceData(projectId)
 
+  // Debug: Log when currentStep changes
+  useEffect(() => {
+    console.log('🎯 [Workspace] currentStep changed:', currentStep)
+  }, [currentStep])
+
   // Check for uploaded files - now enabled for database use
   useEffect(() => {
     const isDevelopmentMode = false // Database is now ready with tables created
@@ -198,7 +203,7 @@ export default function WorkspacePage() {
     <div className="min-h-screen bg-slate-950">
       {/* Header */}
       <header className="bg-slate-900/50 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Rocket className="w-6 h-6 text-indigo-400" />
@@ -224,7 +229,7 @@ export default function WorkspacePage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <main className="mx-auto px-8 py-8 space-y-8">
         {/* Upload Section */}
         <section className="space-y-8">
           <div className="text-center max-w-3xl mx-auto">
