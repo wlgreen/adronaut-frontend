@@ -36,8 +36,11 @@ export class GeminiService {
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey)
-    // Using gemini-1.5-flash for fast responses, can switch to gemini-1.5-pro for more complex tasks
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    // Use model from environment variable, default to gemini-2.5-pro
+    const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || 'gemini-exp-1206'
+    this.model = this.genAI.getGenerativeModel({ model: modelName })
+
+    logger.info('Gemini service initialized', { model: modelName })
   }
 
   async generateText(prompt: string, options: {
@@ -71,7 +74,7 @@ export class GeminiService {
         duration,
         promptLength: prompt.length,
         responseLength: text.length,
-        model: 'gemini-1.5-flash'
+        model: process.env.NEXT_PUBLIC_GEMINI_MODEL || 'gemini-exp-1206'
       })
 
       return {
