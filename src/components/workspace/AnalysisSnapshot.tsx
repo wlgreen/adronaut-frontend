@@ -6,39 +6,41 @@ import { Progress } from '@/components/ui/Progress'
 import { Brain, Users, MapPin, Clock, TrendingUp, Zap } from 'lucide-react'
 
 interface AnalysisSnapshotProps {
-  snapshot: {
-    audience_segments: Array<{
-      name: string
-      characteristics: string[]
-      size_estimate: string
-      value_score: number
-    }>
-    content_themes: Array<{
-      theme: string
-      performance: 'high' | 'medium' | 'low'
-      keywords: string[]
-    }>
-    performance_metrics: {
-      conversion_rate: string
-      engagement_rate: string
-      cost_per_acquisition: string
-      roi: string
-    }
-    geographic_insights: Array<{
-      region: string
-      performance: 'high' | 'medium' | 'low'
-      opportunity: string
-    }>
-    temporal_patterns: {
-      best_days: string[]
-      best_hours: string[]
-      seasonal_trends: string
-    }
-    recommendations: Array<string | { action?: string; recommendation?: string; [key: string]: any }>
-  }
+  snapshot: any  // Backend returns raw features, we'll transform them
 }
 
 export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
+  // Transform backend features into UI-friendly structure
+  const transformedSnapshot = {
+    audience_segments: snapshot?.target_audience?.segments || [],
+    content_themes: Array.isArray(snapshot?.messaging)
+      ? snapshot.messaging.map((msg: string, idx: number) => ({
+          theme: `Theme ${idx + 1}`,
+          performance: 'medium' as const,
+          keywords: [msg]
+        }))
+      : [],
+    performance_metrics: snapshot?.metrics?.campaigns
+      ? Object.values(snapshot.metrics.campaigns).reduce((acc: any, campaign: any) => {
+          return {
+            conversion_rate: campaign.ctr || 'N/A',
+            engagement_rate: campaign.ctr || 'N/A',
+            cost_per_acquisition: campaign.cpa || 'N/A',
+            roi: campaign.roas || 'N/A'
+          }
+        }, {})
+      : null,
+    geographic_insights: snapshot?.geographic_insights || {},
+    temporal_patterns: {
+      best_days: [],
+      best_hours: [],
+      seasonal_trends: snapshot?.recommendations_from_data?.[0] || 'No seasonal data available'
+    },
+    recommendations: Array.isArray(snapshot?.recommendations_from_data)
+      ? snapshot.recommendations_from_data
+      : []
+  }
+
   const getPerformanceColor = (performance: 'high' | 'medium' | 'low') => {
     switch (performance) {
       case 'high': return 'success'
@@ -88,7 +90,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
             </div>
             <div>
               <div className="grid grid-cols-2 gap-6">
-                {snapshot.performance_metrics && Object.entries(snapshot.performance_metrics).map(([key, value]) => (
+                {transformedSnapshot.performance_metrics && Object.entries(transformedSnapshot.performance_metrics).map(([key, value]) => (
                   <div key={key} className="text-center">
                     <p className="text-3xl font-mono font-bold text-emerald-400 mb-1">
                       {value}
@@ -98,7 +100,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                     </p>
                   </div>
                 ))}
-                {!snapshot.performance_metrics && (
+                {!transformedSnapshot.performance_metrics && (
                   <div className="col-span-2 text-center py-4">
                     <p className="text-slate-400">Performance metrics not available</p>
                   </div>
@@ -117,7 +119,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
             </div>
             <div>
               <div className="space-y-4">
-                {snapshot.recommendations?.slice(0, 3).map((rec, index) => {
+                {transformedSnapshot.recommendations?.slice(0, 3).map((rec: any, index: number) => {
                   // Handle both string and object formats
                   const text = typeof rec === 'string' ? rec : rec.recommendation || rec.action || JSON.stringify(rec)
                   return (
@@ -127,9 +129,9 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                     </div>
                   )
                 })}
-                {snapshot.recommendations && snapshot.recommendations.length > 3 && (
+                {transformedSnapshot.recommendations && transformedSnapshot.recommendations.length > 3 && (
                   <div className="pt-2 border-t border-space-300">
-                    <p className="text-xs text-gray-400">+{snapshot.recommendations.length - 3} more recommendations</p>
+                    <p className="text-xs text-gray-400">+{transformedSnapshot.recommendations.length - 3} more recommendations</p>
                   </div>
                 )}
               </div>
@@ -155,49 +157,60 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-6">
-              {snapshot.audience_segments?.map((segment, index) => (
+              {transformedSnapshot.audience_segments?.map((segment: any, index: number) => (
                 <div key={index} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h5 className="font-semibold text-white text-base">{segment.name}</h5>
-                    <Badge variant={getValueScoreColor(segment.value_score)} glow>
-                      Score: {segment.value_score}/10
-                    </Badge>
+                    {segment.value_score && (
+                      <Badge variant={getValueScoreColor(segment.value_score)} glow>
+                        Score: {segment.value_score}/10
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Size Estimate</span>
-                      <span className="text-cyan-400 font-mono font-medium">{segment.size_estimate}</span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Characteristics</p>
-                      <div className="flex flex-wrap gap-2">
-                        {segment.characteristics?.slice(0, 4).map((char, idx) => (
-                          <Badge key={idx} variant="info" className="text-xs">
-                            {char}
-                          </Badge>
-                        ))}
-                        {segment.characteristics.length > 4 && (
-                          <Badge variant="default" className="text-xs">
-                            +{segment.characteristics.length - 4} more
-                          </Badge>
-                        )}
+                    {segment.size_estimate && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">Size Estimate</span>
+                        <span className="text-cyan-400 font-mono font-medium">{segment.size_estimate}</span>
                       </div>
-                    </div>
+                    )}
 
-                    <Progress
-                      value={segment.value_score * 10}
-                      variant={getValueScoreColor(segment.value_score) as any}
-                      className="mt-3"
-                    />
+                    {segment.characteristics && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Characteristics</p>
+                        <div className="flex flex-wrap gap-2">
+                          {segment.characteristics?.slice(0, 4).map((char: string, idx: number) => (
+                            <Badge key={idx} variant="info" className="text-xs">
+                              {char}
+                            </Badge>
+                          ))}
+                          {segment.characteristics && segment.characteristics.length > 4 && (
+                            <Badge variant="default" className="text-xs">
+                              +{segment.characteristics.length - 4} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {segment.value_score && (
+                      <Progress
+                        value={segment.value_score * 10}
+                        variant={getValueScoreColor(segment.value_score) as any}
+                        className="mt-3"
+                      />
+                    )}
                   </div>
 
-                  {index < snapshot.audience_segments.length - 1 && (
+                  {index < transformedSnapshot.audience_segments.length - 1 && (
                     <div className="border-t border-space-300 pt-2" />
                   )}
                 </div>
               ))}
+              {(!transformedSnapshot.audience_segments || transformedSnapshot.audience_segments.length === 0) && (
+                <p className="text-sm text-gray-400">No audience segments available</p>
+              )}
             </div>
           </PremiumCard>
 
@@ -210,7 +223,7 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-5">
-              {snapshot.content_themes?.map((theme, index) => (
+              {transformedSnapshot.content_themes?.map((theme: any, index: number) => (
                 <div key={index} className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h5 className="font-semibold text-white text-base">{theme.theme}</h5>
@@ -222,12 +235,12 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   <div className="space-y-2">
                     <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Key Topics</p>
                     <div className="flex flex-wrap gap-2">
-                      {theme.keywords?.slice(0, 6).map((keyword, idx) => (
+                      {theme.keywords?.slice(0, 6).map((keyword: string, idx: number) => (
                         <Badge key={idx} variant="default" className="text-xs">
                           {keyword}
                         </Badge>
                       ))}
-                      {theme.keywords.length > 6 && (
+                      {theme.keywords && theme.keywords.length > 6 && (
                         <Badge variant="default" className="text-xs opacity-60">
                           +{theme.keywords.length - 6} more
                         </Badge>
@@ -235,11 +248,14 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                     </div>
                   </div>
 
-                  {index < snapshot.content_themes.length - 1 && (
+                  {index < transformedSnapshot.content_themes.length - 1 && (
                     <div className="border-t border-space-300 pt-2" />
                   )}
                 </div>
               ))}
+              {(!transformedSnapshot.content_themes || transformedSnapshot.content_themes.length === 0) && (
+                <p className="text-sm text-gray-400">No content themes available</p>
+              )}
             </div>
           </PremiumCard>
         </div>
@@ -264,8 +280,8 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-5">
-              {snapshot.geographic_insights && typeof snapshot.geographic_insights === 'object' && snapshot.geographic_insights !== 'insufficient_evidence' ? (
-                Object.entries(snapshot.geographic_insights.by_campaign || {}).map(([campaignId, data]: [string, any], index, arr) => (
+              {transformedSnapshot.geographic_insights && typeof transformedSnapshot.geographic_insights === 'object' && transformedSnapshot.geographic_insights !== 'insufficient_evidence' ? (
+                Object.entries(transformedSnapshot.geographic_insights.by_campaign || {}).map(([campaignId, data]: [string, any], index, arr) => (
                   <div key={campaignId} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h5 className="font-semibold text-white text-base">{campaignId}</h5>
@@ -296,31 +312,35 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
             </div>
             <div className=" space-y-5">
               <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-400 mb-3 font-medium">Optimal Days</p>
-                  <div className="flex flex-wrap gap-2">
-                    {snapshot.temporal_patterns?.best_days?.map((day, idx) => (
-                      <Badge key={idx} variant="success" className="text-xs">
-                        {day}
-                      </Badge>
-                    ))}
+                {transformedSnapshot.temporal_patterns?.best_days && transformedSnapshot.temporal_patterns.best_days.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-400 mb-3 font-medium">Optimal Days</p>
+                    <div className="flex flex-wrap gap-2">
+                      {transformedSnapshot.temporal_patterns.best_days.map((day: string, idx: number) => (
+                        <Badge key={idx} variant="success" className="text-xs">
+                          {day}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <p className="text-sm text-gray-400 mb-3 font-medium">Peak Hours</p>
-                  <div className="flex flex-wrap gap-2">
-                    {snapshot.temporal_patterns?.best_hours?.map((hour, idx) => (
-                      <Badge key={idx} variant="info" className="text-xs">
-                        {hour}
-                      </Badge>
-                    ))}
+                {transformedSnapshot.temporal_patterns?.best_hours && transformedSnapshot.temporal_patterns.best_hours.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-400 mb-3 font-medium">Peak Hours</p>
+                    <div className="flex flex-wrap gap-2">
+                      {transformedSnapshot.temporal_patterns.best_hours.map((hour: string, idx: number) => (
+                        <Badge key={idx} variant="info" className="text-xs">
+                          {hour}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="pt-2 border-t border-space-300">
                   <p className="text-sm text-gray-400 mb-2 font-medium">Seasonal Trends</p>
-                  <p className="text-sm text-gray-300 leading-relaxed">{snapshot.temporal_patterns?.seasonal_trends || 'No seasonal data available'}</p>
+                  <p className="text-sm text-gray-300 leading-relaxed">{transformedSnapshot.temporal_patterns?.seasonal_trends || 'No seasonal data available'}</p>
                 </div>
               </div>
             </div>
