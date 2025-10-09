@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Target, Settings, CheckCircle, XCircle, Edit3, Clock, Users, MessageSquare } from 'lucide-react'
+import { Target, Settings, CheckCircle, XCircle, Edit3, Clock } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
-import { PremiumButton, ButtonGroup } from '@/components/ui/PremiumButton'
+import { PremiumButton } from '@/components/ui/PremiumButton'
 import { PremiumCard } from '@/components/ui/PremiumCard'
 import { Badge } from '@/components/ui/Badge'
 import { PatchCard } from '@/components/strategy/PatchCard'
@@ -11,10 +11,19 @@ import { StrategyOverview } from '@/components/strategy/StrategyOverview'
 import { EditPatchDialog } from '@/components/strategy/EditPatchDialog'
 import { useStrategyData, useWorkspaceData } from '@/hooks/useLLMData'
 
+interface PatchData {
+  patch_id: string
+  // Add other patch properties as needed
+}
+
+interface EditedPatchData {
+  // Define edited patch structure
+}
+
 
 export default function StrategyPage() {
-  const [editingPatch, setEditingPatch] = useState<any>(null)
-  const [projectId, setProjectId] = useState<string>(() => {
+  const [editingPatch, setEditingPatch] = useState<PatchData | null>(null)
+  const [projectId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('adronaut_project_id')
 
@@ -35,10 +44,8 @@ export default function StrategyPage() {
     activeStrategy,
     pendingPatches,
     isGeneratingStrategy,
-    isGeneratingPatches,
     error,
     generateStrategy,
-    generatePatches,
     applyPatch
   } = useStrategyData(projectId)
 
@@ -52,7 +59,7 @@ export default function StrategyPage() {
     await applyPatch(patchId, action)
   }
 
-  const handlePatchEdit = (editedPatch: any) => {
+  const handlePatchEdit = (_editedPatch: EditedPatchData) => {
     // This would need more sophisticated patch editing logic
     setEditingPatch(null)
   }

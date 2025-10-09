@@ -5,12 +5,13 @@ import { Rocket, Play, Trash2 } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { FileUploader } from '@/components/workspace/FileUploader'
 import { AnalysisSnapshot } from '@/components/workspace/AnalysisSnapshot'
+import { InsightsCard } from '@/components/workspace/InsightsCard'
 import { PremiumButton } from '@/components/ui/PremiumButton'
 import { PremiumCard } from '@/components/ui/PremiumCard'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { useWorkspaceData } from '@/hooks/useLLMData'
-import { supabase } from '@/lib/supabase'
 import { supabaseLogger } from '@/lib/supabase-logger'
+import type { Insight } from '@/types/insights'
 
 export default function WorkspacePage() {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string; status: string}>>([])
@@ -24,6 +25,7 @@ export default function WorkspacePage() {
   const [artifactsLoading, setArtifactsLoading] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<{ artifactId: string; filename: string } | null>(null)
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null)
+  const [insights, setInsights] = useState<Insight[]>([])
   const [projectId, setProjectId] = useState<string>(() => {
     // Generate or retrieve project ID
     if (typeof window !== 'undefined') {
@@ -79,7 +81,7 @@ export default function WorkspacePage() {
           setArtifacts(result.data)
 
           // Update uploaded files count for display
-          setUploadedFiles(result.data.map((file: any) => ({
+          setUploadedFiles(result.data.map((file: { artifact_id: string }) => ({
             id: file.artifact_id,
             status: 'success'
           })))
@@ -183,6 +185,39 @@ export default function WorkspacePage() {
       setDeleteConfirm(null)
     }
   }
+
+  // Load insights from latest patch
+  useEffect(() => {
+    if (!projectId) return
+
+    const loadInsights = async () => {
+      try {
+        // Get the latest patch for this project
+        const result = await supabaseLogger.select('strategy_patches', {
+          select: 'justification',
+          eq: { project_id: projectId },
+          orderBy: { column: 'created_at', ascending: false },
+          limit: 1
+        })
+
+        if (result.data && result.data.length > 0) {
+          const justification = result.data[0].justification
+          try {
+            const parsed = JSON.parse(justification)
+            if (parsed.insights && Array.isArray(parsed.insights)) {
+              setInsights(parsed.insights)
+            }
+          } catch {
+            // Not JSON, skip
+          }
+        }
+      } catch (error) {
+        console.warn('Could not load insights:', error)
+      }
+    }
+
+    loadInsights()
+  }, [projectId, analysisSnapshot])
 
   // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
   useEffect(() => {
@@ -363,6 +398,13 @@ export default function WorkspacePage() {
             <PremiumCard variant="elevated">
               <AnalysisSnapshot snapshot={analysisSnapshot} />
             </PremiumCard>
+
+            {/* Insights Display */}
+            {insights.length > 0 && (
+              <div className="max-w-4xl mx-auto">
+                <InsightsCard insights={insights} />
+              </div>
+            )}
           </section>
         )}
 
