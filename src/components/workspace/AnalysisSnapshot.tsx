@@ -12,7 +12,9 @@ interface AnalysisSnapshotProps {
 export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
   // Transform backend features into UI-friendly structure
   const transformedSnapshot = {
-    audience_segments: snapshot?.target_audience?.segments || [],
+    audience_segments: Array.isArray(snapshot?.target_audience?.segments)
+      ? snapshot.target_audience.segments
+      : [],
     content_themes: Array.isArray(snapshot?.messaging)
       ? snapshot.messaging.map((msg: string, idx: number) => ({
           theme: `Theme ${idx + 1}`,
