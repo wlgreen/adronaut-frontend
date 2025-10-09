@@ -73,13 +73,53 @@ export interface Strategy {
   }
 }
 
+// New structured insights schema (LLM Refactor Phase 2)
+export interface Insight {
+  insight: string
+  hypothesis: string
+  proposed_action: string
+  primary_lever: 'audience' | 'creative' | 'budget' | 'bidding' | 'funnel'
+  expected_effect: {
+    direction: 'increase' | 'decrease'
+    metric: string
+    magnitude: 'small' | 'medium' | 'large'
+    range?: string
+  }
+  confidence: number  // 0..1
+  data_support: 'strong' | 'moderate' | 'weak'
+  evidence_refs: string[]
+  contrastive_reason: string
+  impact_rank: number  // 1..3
+  impact_score: number  // 0..100
+}
+
+export interface InsightsResponse {
+  insights: Insight[]  // Exactly 3
+  candidates_evaluated: number
+  selection_method: string
+}
+
 export interface StrategyPatch {
   patch_id: string
-  source: 'insights' | 'performance' | 'manual'
-  status: 'proposed' | 'approved' | 'rejected'
+  source: 'insights' | 'performance' | 'manual' | 'edited_llm'
+  status: 'proposed' | 'approved' | 'rejected' | 'superseded'
   patch_json: Partial<Strategy>
   justification: string
   created_at: string
+  annotations?: {
+    heuristic_flags?: string[]
+    sanity_flags?: Array<{
+      action_id: string
+      reason: string
+      risk: 'high' | 'medium' | 'low'
+      recommendation: string
+    }>
+    requires_review?: boolean
+    auto_downscoped?: boolean
+    requires_hitl_review?: boolean
+  }
+  sanity_review?: 'safe' | 'review_recommended' | 'high_risk'
+  insufficient_evidence?: boolean
 }
 
 export interface Campaign {
