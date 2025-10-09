@@ -201,7 +201,7 @@ export default function WorkspacePage() {
         })
 
         if (result.data && result.data.length > 0) {
-          const justification = result.data[0].justification
+          const justification = (result.data[0] as { justification: string }).justification
           try {
             const parsed = JSON.parse(justification)
             if (parsed.insights && Array.isArray(parsed.insights)) {
