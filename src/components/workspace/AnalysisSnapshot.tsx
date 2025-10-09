@@ -264,21 +264,25 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
               </div>
             </div>
             <div className=" space-y-5">
-              {snapshot.geographic_insights?.map((geo, index) => (
-                <div key={index} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h5 className="font-semibold text-white text-base">{geo.region}</h5>
-                    <Badge variant={getPerformanceColor(geo.performance)} glow>
-                      {geo.performance.toUpperCase()}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-300 leading-relaxed">{geo.opportunity}</p>
+              {snapshot.geographic_insights && typeof snapshot.geographic_insights === 'object' && snapshot.geographic_insights !== 'insufficient_evidence' ? (
+                Object.entries(snapshot.geographic_insights.by_campaign || {}).map(([campaignId, data]: [string, any], index, arr) => (
+                  <div key={campaignId} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-semibold text-white text-base">{campaignId}</h5>
+                    </div>
+                    <div className="text-sm text-gray-300 leading-relaxed">
+                      {data.top_geos && <div>Top locations: {data.top_geos.join(', ')}</div>}
+                      {data.performance_notes && <div className="mt-1">{data.performance_notes}</div>}
+                    </div>
 
-                  {index < snapshot.geographic_insights.length - 1 && (
-                    <div className="border-t border-space-300 pt-2" />
-                  )}
-                </div>
-              ))}
+                    {index < arr.length - 1 && (
+                      <div className="border-t border-space-300 pt-2" />
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-400">No geographic insights available</p>
+              )}
             </div>
           </PremiumCard>
 
