@@ -51,6 +51,17 @@ export default function WorkspacePage() {
     analyzeFiles
   } = useWorkspaceData(projectId)
 
+  // Debug: Log analysisSnapshot when it changes
+  useEffect(() => {
+    console.log('📊 [Workspace] analysisSnapshot changed:', {
+      hasSnapshot: !!analysisSnapshot,
+      keys: analysisSnapshot ? Object.keys(analysisSnapshot) : [],
+      targetAudience: analysisSnapshot?.target_audience,
+      audienceSegments: analysisSnapshot?.audience_segments,
+      rawSnapshot: analysisSnapshot
+    })
+  }, [analysisSnapshot])
+
   // Debug: Log when currentStep changes
   useEffect(() => {
     console.log('🎯 [Workspace] currentStep changed:', currentStep)
@@ -186,38 +197,34 @@ export default function WorkspacePage() {
     }
   }
 
-  // Load insights from latest patch
+  // Load insights from analysis snapshot (correct location after workflow)
   useEffect(() => {
-    if (!projectId) return
-
-    const loadInsights = async () => {
-      try {
-        // Get the latest patch for this project
-        const result = await supabaseLogger.select('strategy_patches', {
-          select: 'justification',
-          eq: { project_id: projectId },
-          orderBy: { column: 'created_at', ascending: false },
-          limit: 1
-        })
-
-        if (result.data && result.data.length > 0) {
-          const justification = (result.data[0] as { justification: string }).justification
-          try {
-            const parsed = JSON.parse(justification)
-            if (parsed.insights && Array.isArray(parsed.insights)) {
-              setInsights(parsed.insights)
-            }
-          } catch {
-            // Not JSON, skip
-          }
-        }
-      } catch (error) {
-        console.warn('Could not load insights:', error)
-      }
+    if (!analysisSnapshot) {
+      setInsights([])
+      return
     }
 
-    loadInsights()
-  }, [projectId, analysisSnapshot])
+    console.log('📊 [Insights] Loading insights from snapshot')
+
+    // Insights are stored in nested structure: snapshot.insights.insights
+    // This is because the workflow saves {features, insights: {insights: [...], candidates_evaluated, selection_method}}
+    const snapshotInsights = analysisSnapshot?.insights?.insights || []
+
+    console.log('📊 [Insights] Found insights:', {
+      hasInsightsKey: !!analysisSnapshot.insights,
+      hasNestedInsights: !!analysisSnapshot?.insights?.insights,
+      insightCount: snapshotInsights.length,
+      insights: snapshotInsights
+    })
+
+    if (Array.isArray(snapshotInsights) && snapshotInsights.length > 0) {
+      setInsights(snapshotInsights)
+      console.log(`✅ [Insights] Loaded ${snapshotInsights.length} insights from snapshot`)
+    } else {
+      setInsights([])
+      console.log('⚠️ [Insights] No insights found in snapshot')
+    }
+  }, [analysisSnapshot])
 
   // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
   useEffect(() => {

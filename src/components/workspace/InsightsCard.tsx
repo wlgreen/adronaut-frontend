@@ -9,19 +9,23 @@ interface InsightsCardProps {
 }
 
 const DataSupportIndicator: React.FC<{ support: 'strong' | 'moderate' | 'weak' }> = ({ support }) => {
-  const label = support === 'weak' ? 'Limited data' : support === 'moderate' ? 'Moderate' : 'Strong';
-  const dotColor = support === 'strong' ? 'bg-blue-500' : 'bg-gray-400';
+  const getBadgeStyle = () => {
+    if (support === 'strong') return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50';
+    if (support === 'weak') return 'bg-amber-500/20 text-amber-300 border-amber-500/50';
+    return 'bg-gray-500/20 text-gray-300 border-gray-500/50';
+  };
+
+  const label = support === 'weak' ? 'LIMITED DATA' : support === 'moderate' ? 'MODERATE DATA' : 'STRONG DATA';
 
   return (
-    <div className="flex items-center gap-2 text-sm text-gray-400">
-      <div className={`w-2 h-2 rounded-full ${dotColor}`} />
+    <div className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full border ${getBadgeStyle()}`} data-testid="data-support-badge">
+      <div className={`w-2 h-2 rounded-full ${support === 'strong' ? 'bg-emerald-500' : support === 'weak' ? 'bg-amber-500' : 'bg-gray-400'}`} />
       <span>{label}</span>
     </div>
   );
 };
 
 const ImpactScoreBadge: React.FC<{ score: number }> = ({ score }) => {
-  // Use blue intensity gradient (not red/yellow/green)
   const bgColor = score >= 70 ? 'bg-blue-600' : score >= 50 ? 'bg-blue-500' : 'bg-blue-400';
 
   return (
@@ -31,55 +35,9 @@ const ImpactScoreBadge: React.FC<{ score: number }> = ({ score }) => {
   );
 };
 
-const ExperimentHighlight: React.FC<{ text: string }> = ({ text }) => {
-  const experimentKeywords = ['pilot', 'test', 'a/b', 'experiment', 'validate', 'trial', 'measure', 'track'];
-
-  // Split text by experiment keywords and highlight them
-  const parts: React.ReactNode[] = [];
-  let remainingText = text;
-  let index = 0;
-
-  while (remainingText.length > 0) {
-    let foundKeyword = false;
-
-    for (const keyword of experimentKeywords) {
-      const lowerText = remainingText.toLowerCase();
-      const keywordIndex = lowerText.indexOf(keyword);
-
-      if (keywordIndex !== -1) {
-        // Add text before keyword
-        if (keywordIndex > 0) {
-          parts.push(
-            <span key={`text-${index++}`}>
-              {remainingText.substring(0, keywordIndex)}
-            </span>
-          );
-        }
-
-        // Add highlighted keyword
-        parts.push(
-          <span key={`keyword-${index++}`} className="bg-amber-500/20 text-amber-300 px-1 rounded">
-            {remainingText.substring(keywordIndex, keywordIndex + keyword.length)}
-          </span>
-        );
-
-        remainingText = remainingText.substring(keywordIndex + keyword.length);
-        foundKeyword = true;
-        break;
-      }
-    }
-
-    if (!foundKeyword) {
-      parts.push(<span key={`text-${index++}`}>{remainingText}</span>);
-      break;
-    }
-  }
-
-  return <>{parts}</>;
-};
-
 const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, rank }) => {
-  const [expanded, setExpanded] = useState(false);
+  // Auto-expand weak insights to show experiment details
+  const [expanded, setExpanded] = useState(insight.data_support === 'weak');
 
   const leverColors: Record<string, string> = {
     audience: 'text-purple-400',
@@ -89,8 +47,61 @@ const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, ra
     funnel: 'text-pink-400',
   };
 
+  // Determine border color based on data support
+  const getBorderColor = () => {
+    if (insight.data_support === 'strong') return 'border-emerald-500/50';
+    if (insight.data_support === 'weak') return 'border-amber-500/50';
+    return 'border-gray-700';
+  };
+
+  // Highlight experiment keywords in proposed action
+  const highlightExperimentKeywords = (text: string) => {
+    const keywords = ['pilot', 'test', 'a/b', 'experiment', 'validate', 'trial', 'measure', 'track', 'budget cap', 'days', 'day'];
+    const parts: React.ReactNode[] = [];
+    let remaining = text;
+    let index = 0;
+
+    while (remaining.length > 0) {
+      let foundKeyword = false;
+
+      for (const keyword of keywords) {
+        const lowerText = remaining.toLowerCase();
+        const keywordIndex = lowerText.indexOf(keyword);
+
+        if (keywordIndex !== -1) {
+          // Add text before keyword
+          if (keywordIndex > 0) {
+            parts.push(
+              <span key={`text-${index++}`}>
+                {remaining.substring(0, keywordIndex)}
+              </span>
+            );
+          }
+
+          // Add highlighted keyword
+          parts.push(
+            <span key={`keyword-${index++}`} className="bg-amber-500/20 text-amber-300 px-1 rounded font-medium">
+              {remaining.substring(keywordIndex, keywordIndex + keyword.length)}
+            </span>
+          );
+
+          remaining = remaining.substring(keywordIndex + keyword.length);
+          foundKeyword = true;
+          break;
+        }
+      }
+
+      if (!foundKeyword) {
+        parts.push(<span key={`text-${index++}`}>{remaining}</span>);
+        break;
+      }
+    }
+
+    return <>{parts}</>;
+  };
+
   return (
-    <div className="bg-gray-800/50 rounded-lg border border-gray-700 p-4 space-y-3">
+    <div className={`bg-gray-800/50 rounded-lg border ${getBorderColor()} p-4 space-y-3`} data-testid="insight-card">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -120,11 +131,22 @@ const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, ra
         <div className="text-gray-300">{insight.hypothesis}</div>
       </div>
 
-      {/* Proposed Action */}
+      {/* Proposed Action - Highlight experiment keywords for weak insights */}
       <div className="space-y-1">
-        <div className="text-xs text-gray-500 uppercase tracking-wide">Proposed Action</div>
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-gray-500 uppercase tracking-wide">Proposed Action</div>
+          {insight.data_support === 'weak' && (
+            <div className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">
+              🧪 LEARNING EXPERIMENT
+            </div>
+          )}
+        </div>
         <div className="text-gray-200">
-          <ExperimentHighlight text={insight.proposed_action} />
+          {insight.data_support === 'weak' ? (
+            highlightExperimentKeywords(insight.proposed_action)
+          ) : (
+            insight.proposed_action
+          )}
         </div>
       </div>
 
@@ -159,7 +181,7 @@ const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, ra
       </button>
 
       {expanded && (
-        <div className="space-y-3 pt-2 border-t border-gray-700">
+        <div className="space-y-3 pt-2 border-t border-gray-700" data-testid="experiment-section">
           {/* Evidence References */}
           {insight.evidence_refs && insight.evidence_refs.length > 0 && (
             <div className="space-y-1">
@@ -177,6 +199,17 @@ const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, ra
             <div className="text-xs text-gray-500 uppercase tracking-wide">Why This vs Alternatives</div>
             <div className="text-sm text-gray-300 italic">{insight.contrastive_reason}</div>
           </div>
+
+          {/* Weak Data Call-out */}
+          {insight.data_support === 'weak' && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+              <div className="text-xs text-amber-300 font-medium mb-1">📊 DATA COLLECTION OPPORTUNITY</div>
+              <div className="text-xs text-gray-300">
+                This recommendation focuses on gathering data to make informed decisions in future cycles.
+                Success metrics should be tracked throughout the experiment period.
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -189,7 +222,7 @@ export const InsightsCard: React.FC<InsightsCardProps> = ({ insights, onInsightC
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg border border-gray-700 p-6 space-y-4">
+    <div className="bg-gray-900 rounded-lg border border-gray-700 p-6 space-y-4" data-testid="insights-container">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold text-white">Strategic Insights</h3>
         <div className="text-sm text-gray-400">{insights.length} insights</div>
