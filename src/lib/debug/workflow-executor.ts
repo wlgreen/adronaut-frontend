@@ -74,8 +74,8 @@ class WorkflowExecutor {
 
     try {
       // Execute with debugging wrapper
-      result = await debugWorkflow(config.name, async (debugger) => {
-        executionId = debugger.getCurrentExecution()?.id || ''
+      result = await debugWorkflow(config.name, async (debug) => {
+        executionId = debug.getCurrentExecution()?.id || ''
 
         // Apply any execution overrides
         if (config.overrides) {

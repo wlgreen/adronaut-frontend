@@ -269,7 +269,9 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                   </div>
                   {insight.expected_effect.range && (
                     <div className="text-xs text-blue-300 ml-20">
-                      {insight.expected_effect.range}
+                      {typeof insight.expected_effect.range === 'string'
+                        ? insight.expected_effect.range
+                        : JSON.stringify(insight.expected_effect.range)}
                     </div>
                   )}
                 </div>
@@ -518,7 +520,11 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
                       <h5 className="font-semibold text-white text-base">{campaignId}</h5>
                     </div>
                     <div className="text-sm text-gray-300 leading-relaxed">
-                      {data.top_geos && <div>Top locations: {data.top_geos.join(', ')}</div>}
+                      {data.top_geos && (
+                        <div>
+                          Top locations: {Array.isArray(data.top_geos) ? data.top_geos.join(', ') : String(data.top_geos)}
+                        </div>
+                      )}
                       {data.performance_notes && <div className="mt-1">{data.performance_notes}</div>}
                     </div>
 

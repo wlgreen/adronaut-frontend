@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, Brain, AlertCircle, Code, DollarSign, Lightbulb, Beaker, Flag, Users, Edit3 } from 'lucide-react'
+import { CheckCircle, Brain, AlertCircle, Code, DollarSign, Lightbulb, Beaker, Flag, Users, Edit3, XCircle } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/PremiumCard'
 import { PremiumButton } from '@/components/ui/PremiumButton'
 import { Badge } from '@/components/ui/Badge'
@@ -290,7 +290,9 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
                     </div>
                     {insight.expected_effect.range && (
                       <div className="text-xs text-blue-300 ml-16">
-                        {insight.expected_effect.range}
+                        {typeof insight.expected_effect.range === 'string'
+                          ? insight.expected_effect.range
+                          : JSON.stringify(insight.expected_effect.range)}
                       </div>
                     )}
                   </div>
@@ -355,8 +357,15 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
                 <div>
                   <span className="text-gray-400">Success Metrics:</span>
                   <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-                    {experimentDetails.success_metrics.map((metric: string, idx: number) => (
-                      <li key={idx} className="text-gray-300">{metric}</li>
+                    {experimentDetails.success_metrics.map((metric: any, idx: number) => (
+                      <li key={idx} className="text-gray-300">
+                        {typeof metric === 'string'
+                          ? metric
+                          : metric.metric
+                            ? `${metric.metric}${metric.target ? ` (target: ${metric.target})` : ''}${metric.baseline ? ` (baseline: ${metric.baseline})` : ''}`
+                            : JSON.stringify(metric)
+                        }
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -427,7 +436,7 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
             </div>
           ) : (
             <div className="text-sm text-gray-400">
-              Click "Show Details" to view complete patch diff
+              Click &quot;Show Details&quot; to view complete patch diff
             </div>
           )}
         </div>
@@ -445,7 +454,11 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
                   <p className="text-xs text-gray-400">{insight.expected_effect.metric}</p>
                   <p className="text-xs text-gray-500 mt-1">{insight.expected_effect.magnitude}</p>
                   {insight.expected_effect.range && (
-                    <p className="text-xs text-blue-300 mt-1">{insight.expected_effect.range}</p>
+                    <p className="text-xs text-blue-300 mt-1">
+                      {typeof insight.expected_effect.range === 'string'
+                        ? insight.expected_effect.range
+                        : JSON.stringify(insight.expected_effect.range)}
+                    </p>
                   )}
                 </div>
               ))}

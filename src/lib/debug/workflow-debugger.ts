@@ -456,7 +456,7 @@ export const workflowDebugger = WorkflowDebugger.getInstance()
 // Export convenience functions for easy integration
 export function debugWorkflow<T>(
   name: string,
-  fn: (debugger: WorkflowDebugger) => Promise<T>,
+  fn: (debug: WorkflowDebugger) => Promise<T>,
   trigger?: string
 ): Promise<T> {
   const executionId = workflowDebugger.startWorkflow(name, trigger)

@@ -73,29 +73,6 @@ export interface Database {
           created_at?: string
         }
       }
-      strategy_versions: {
-        Row: {
-          strategy_id: string
-          project_id: string
-          version: number
-          strategy_json: any
-          created_at: string
-        }
-        Insert: {
-          strategy_id?: string
-          project_id: string
-          version: number
-          strategy_json: any
-          created_at?: string
-        }
-        Update: {
-          strategy_id?: string
-          project_id?: string
-          version?: number
-          strategy_json?: any
-          created_at?: string
-        }
-      }
       strategies: {
         Row: {
           strategy_id: string
@@ -142,6 +119,7 @@ export interface Database {
           status: 'proposed' | 'approved' | 'rejected' | 'superseded'
           patch_data: any
           justification: string
+          annotations: any | null
           created_at: string
         }
         Insert: {
@@ -152,6 +130,7 @@ export interface Database {
           status?: 'proposed' | 'approved' | 'rejected' | 'superseded'
           patch_data: any
           justification: string
+          annotations?: any | null
           created_at?: string
         }
         Update: {
@@ -162,6 +141,7 @@ export interface Database {
           status?: 'proposed' | 'approved' | 'rejected' | 'superseded'
           patch_data?: any
           justification?: string
+          annotations?: any | null
           created_at?: string
         }
       }
@@ -253,6 +233,7 @@ export interface Database {
           run_id: string
           step_name: string
           status: 'started' | 'completed' | 'failed'
+          metadata: any | null
           created_at: string
         }
         Insert: {
@@ -261,6 +242,7 @@ export interface Database {
           run_id: string
           step_name: string
           status: 'started' | 'completed' | 'failed'
+          metadata?: any | null
           created_at?: string
         }
         Update: {
@@ -269,6 +251,7 @@ export interface Database {
           run_id?: string
           step_name?: string
           status?: 'started' | 'completed' | 'failed'
+          metadata?: any | null
           created_at?: string
         }
       }

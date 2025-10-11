@@ -10,19 +10,10 @@ import { PatchCard } from '@/components/strategy/PatchCard'
 import { StrategyOverview } from '@/components/strategy/StrategyOverview'
 import { EditPatchDialog } from '@/components/strategy/EditPatchDialog'
 import { useStrategyData, useWorkspaceData } from '@/hooks/useLLMData'
-
-interface PatchData {
-  patch_id: string
-  // Add other patch properties as needed
-}
-
-interface EditedPatchData {
-  // Define edited patch structure
-}
-
+import type { StrategyPatch } from '@/lib/llm-service'
 
 export default function StrategyPage() {
-  const [editingPatch, setEditingPatch] = useState<PatchData | null>(null)
+  const [editingPatch, setEditingPatch] = useState<StrategyPatch | null>(null)
   const [projectId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('adronaut_project_id')
@@ -59,7 +50,7 @@ export default function StrategyPage() {
     await applyPatch(patchId, action)
   }
 
-  const handlePatchEdit = (_editedPatch: EditedPatchData) => {
+  const handlePatchEdit = (_editedPatch: unknown) => {
     // This would need more sophisticated patch editing logic
     setEditingPatch(null)
   }

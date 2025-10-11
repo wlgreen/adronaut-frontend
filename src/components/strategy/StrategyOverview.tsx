@@ -139,7 +139,7 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
               <div>
                 <h4 className="text-sm font-medium text-gray-400 mb-2">Primary Message</h4>
                 <p className="text-white font-medium leading-relaxed">
-                  "{strategy.messaging_strategy.primary_message || 'No primary message available'}"
+                  &quot;{strategy.messaging_strategy.primary_message || 'No primary message available'}&quot;
                 </p>
               </div>
 

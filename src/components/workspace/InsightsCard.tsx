@@ -166,7 +166,9 @@ const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, ra
         </div>
         {insight.expected_effect.range && (
           <div className="text-xs text-blue-300 ml-20">
-            {insight.expected_effect.range}
+            {typeof insight.expected_effect.range === 'string'
+              ? insight.expected_effect.range
+              : JSON.stringify(insight.expected_effect.range)}
           </div>
         )}
       </div>
