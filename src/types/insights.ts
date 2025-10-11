@@ -51,3 +51,34 @@ export interface SanityFlag {
   risk: 'high' | 'medium' | 'low'
   recommendation: string
 }
+
+/**
+ * Schema detection types for adaptive data processing
+ */
+
+export interface DataSchema {
+  primary_dimension: string
+  row_count: number
+  available_metrics: {
+    efficiency: string[]
+    cost: string[]
+    volume: string[]
+    comparative?: string[]
+  }
+}
+
+export interface MetricStat {
+  mean?: number
+  median?: number
+  min?: number
+  max?: number
+  sum?: number
+  count?: number
+}
+
+export interface MetricsSummary {
+  efficiency_metrics?: Record<string, MetricStat>
+  cost_metrics?: Record<string, MetricStat>
+  volume_metrics?: Record<string, MetricStat>
+  comparative_metrics?: Record<string, MetricStat>
+}

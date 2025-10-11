@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, Brain, AlertCircle, Code, DollarSign, Lightbulb, Beaker, Flag, Users, Edit3, XCircle } from 'lucide-react'
+import { CheckCircle, Brain, AlertCircle, Code, DollarSign, Lightbulb, Beaker, Flag, Users, Edit3, XCircle, TrendingUp, Target } from 'lucide-react'
 import { PremiumCard } from '@/components/ui/PremiumCard'
 import { PremiumButton } from '@/components/ui/PremiumButton'
 import { Badge } from '@/components/ui/Badge'
@@ -82,67 +82,91 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
   const experimentDetails = patch.patch_json.experiment_details
   const aiRecommendations = patch.patch_json.ai_recommendations
 
+  // Dynamic patch renderer - works with ANY patch structure
   const renderPatchChanges = () => {
-    const changes = []
+    // Icon mapping for fuzzy pattern matching
+    const getIconAndColor = (key: string): { icon: React.ReactNode; color: string } => {
+      const k = key.toLowerCase()
+      if (k.includes('audience') || k.includes('targeting')) return { icon: <Users className="w-4 h-4" />, color: 'bg-purple-500' }
+      if (k.includes('budget') || k.includes('spend') || k.includes('allocation')) return { icon: <DollarSign className="w-4 h-4" />, color: 'bg-green-500' }
+      if (k.includes('bid') || k.includes('price')) return { icon: <TrendingUp className="w-4 h-4" />, color: 'bg-orange-500' }
+      if (k.includes('messag') || k.includes('creative')) return { icon: <Edit3 className="w-4 h-4" />, color: 'bg-cyan-500' }
+      if (k.includes('channel')) return { icon: <Target className="w-4 h-4" />, color: 'bg-pink-500' }
+      return { icon: <Code className="w-4 h-4" />, color: 'bg-gray-500' }
+    }
 
-    if (patch.patch_json.audience_targeting) {
-      changes.push(
-        <div key="audience" className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-neon-cyan" />
-            <span className="text-sm font-medium text-white">Audience Targeting</span>
+    // Recursive value renderer
+    const renderValue = (value: any, dotColor: string, depth = 0): React.ReactNode => {
+      if (value === null || value === undefined) return null
+
+      // Array
+      if (Array.isArray(value)) {
+        return value.map((item, idx) => (
+          <div key={idx} className="flex items-start gap-2 text-sm text-gray-300">
+            <span className={`w-2 h-2 rounded-full mt-1.5 ${dotColor}`} />
+            {typeof item === 'object' ? (
+              <div className="flex-1">{renderValue(item, dotColor, depth + 1)}</div>
+            ) : (
+              <span>{safeRender(item)}</span>
+            )}
           </div>
-          <div className="ml-6 space-y-1">
-            {patch.patch_json.audience_targeting.segments?.map((segment: any, idx: number) => (
-              <div key={idx} className="text-sm text-gray-300 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-neon-cyan" />
-                <span>{safeRender(segment.name)}: {safeRender(segment.budget_allocation)} allocation</span>
+        ))
+      }
+
+      // Object
+      if (typeof value === 'object') {
+        return (
+          <div className={`space-y-1 ${depth > 0 ? 'ml-4' : ''}`}>
+            {Object.entries(value).map(([k, v]) => (
+              <div key={k} className="text-sm">
+                <span className="text-gray-400">{k.replace(/_/g, ' ')}: </span>
+                <span className="text-gray-200">
+                  {typeof v === 'object' ? '' : safeRender(v)}
+                </span>
+                {typeof v === 'object' && renderValue(v, dotColor, depth + 1)}
               </div>
             ))}
           </div>
-        </div>
-      )
+        )
+      }
+
+      // Primitive
+      return <span className="text-gray-300">{safeRender(value)}</span>
     }
 
-    if (patch.patch_json.budget_allocation) {
-      changes.push(
-        <div key="budget" className="space-y-2">
+    // Render section
+    const renderSection = (sectionKey: string, sectionData: any): React.ReactNode => {
+      if (!sectionData || (typeof sectionData === 'object' && Object.keys(sectionData).length === 0)) {
+        return null
+      }
+
+      const { icon, color } = getIconAndColor(sectionKey)
+
+      return (
+        <div key={sectionKey} className="space-y-2">
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-neon-emerald" />
-            <span className="text-sm font-medium text-white">Budget Allocation</span>
+            {icon}
+            <span className="text-sm font-medium text-white">
+              {sectionKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+            </span>
           </div>
           <div className="ml-6 space-y-1">
-            <div className="text-sm text-gray-300 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-neon-emerald" />
-              <span>Total Budget: {safeRender(patch.patch_json.budget_allocation.total_budget)}</span>
-            </div>
-            {patch.patch_json.budget_allocation.channel_breakdown && (
-              Object.entries(patch.patch_json.budget_allocation.channel_breakdown).map(([channel, amount]) => (
-                <div key={channel} className="text-sm text-gray-400 ml-4">
-                  {channel}: {safeRender(amount)}
-                </div>
-              ))
-            )}
+            {renderValue(sectionData, color)}
           </div>
         </div>
       )
     }
 
-    if (patch.patch_json.messaging_strategy) {
-      changes.push(
-        <div key="messaging" className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Edit3 className="w-4 h-4 text-neon-amber" />
-            <span className="text-sm font-medium text-white">Messaging Strategy</span>
-          </div>
-          <div className="ml-6 text-sm text-gray-300">
-            {safeRender(patch.patch_json.messaging_strategy.primary_message)}
-          </div>
-        </div>
-      )
-    }
+    // Skip metadata fields, render all other top-level sections
+    const skipKeys = ['strategy_type', 'experiment_details', 'ai_recommendations', 'annotations', 'success_metrics']
+    const sections = Object.keys(patch.patch_json)
+      .filter(key => !skipKeys.includes(key))
+      .map(key => renderSection(key, patch.patch_json[key]))
+      .filter(Boolean)
 
-    return changes
+    return sections.length > 0 ? sections : (
+      <div className="text-sm text-gray-400">No structured changes detected</div>
+    )
   }
 
   return (

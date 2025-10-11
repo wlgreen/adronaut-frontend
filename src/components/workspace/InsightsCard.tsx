@@ -184,14 +184,45 @@ const InsightCard: React.FC<{ insight: Insight; rank: number }> = ({ insight, ra
 
       {expanded && (
         <div className="space-y-3 pt-2 border-t border-gray-700" data-testid="experiment-section">
-          {/* Evidence References */}
+          {/* Evidence References - Adaptive Parser */}
           {insight.evidence_refs && insight.evidence_refs.length > 0 && (
             <div className="space-y-1">
               <div className="text-xs text-gray-500 uppercase tracking-wide">Evidence References</div>
               <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
-                {insight.evidence_refs.map((ref, i) => (
-                  <li key={i} className="font-mono text-xs">{ref}</li>
-                ))}
+                {insight.evidence_refs.map((ref, i) => {
+                  // Parse path: features.segment_performance.by_keyword.fanny_pack.metrics.roas
+                  const parts = ref.split('.');
+
+                  // Remove "features" prefix
+                  const pathParts = parts.slice(1);
+
+                  // Identify dimension values (contain underscores or numbers, not common keywords)
+                  const commonKeywords = ['by', 'metrics', 'summary', 'performance', 'segment', 'campaigns'];
+
+                  return (
+                    <li key={i} className="font-mono text-xs flex items-start gap-1">
+                      {pathParts.map((part, idx) => {
+                        // Check if this part is likely a dimension value
+                        const isDimensionValue =
+                          /[_\d]/.test(part) &&
+                          !commonKeywords.some(kw => part.toLowerCase().includes(kw));
+
+                        const displayText = part.replace(/_/g, ' ');
+
+                        return (
+                          <span key={idx} className="inline-flex items-center">
+                            <span className={isDimensionValue ? 'text-blue-300 font-semibold' : 'text-gray-400'}>
+                              {displayText}
+                            </span>
+                            {idx < pathParts.length - 1 && (
+                              <span className="text-gray-600 mx-1">→</span>
+                            )}
+                          </span>
+                        );
+                      })}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
