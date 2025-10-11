@@ -35,6 +35,7 @@ export default function StrategyPage() {
     activeStrategy,
     pendingPatches,
     isGeneratingStrategy,
+    isLoadingStrategy,
     error,
     generateStrategy,
     applyPatch
@@ -56,11 +57,12 @@ export default function StrategyPage() {
   }
 
   // Generate strategy from analysis if we have analysis but no strategy
+  // Only auto-generate after we've finished loading existing strategies
   useEffect(() => {
-    if (analysisSnapshot && !activeStrategy && !isGeneratingStrategy) {
+    if (analysisSnapshot && !activeStrategy && !isGeneratingStrategy && !isLoadingStrategy) {
       generateStrategy(analysisSnapshot)
     }
-  }, [analysisSnapshot, activeStrategy, isGeneratingStrategy, generateStrategy])
+  }, [analysisSnapshot, activeStrategy, isGeneratingStrategy, isLoadingStrategy, generateStrategy])
 
   return (
     <div className="min-h-screen bg-slate-950">

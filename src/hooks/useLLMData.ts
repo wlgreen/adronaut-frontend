@@ -118,6 +118,7 @@ export function useStrategyData(projectId?: string) {
   const [pendingPatches, setPendingPatches] = useState<StrategyPatch[]>([])
   const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false)
   const [isGeneratingPatches, setIsGeneratingPatches] = useState(false)
+  const [isLoadingStrategy, setIsLoadingStrategy] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const generateStrategy = useCallback(async (analysisSnapshot: any) => {
@@ -252,39 +253,45 @@ export function useStrategyData(projectId?: string) {
     if (!projectId) return
 
     const loadStrategyData = async () => {
-      // Load latest strategy
-      const result = await supabaseLogger.select('strategies', {
-        select: '*',
-        eq: { project_id: projectId },
-        orderBy: { column: 'version', ascending: false },
-        limit: 1
-      })
+      try {
+        // Load latest strategy
+        const result = await supabaseLogger.select('strategies', {
+          select: '*',
+          eq: { project_id: projectId },
+          orderBy: { column: 'version', ascending: false },
+          limit: 1
+        })
 
-      const strategyData = result.data && result.data.length > 0 ? result.data[0] : null
+        const strategyData = result.data && result.data.length > 0 ? result.data[0] : null
 
-      if (strategyData) {
-        setActiveStrategy(strategyData.strategy_data)
-      }
+        if (strategyData) {
+          setActiveStrategy(strategyData.strategy_data)
+        }
 
-      // Load pending patches
-      const patchesResult = await supabaseLogger.select('strategy_patches', {
-        select: '*',
-        eq: { project_id: projectId, status: 'proposed' },
-        orderBy: { column: 'created_at', ascending: false }
-      })
+        // Load pending patches
+        const patchesResult = await supabaseLogger.select('strategy_patches', {
+          select: '*',
+          eq: { project_id: projectId, status: 'proposed' },
+          orderBy: { column: 'created_at', ascending: false }
+        })
 
-      const patchesData = patchesResult.data
+        const patchesData = patchesResult.data
 
-      if (patchesData) {
-        const patches: StrategyPatch[] = patchesData.map(p => ({
-          patch_id: p.patch_id,
-          source: p.source,
-          status: p.status,
-          patch_json: p.patch_data,
-          justification: p.justification,
-          created_at: p.created_at
-        }))
-        setPendingPatches(patches)
+        if (patchesData) {
+          const patches: StrategyPatch[] = patchesData.map(p => ({
+            patch_id: p.patch_id,
+            source: p.source,
+            status: p.status,
+            patch_json: p.patch_data,
+            justification: p.justification,
+            created_at: p.created_at
+          }))
+          setPendingPatches(patches)
+        }
+      } catch (error) {
+        console.error('Failed to load strategy data:', error)
+      } finally {
+        setIsLoadingStrategy(false)
       }
     }
 
@@ -296,6 +303,7 @@ export function useStrategyData(projectId?: string) {
     pendingPatches,
     isGeneratingStrategy,
     isGeneratingPatches,
+    isLoadingStrategy,
     error,
     generateStrategy,
     generatePatches,
