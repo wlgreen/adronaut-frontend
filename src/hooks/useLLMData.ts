@@ -192,9 +192,7 @@ export function useStrategyData(projectId?: string) {
           strategy_id: uuidv4()
         }
 
-        setActiveStrategy(newStrategy)
-
-        // Save new strategy version
+        // Save new strategy version first
         await supabaseLogger.insert('strategies', {
           project_id: projectId,
           strategy_id: newStrategy.strategy_id,
@@ -202,6 +200,9 @@ export function useStrategyData(projectId?: string) {
           strategy_data: newStrategy,
           created_at: newStrategy.created_at
         })
+
+        // Update local state after successful database write
+        setActiveStrategy(newStrategy)
       }
 
       // Update patch status
@@ -212,8 +213,37 @@ export function useStrategyData(projectId?: string) {
 
       // Remove from pending
       setPendingPatches(prev => prev.filter(p => p.patch_id !== patchId))
+
+      // Reload strategy from database to ensure consistency
+      if (action === 'approve') {
+        const result = await supabaseLogger.select('strategies', {
+          select: '*',
+          eq: { project_id: projectId },
+          orderBy: { column: 'version', ascending: false },
+          limit: 1
+        })
+
+        if (result.data && result.data.length > 0) {
+          setActiveStrategy(result.data[0].strategy_data)
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to apply patch')
+      // Reload strategy on error to ensure state consistency
+      try {
+        const result = await supabaseLogger.select('strategies', {
+          select: '*',
+          eq: { project_id: projectId },
+          orderBy: { column: 'version', ascending: false },
+          limit: 1
+        })
+
+        if (result.data && result.data.length > 0) {
+          setActiveStrategy(result.data[0].strategy_data)
+        }
+      } catch (reloadErr) {
+        console.error('Failed to reload strategy after error:', reloadErr)
+      }
     }
   }, [pendingPatches, activeStrategy, projectId])
 
