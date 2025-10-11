@@ -28,6 +28,15 @@ interface PatchCardProps {
 export function PatchCard({ patch, onAction }: PatchCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
+  // Helper function to safely render any value (primitive or object)
+  const safeRender = (value: unknown): string => {
+    if (value === null || value === undefined) return 'N/A'
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value)
+    }
+    return JSON.stringify(value)
+  }
+
   const getSourceIcon = (source: string) => {
     switch (source) {
       case 'insights': return <Brain className="w-5 h-5" />
@@ -84,10 +93,10 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
             <span className="text-sm font-medium text-white">Audience Targeting</span>
           </div>
           <div className="ml-6 space-y-1">
-            {patch.patch_json.audience_targeting.segments?.map((segment: { name: string; budget_allocation: string }, idx: number) => (
+            {patch.patch_json.audience_targeting.segments?.map((segment: any, idx: number) => (
               <div key={idx} className="text-sm text-gray-300 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-neon-cyan" />
-                <span>{segment.name}: {segment.budget_allocation} allocation</span>
+                <span>{safeRender(segment.name)}: {safeRender(segment.budget_allocation)} allocation</span>
               </div>
             ))}
           </div>
@@ -105,12 +114,12 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
           <div className="ml-6 space-y-1">
             <div className="text-sm text-gray-300 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-neon-emerald" />
-              <span>Total Budget: {patch.patch_json.budget_allocation.total_budget}</span>
+              <span>Total Budget: {safeRender(patch.patch_json.budget_allocation.total_budget)}</span>
             </div>
             {patch.patch_json.budget_allocation.channel_breakdown && (
               Object.entries(patch.patch_json.budget_allocation.channel_breakdown).map(([channel, amount]) => (
                 <div key={channel} className="text-sm text-gray-400 ml-4">
-                  {channel}: {amount as string}
+                  {channel}: {safeRender(amount)}
                 </div>
               ))
             )}
@@ -127,7 +136,7 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
             <span className="text-sm font-medium text-white">Messaging Strategy</span>
           </div>
           <div className="ml-6 text-sm text-gray-300">
-            {patch.patch_json.messaging_strategy.primary_message}
+            {safeRender(patch.patch_json.messaging_strategy.primary_message)}
           </div>
         </div>
       )
@@ -326,31 +335,31 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
               {experimentDetails.objective && (
                 <div>
                   <span className="text-gray-400">Objective: </span>
-                  <span className="text-gray-200">{experimentDetails.objective}</span>
+                  <span className="text-gray-200">{safeRender(experimentDetails.objective)}</span>
                 </div>
               )}
               {experimentDetails.hypothesis && (
                 <div>
                   <span className="text-gray-400">Hypothesis: </span>
-                  <span className="text-gray-200">{experimentDetails.hypothesis}</span>
+                  <span className="text-gray-200">{safeRender(experimentDetails.hypothesis)}</span>
                 </div>
               )}
               {experimentDetails.method && (
                 <div>
                   <span className="text-gray-400">Method: </span>
-                  <span className="text-gray-200">{experimentDetails.method}</span>
+                  <span className="text-gray-200">{safeRender(experimentDetails.method)}</span>
                 </div>
               )}
               {experimentDetails.duration && (
                 <div>
                   <span className="text-gray-400">Duration: </span>
-                  <span className="text-gray-200">{experimentDetails.duration}</span>
+                  <span className="text-gray-200">{safeRender(experimentDetails.duration)}</span>
                 </div>
               )}
               {experimentDetails.total_budget && (
                 <div>
                   <span className="text-gray-400">Budget: </span>
-                  <span className="text-gray-200">{experimentDetails.total_budget}</span>
+                  <span className="text-gray-200">{safeRender(experimentDetails.total_budget)}</span>
                 </div>
               )}
               {experimentDetails.success_metrics && experimentDetails.success_metrics.length > 0 && (
@@ -373,7 +382,7 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
               {experimentDetails.decision_criteria && (
                 <div>
                   <span className="text-gray-400">Decision Criteria: </span>
-                  <span className="text-gray-200">{experimentDetails.decision_criteria}</span>
+                  <span className="text-gray-200">{safeRender(experimentDetails.decision_criteria)}</span>
                 </div>
               )}
             </div>
@@ -391,21 +400,21 @@ export function PatchCard({ patch, onAction }: PatchCardProps) {
               {aiRecommendations.rationale && (
                 <div>
                   <span className="text-gray-400">Rationale: </span>
-                  <span className="text-gray-200">{aiRecommendations.rationale}</span>
+                  <span className="text-gray-200">{safeRender(aiRecommendations.rationale)}</span>
                 </div>
               )}
               {aiRecommendations.learning_value && (
                 <div>
                   <span className="text-gray-400">Learning Value: </span>
-                  <span className="text-gray-200">{aiRecommendations.learning_value}</span>
+                  <span className="text-gray-200">{safeRender(aiRecommendations.learning_value)}</span>
                 </div>
               )}
               {aiRecommendations.next_steps_after_experiment && aiRecommendations.next_steps_after_experiment.length > 0 && (
                 <div>
                   <span className="text-gray-400">Next Steps After Experiment:</span>
                   <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-                    {aiRecommendations.next_steps_after_experiment.map((step: string, idx: number) => (
-                      <li key={idx} className="text-gray-300">{step}</li>
+                    {aiRecommendations.next_steps_after_experiment.map((step: any, idx: number) => (
+                      <li key={idx} className="text-gray-300">{safeRender(step)}</li>
                     ))}
                   </ul>
                 </div>

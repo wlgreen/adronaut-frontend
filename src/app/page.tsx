@@ -5,13 +5,11 @@ import { Rocket, Play, Trash2 } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { FileUploader } from '@/components/workspace/FileUploader'
 import { AnalysisSnapshot } from '@/components/workspace/AnalysisSnapshot'
-import { InsightsCard } from '@/components/workspace/InsightsCard'
 import { PremiumButton } from '@/components/ui/PremiumButton'
 import { PremiumCard } from '@/components/ui/PremiumCard'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { useWorkspaceData } from '@/hooks/useLLMData'
 import { supabaseLogger } from '@/lib/supabase-logger'
-import type { Insight } from '@/types/insights'
 
 export default function WorkspacePage() {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string; status: string}>>([])
@@ -25,7 +23,6 @@ export default function WorkspacePage() {
   const [artifactsLoading, setArtifactsLoading] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<{ artifactId: string; filename: string } | null>(null)
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null)
-  const [insights, setInsights] = useState<Insight[]>([])
   const [projectId, setProjectId] = useState<string>(() => {
     // Generate or retrieve project ID
     if (typeof window !== 'undefined') {
@@ -56,6 +53,11 @@ export default function WorkspacePage() {
     console.log('📊 [Workspace] analysisSnapshot changed:', {
       hasSnapshot: !!analysisSnapshot,
       keys: analysisSnapshot ? Object.keys(analysisSnapshot) : [],
+      hasFeatures: !!analysisSnapshot?.features,
+      hasInsights: !!analysisSnapshot?.insights,
+      featuresKeys: analysisSnapshot?.features ? Object.keys(analysisSnapshot.features) : [],
+      insightsKeys: analysisSnapshot?.insights ? Object.keys(analysisSnapshot.insights) : [],
+      insightsCount: analysisSnapshot?.insights?.insights?.length || 0,
       targetAudience: analysisSnapshot?.target_audience,
       audienceSegments: analysisSnapshot?.audience_segments,
       rawSnapshot: analysisSnapshot
@@ -196,35 +198,6 @@ export default function WorkspacePage() {
       setDeleteConfirm(null)
     }
   }
-
-  // Load insights from analysis snapshot (correct location after workflow)
-  useEffect(() => {
-    if (!analysisSnapshot) {
-      setInsights([])
-      return
-    }
-
-    console.log('📊 [Insights] Loading insights from snapshot')
-
-    // Insights are stored in nested structure: snapshot.insights.insights
-    // This is because the workflow saves {features, insights: {insights: [...], candidates_evaluated, selection_method}}
-    const snapshotInsights = analysisSnapshot?.insights?.insights || []
-
-    console.log('📊 [Insights] Found insights:', {
-      hasInsightsKey: !!analysisSnapshot.insights,
-      hasNestedInsights: !!analysisSnapshot?.insights?.insights,
-      insightCount: snapshotInsights.length,
-      insights: snapshotInsights
-    })
-
-    if (Array.isArray(snapshotInsights) && snapshotInsights.length > 0) {
-      setInsights(snapshotInsights)
-      console.log(`✅ [Insights] Loaded ${snapshotInsights.length} insights from snapshot`)
-    } else {
-      setInsights([])
-      console.log('⚠️ [Insights] No insights found in snapshot')
-    }
-  }, [analysisSnapshot])
 
   // Safety: Reset analyzing state if snapshot loads (e.g., from cache/refresh)
   useEffect(() => {
@@ -405,13 +378,6 @@ export default function WorkspacePage() {
             <PremiumCard variant="elevated">
               <AnalysisSnapshot snapshot={analysisSnapshot} />
             </PremiumCard>
-
-            {/* Insights Display */}
-            {insights.length > 0 && (
-              <div className="max-w-4xl mx-auto">
-                <InsightsCard insights={insights} />
-              </div>
-            )}
           </section>
         )}
 

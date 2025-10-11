@@ -166,7 +166,7 @@ export class LLMService {
     return LLMService.instance
   }
 
-  async analyzeUploadedFiles(projectId: string, onProgress?: (step: string) => void): Promise<AnalysisSnapshot> {
+  async analyzeUploadedFiles(projectId: string, onProgress?: (step: string) => void): Promise<any> {
     const timer = logger.startTimer('LLM_ANALYZE_FILES')
 
     try {
@@ -275,7 +275,7 @@ export class LLMService {
     }
   }
 
-  async generateStrategy(analysisSnapshot: AnalysisSnapshot, projectId: string): Promise<Strategy> {
+  async generateStrategy(analysisSnapshot: any, projectId: string): Promise<Strategy> {
     const timer = logger.startTimer('LLM_GENERATE_STRATEGY')
 
     try {
@@ -609,7 +609,7 @@ Based on the project context and typical marketing patterns, provide a realistic
     }
   }
 
-  private async generateRealStrategy(analysisSnapshot: AnalysisSnapshot, projectId: string): Promise<Strategy> {
+  private async generateRealStrategy(analysisSnapshot: any, projectId: string): Promise<Strategy> {
     const timer = logger.startTimer('GEMINI_STRATEGY_CALL')
     logger.info('Starting real Gemini strategy generation', { projectId })
 
@@ -709,10 +709,17 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
     }
   }
 
-  private createSampleStrategy(analysisSnapshot: AnalysisSnapshot): Strategy {
+  private createSampleStrategy(analysisSnapshot: any): Strategy {
     // Create a strategy based on the analysis insights
-    const topSegment = analysisSnapshot.audience_segments[0]
-    const topTheme = analysisSnapshot.content_themes.find(t => t.performance === 'high') || analysisSnapshot.content_themes[0]
+    // Handle both raw backend format ({features, insights}) and transformed format ({audience_segments, content_themes})
+
+    // Safely get segments and themes with fallbacks
+    const segments = analysisSnapshot.audience_segments || []
+    const themes = analysisSnapshot.content_themes || []
+    const temporalPatterns = analysisSnapshot.temporal_patterns || {}
+
+    const topSegment = segments.length > 0 ? segments[0] : null
+    const topTheme = themes.find((t: any) => t.performance === 'high') || (themes.length > 0 ? themes[0] : null)
 
     return {
       strategy_id: uuidv4(),
@@ -758,8 +765,8 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
           "content_marketing": "20%"
         },
         scheduling: {
-          peak_hours: analysisSnapshot.temporal_patterns.best_hours || ["10-12pm", "2-4pm"],
-          peak_days: analysisSnapshot.temporal_patterns.best_days || ["Tuesday", "Wednesday", "Thursday"]
+          peak_hours: temporalPatterns.best_hours || ["10-12pm", "2-4pm"],
+          peak_days: temporalPatterns.best_days || ["Tuesday", "Wednesday", "Thursday"]
         }
       },
       budget_allocation: {
@@ -1120,35 +1127,12 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
     }
   }
 
-  private async fetchAnalysisFromDatabase(projectId: string): Promise<AnalysisSnapshot> {
+  private async fetchAnalysisFromDatabase(projectId: string): Promise<any> {
     try {
       // Import supabaseLogger here to avoid circular dependency
       const { supabaseLogger } = await import('./supabase-logger')
 
-      // First try to get the latest strategy patch (where real insights are stored)
-      const strategyResult = await supabaseLogger.select('strategy_patches', {
-        select: '*',
-        eq: { project_id: projectId },
-        orderBy: { column: 'created_at', ascending: false },
-        limit: 1
-      })
-
-      if (strategyResult.data && strategyResult.data.length > 0) {
-        const patch = strategyResult.data[0]
-        const patchData = patch.patch_data
-
-        logger.info('Found strategy patch with real insights', {
-          projectId,
-          patchId: patch.id,
-          patchDataKeys: patchData ? Object.keys(patchData) : []
-        })
-
-        if (patchData && typeof patchData === 'object') {
-          return this.transformStrategyPatchToAnalysis(patchData)
-        }
-      }
-
-      // Fallback to analysis_snapshots if no strategy patch found
+      // Get the latest analysis snapshot (contains raw features + insights)
       const result = await supabaseLogger.select('analysis_snapshots', {
         select: '*',
         eq: { project_id: projectId },
@@ -1157,11 +1141,26 @@ Create a strategic plan that leverages the insights from the analysis to maximiz
       })
 
       if (result.data && result.data.length > 0) {
-        const snapshot = result.data[0].snapshot_data
+        const snapshotData = result.data[0].snapshot_data
 
-        // Transform the database format to match our interface
-        if (snapshot && typeof snapshot === 'object') {
-          return this.transformSnapshotToAnalysis(snapshot)
+        console.log('📊 [fetchAnalysisFromDatabase] Snapshot data retrieved:', {
+          hasData: !!snapshotData,
+          keys: snapshotData ? Object.keys(snapshotData) : [],
+          hasFeatures: !!snapshotData?.features,
+          hasInsights: !!snapshotData?.insights,
+          insightsStructure: snapshotData?.insights ? Object.keys(snapshotData.insights) : []
+        })
+
+        logger.info('Found analysis snapshot with features and insights', {
+          projectId,
+          hasFeatures: !!snapshotData?.features,
+          hasInsights: !!snapshotData?.insights,
+          insightsCount: snapshotData?.insights?.insights?.length || 0
+        })
+
+        // Return the RAW snapshot data - AnalysisSnapshot component expects this format
+        if (snapshotData && typeof snapshotData === 'object') {
+          return snapshotData
         }
       }
 

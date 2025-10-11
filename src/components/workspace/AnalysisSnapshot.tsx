@@ -16,42 +16,32 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
   console.log('🎨 [AnalysisSnapshot] Received snapshot:', {
     hasSnapshot: !!snapshot,
     keys: snapshot ? Object.keys(snapshot) : [],
-    targetAudience: snapshot?.target_audience,
-    metrics: snapshot?.metrics,
-    messaging: snapshot?.messaging,
+    hasFeatures: !!snapshot?.features,
+    hasInsights: !!snapshot?.insights,
+    hasAudienceSegments: !!snapshot?.audience_segments,
     fullSnapshot: snapshot
   })
 
-  // Check if we have any actual data (not all "insufficient_evidence")
-  const hasMetricsData = snapshot?.metrics?.campaigns &&
-    typeof snapshot.metrics.campaigns === 'object' &&
-    snapshot.metrics.campaigns !== 'insufficient_evidence' &&
-    Object.keys(snapshot.metrics.campaigns).length > 0
-  const hasChannelsData = Array.isArray(snapshot?.channels) && snapshot.channels.length > 0
-  const hasBudgetData = snapshot?.budget_data?.total_budget && snapshot.budget_data.total_budget !== 'insufficient_evidence'
-  const hasAnyData = hasMetricsData || hasChannelsData || hasBudgetData
+  // Detect format: raw backend format vs old transformed format
+  const isRawFormat = snapshot?.features || snapshot?.insights
+  const isOldTransformedFormat = snapshot?.audience_segments || snapshot?.content_themes
 
-  console.log('🔍 [AnalysisSnapshot] Data check:', {
-    hasAnyData,
-    hasMetricsData,
-    hasChannelsData,
-    hasBudgetData,
-    metricsCampaigns: snapshot?.metrics?.campaigns,
-    metricsType: typeof snapshot?.metrics?.campaigns,
-    channels: snapshot?.channels,
-    budget: snapshot?.budget_data
+  console.log('🔍 [AnalysisSnapshot] Format detection:', {
+    isRawFormat,
+    isOldTransformedFormat
   })
 
-  // Instead of hiding everything, show a data completeness indicator
-  const dataCompleteness = snapshot?.metrics?.data_completeness || 'minimal'
-  const showLimitedDataBanner = !hasMetricsData && hasChannelsData
-
-  // Extract insights from nested structure: snapshot.insights.insights
-  const insights: Insight[] = snapshot?.insights?.insights || []
+  // Extract insights - handle both formats
+  let insights: Insight[] = []
+  if (isRawFormat) {
+    // New raw format: snapshot.insights.insights
+    insights = snapshot?.insights?.insights || []
+  }
   const hasInsights = insights.length > 0
   const hasWeakInsights = insights.some((i: Insight) => i.data_support === 'weak')
 
   console.log('💡 [AnalysisSnapshot] Insights check:', {
+    isRawFormat,
     hasInsightsKey: !!snapshot?.insights,
     hasNestedInsights: !!snapshot?.insights?.insights,
     insightCount: insights.length,
@@ -59,41 +49,79 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
     insights
   })
 
-  // Transform backend features into UI-friendly structure
-  const transformedSnapshot = {
-    audience_segments: Array.isArray(snapshot?.target_audience?.segments)
-      ? snapshot.target_audience.segments
-      : [],
-    content_themes: Array.isArray(snapshot?.messaging)
-      ? snapshot.messaging.map((msg: string, idx: number) => ({
-          theme: `Theme ${idx + 1}`,
-          performance: 'medium' as const,
-          keywords: [msg]
-        }))
-      : [],
-    performance_metrics: snapshot?.metrics?.campaigns && typeof snapshot.metrics.campaigns === 'object' && snapshot.metrics.campaigns !== 'insufficient_evidence'
-      ? Object.values(snapshot.metrics.campaigns).reduce((acc: any, campaign: any) => {
-          return {
-            conversion_rate: campaign.ctr || 'N/A',
-            engagement_rate: campaign.ctr || 'N/A',
-            cost_per_acquisition: campaign.cpa || 'N/A',
-            roi: campaign.roas || 'N/A'
-          }
-        }, {})
-      : null,
-    geographic_insights: snapshot?.geographic_insights || {},
-    temporal_patterns: {
-      best_days: [],
-      best_hours: [],
-      seasonal_trends: snapshot?.recommendations_from_data?.[0] || 'No seasonal data available'
-    },
-    recommendations: Array.isArray(snapshot?.recommendations_from_data)
-      ? snapshot.recommendations_from_data
-      : [],
-    channels: Array.isArray(snapshot?.channels) ? snapshot.channels : []
+  // Transform data for display - handle both formats
+  let transformedSnapshot: any
+
+  if (isRawFormat) {
+    // New raw format - transform from features
+    const features = snapshot.features || {}
+    console.log('📊 [AnalysisSnapshot] Transforming from raw format, features:', features)
+
+    transformedSnapshot = {
+      audience_segments: Array.isArray(features?.target_audience?.segments)
+        ? features.target_audience.segments
+        : [],
+      content_themes: Array.isArray(features?.messaging)
+        ? features.messaging.map((msg: string, idx: number) => ({
+            theme: `Theme ${idx + 1}`,
+            performance: 'medium' as const,
+            keywords: [msg]
+          }))
+        : [],
+      performance_metrics: features?.metrics?.campaigns && typeof features.metrics.campaigns === 'object' && features.metrics.campaigns !== 'insufficient_evidence'
+        ? Object.values(features.metrics.campaigns).reduce((acc: any, campaign: any) => {
+            return {
+              conversion_rate: campaign.ctr || 'N/A',
+              engagement_rate: campaign.ctr || 'N/A',
+              cost_per_acquisition: campaign.cpa || 'N/A',
+              roi: campaign.roas || 'N/A'
+            }
+          }, {})
+        : null,
+      geographic_insights: features?.geographic_insights || {},
+      temporal_patterns: {
+        best_days: [],
+        best_hours: [],
+        seasonal_trends: features?.recommendations_from_data?.[0] || 'No seasonal data available'
+      },
+      recommendations: Array.isArray(features?.recommendations_from_data)
+        ? features.recommendations_from_data
+        : [],
+      channels: Array.isArray(features?.channels) ? features.channels : []
+    }
+  } else if (isOldTransformedFormat) {
+    // Old transformed format - use directly
+    console.log('📊 [AnalysisSnapshot] Using old transformed format directly')
+    transformedSnapshot = {
+      audience_segments: snapshot.audience_segments || [],
+      content_themes: snapshot.content_themes || [],
+      performance_metrics: snapshot.performance_metrics || null,
+      geographic_insights: snapshot.geographic_insights || {},
+      temporal_patterns: snapshot.temporal_patterns || { best_days: [], best_hours: [], seasonal_trends: 'No data available' },
+      recommendations: snapshot.recommendations || [],
+      channels: snapshot.channels || []
+    }
+  } else {
+    // Fallback - empty data
+    console.warn('⚠️ [AnalysisSnapshot] Unknown format, using empty data')
+    transformedSnapshot = {
+      audience_segments: [],
+      content_themes: [],
+      performance_metrics: null,
+      geographic_insights: {},
+      temporal_patterns: { best_days: [], best_hours: [], seasonal_trends: 'No data available' },
+      recommendations: [],
+      channels: []
+    }
   }
 
-  console.log('📊 [AnalysisSnapshot] Transformed snapshot:', transformedSnapshot)
+  console.log('📊 [AnalysisSnapshot] Final transformed snapshot:', transformedSnapshot)
+
+  // Check for data completeness
+  const hasMetricsData = transformedSnapshot.performance_metrics && Object.keys(transformedSnapshot.performance_metrics).length > 0
+  const hasChannelsData = transformedSnapshot.channels.length > 0
+  const dataCompleteness = hasMetricsData ? 'complete' : hasChannelsData ? 'partial' : 'minimal'
+  const showLimitedDataBanner = !hasMetricsData && hasChannelsData
 
   const getPerformanceColor = (performance: 'high' | 'medium' | 'low') => {
     switch (performance) {
@@ -160,218 +188,84 @@ export function AnalysisSnapshot({ snapshot }: AnalysisSnapshotProps) {
         </div>
       )}
 
-      {/* Strategic Insights Section - HIGH PRIORITY */}
-      {hasInsights && (
-        <section className="space-y-4" data-testid="analysis-insights-section">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-indigo-500 to-cyan-500 rounded-full"></div>
-            <h4 className="text-lg font-semibold text-slate-100">Strategic Insights</h4>
-            <Badge variant={hasWeakInsights ? 'warning' : 'success'} className="text-xs">
-              {insights.length} {insights.length === 1 ? 'insight' : 'insights'}
-            </Badge>
-          </div>
+      {/* Strategic Insights - uses InsightsCard component which has its own header */}
+      {hasInsights && <InsightsCard insights={insights} />}
 
-          {/* Banner for weak data insights */}
-          {hasWeakInsights && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-              <div className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-3 h-3 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-amber-300 font-medium mb-1">
-                    Learning-Focused Recommendations
-                  </p>
-                  <p className="text-xs text-gray-300">
-                    Based on limited data - recommendations include structured experiments to gather insights for future optimization cycles.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Render insights using InsightsCard component */}
-          <div className="space-y-4">
-            {insights.map((insight, index) => (
-              <div key={index} className="bg-gray-800/50 rounded-lg border border-gray-700 p-4 space-y-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl font-bold text-gray-500">#{insight.impact_rank}</div>
-                    <div className={`${insight.impact_score >= 70 ? 'bg-blue-600' : insight.impact_score >= 50 ? 'bg-blue-500' : 'bg-blue-400'} text-white px-3 py-1 rounded-lg text-sm font-medium`}>
-                      {insight.impact_score}/100
-                    </div>
-                  </div>
-                  <div className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full border ${
-                    insight.data_support === 'strong' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' :
-                    insight.data_support === 'weak' ? 'bg-amber-500/20 text-amber-300 border-amber-500/50' :
-                    'bg-gray-500/20 text-gray-300 border-gray-500/50'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      insight.data_support === 'strong' ? 'bg-emerald-500' :
-                      insight.data_support === 'weak' ? 'bg-amber-500' :
-                      'bg-gray-400'
-                    }`} />
-                    <span>
-                      {insight.data_support === 'weak' ? 'LIMITED DATA' :
-                       insight.data_support === 'moderate' ? 'MODERATE DATA' :
-                       'STRONG DATA'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-400">Primary lever:</span>
-                  <span className={`text-sm font-medium ${
-                    insight.primary_lever === 'audience' ? 'text-purple-400' :
-                    insight.primary_lever === 'creative' ? 'text-cyan-400' :
-                    insight.primary_lever === 'budget' ? 'text-green-400' :
-                    insight.primary_lever === 'bidding' ? 'text-orange-400' :
-                    'text-pink-400'
-                  }`}>
-                    {insight.primary_lever}
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Insight</div>
-                  <div className="text-gray-200">{insight.insight}</div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Hypothesis</div>
-                  <div className="text-gray-300">{insight.hypothesis}</div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Proposed Action</div>
-                    {insight.data_support === 'weak' && (
-                      <div className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">
-                        🧪 LEARNING EXPERIMENT
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-gray-200">{insight.proposed_action}</div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="text-gray-400">Expected:</span>
-                    <span className="text-gray-200">
-                      {insight.expected_effect.direction === 'increase' ? '↑' : '↓'} {insight.expected_effect.metric}
-                    </span>
-                    <span className="text-gray-400">
-                      ({insight.expected_effect.magnitude} magnitude)
-                    </span>
-                    <span className="text-gray-400 ml-auto">
-                      Confidence: {(insight.confidence * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  {insight.expected_effect.range && (
-                    <div className="text-xs text-blue-300 ml-20">
-                      {typeof insight.expected_effect.range === 'string'
-                        ? insight.expected_effect.range
-                        : JSON.stringify(insight.expected_effect.range)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Key Performance Insights - Top Priority */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-2 h-8 bg-gradient-to-b from-emerald-500 to-indigo-500 rounded-full"></div>
-          <h4 className="text-lg font-semibold text-slate-100">Key Performance Insights</h4>
+      {/* Performance Insights Section */}
+      <section className="space-y-4" data-testid="performance-insights-section">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-8 bg-gradient-to-b from-emerald-500 to-cyan-500 rounded-full"></div>
+          <h4 className="text-lg font-semibold text-slate-100">Performance Insights</h4>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Performance Metrics - Elevated prominence */}
-          <PremiumCard variant="elevated" className="p-6">
-            <div className="pb-4">
-              <div className="flex items-center gap-3 mb-4">
-                <TrendingUp className="w-6 h-6 text-emerald-400" />
-                <span className="text-lg font-semibold text-slate-100">Performance Metrics</span>
-              </div>
-            </div>
-            <div>
-              <div className="grid grid-cols-2 gap-6">
-                {transformedSnapshot.performance_metrics && Object.entries(transformedSnapshot.performance_metrics).map(([key, value]) => (
-                  <div key={key} className="text-center">
-                    <p className="text-3xl font-mono font-bold text-emerald-400 mb-1">
-                      {value}
-                    </p>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">
-                      {key.replace('_', ' ')}
-                    </p>
+        {hasMetricsData ? (
+          <div className="bg-gray-900 rounded-lg border border-gray-700 p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(transformedSnapshot.performance_metrics).map(([key, value]) => (
+                <div key={key} className="bg-gray-800/50 rounded-lg border border-emerald-500/30 p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-400" />
+                    <span className="text-sm text-gray-400 uppercase tracking-wide">
+                      {key.replace(/_/g, ' ')}
+                    </span>
                   </div>
-                ))}
-                {!transformedSnapshot.performance_metrics && (
-                  <div className="col-span-2 text-center py-4">
-                    <p className="text-slate-400">Performance metrics not available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </PremiumCard>
-
-          {/* Detected Channels */}
-          {transformedSnapshot.channels && transformedSnapshot.channels.length > 0 && (
-            <PremiumCard variant="elevated" className="p-6">
-              <div className="pb-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <Zap className="w-6 h-6 text-cyan-400" />
-                  <span className="text-lg font-semibold text-slate-100">Detected Channels</span>
+                  <p className="text-2xl font-mono font-bold text-emerald-400">{value}</p>
                 </div>
-              </div>
-              <div>
+              ))}
+            </div>
+            {transformedSnapshot.recommendations && transformedSnapshot.recommendations.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Data-Driven Recommendations</p>
                 <div className="space-y-2">
-                  {transformedSnapshot.channels.map((channel: any, index: number) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-space-200/30 rounded-lg">
-                      <div className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
-                      <p className="text-sm text-gray-200">{typeof channel === 'string' ? channel : JSON.stringify(channel)}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </PremiumCard>
-          )}
-
-          {/* AI Recommendations - High priority */}
-          {transformedSnapshot.recommendations && transformedSnapshot.recommendations.length > 0 && (
-            <PremiumCard variant="elevated" className="p-6">
-              <div className="pb-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <Brain className="w-6 h-6 text-indigo-400" />
-                  <span className="text-lg font-semibold text-slate-100">AI Recommendations</span>
-                </div>
-              </div>
-              <div>
-                <div className="space-y-4">
                   {transformedSnapshot.recommendations.slice(0, 3).map((rec: any, index: number) => {
-                    // Handle both string and object formats
                     const text = typeof rec === 'string' ? rec : rec.recommendation || rec.action || JSON.stringify(rec)
                     return (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
-                        <p className="text-sm text-gray-300 leading-relaxed">{text}</p>
+                      <div key={index} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0" />
+                        <p className="text-sm text-gray-300">{text}</p>
                       </div>
                     )
                   })}
-                  {transformedSnapshot.recommendations.length > 3 && (
-                    <div className="pt-2 border-t border-space-300">
-                      <p className="text-xs text-gray-400">+{transformedSnapshot.recommendations.length - 3} more recommendations</p>
-                    </div>
-                  )}
                 </div>
               </div>
-            </PremiumCard>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-gray-900 rounded-lg border border-gray-700 p-8">
+            <div className="flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-gray-400 font-medium mb-1">No Sufficient Data</p>
+                <p className="text-sm text-gray-500">
+                  Upload files with campaign metrics (impressions, clicks, conversions, spend) to see performance insights.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
+
+      {/* Detected Channels - Moved from Key Performance Insights */}
+      {transformedSnapshot.channels && transformedSnapshot.channels.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-8 bg-gradient-to-b from-cyan-500 to-indigo-500 rounded-full"></div>
+            <h4 className="text-lg font-semibold text-slate-100">Detected Channels</h4>
+          </div>
+          <PremiumCard variant="elevated" className="p-6">
+            <div className="space-y-2">
+              {transformedSnapshot.channels.map((channel: any, index: number) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-space-200/30 rounded-lg">
+                  <div className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
+                  <p className="text-sm text-gray-200">{typeof channel === 'string' ? channel : JSON.stringify(channel)}</p>
+                </div>
+              ))}
+            </div>
+          </PremiumCard>
+        </section>
+      )}
 
       {/* Audience & Content Analysis */}
       <section className="space-y-6">

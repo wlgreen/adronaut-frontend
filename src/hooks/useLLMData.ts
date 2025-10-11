@@ -5,7 +5,7 @@ import { supabaseLogger } from '@/lib/supabase-logger'
 import { logger } from '@/lib/logger'
 
 export function useWorkspaceData(projectId?: string) {
-  const [analysisSnapshot, setAnalysisSnapshot] = useState<AnalysisSnapshot | null>(null)
+  const [analysisSnapshot, setAnalysisSnapshot] = useState<any | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState<string>('')
@@ -27,23 +27,20 @@ export function useWorkspaceData(projectId?: string) {
         console.log('📊 [analyzeFiles] setCurrentStep completed, new value:', step)
       })
       console.log('✅ [analyzeFiles] Analysis completed, snapshot received:', {
-        hasAudienceSegments: !!snapshot.audience_segments,
-        hasRecommendations: !!snapshot.recommendations,
-        segmentCount: snapshot.audience_segments?.length
+        snapshot,
+        keys: snapshot ? Object.keys(snapshot) : [],
+        hasFeatures: !!snapshot?.features,
+        hasInsights: !!snapshot?.insights,
+        hasAudienceSegments: !!snapshot?.audience_segments,
+        hasRecommendations: !!snapshot?.recommendations,
+        segmentCount: snapshot?.audience_segments?.length
       })
 
       setAnalysisSnapshot(snapshot)
-      console.log('📊 [analyzeFiles] Snapshot state updated')
+      console.log('📊 [analyzeFiles] Snapshot state updated with:', snapshot)
 
-      // Save to Supabase
-      await supabaseLogger.upsert('analysis_snapshots', {
-        project_id: projectId,
-        snapshot_data: snapshot,
-        created_at: new Date().toISOString()
-      }, {
-        onConflict: 'project_id'
-      })
-      console.log('💾 [analyzeFiles] Snapshot saved to Supabase')
+      // Don't save again - backend already saved it
+      console.log('💾 [analyzeFiles] Skipping duplicate save (backend already saved)')
     } catch (err) {
       console.error('❌ [analyzeFiles] Analysis failed:', err)
       setError(err instanceof Error ? err.message : 'Analysis failed')
@@ -59,6 +56,7 @@ export function useWorkspaceData(projectId?: string) {
     if (!projectId) return
 
     const loadExistingAnalysis = async () => {
+      console.log('🔍 [loadExistingAnalysis] Loading existing analysis for project:', projectId)
       try {
         const result = await supabaseLogger.select('analysis_snapshots', {
           select: '*',
@@ -67,19 +65,33 @@ export function useWorkspaceData(projectId?: string) {
           limit: 1
         })
 
+        console.log('🔍 [loadExistingAnalysis] Query result:', {
+          hasData: !!result.data,
+          dataLength: result.data?.length || 0,
+          rawResult: result
+        })
+
         if (result.data && result.data.length > 0) {
-          const snapshotData = result.data[0].snapshot_data
-          console.log('📊 Loaded existing analysis:', snapshotData)
+          const snapshotData = (result.data[0] as any).snapshot_data
+          console.log('📊 [loadExistingAnalysis] Loaded existing analysis:', {
+            snapshotData,
+            keys: snapshotData ? Object.keys(snapshotData) : [],
+            hasFeatures: !!snapshotData?.features,
+            hasInsights: !!snapshotData?.insights,
+            insightsCount: snapshotData?.insights?.insights?.length || 0
+          })
           setAnalysisSnapshot(snapshotData)
 
           // Reset analyzing state if we have existing data
           setIsAnalyzing(false)
         } else {
           // No existing analysis found
+          console.log('⚠️ [loadExistingAnalysis] No existing analysis found')
           setAnalysisSnapshot(null)
           setIsAnalyzing(false)
         }
       } catch (error) {
+        console.error('❌ [loadExistingAnalysis] Failed to load existing analysis:', error)
         logger.warn('Failed to load existing analysis', {
           projectId,
           error: error instanceof Error ? error.message : 'Unknown error'
@@ -108,7 +120,7 @@ export function useStrategyData(projectId?: string) {
   const [isGeneratingPatches, setIsGeneratingPatches] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const generateStrategy = useCallback(async (analysisSnapshot: AnalysisSnapshot) => {
+  const generateStrategy = useCallback(async (analysisSnapshot: any) => {
     if (!projectId) return
 
     setIsGeneratingStrategy(true)

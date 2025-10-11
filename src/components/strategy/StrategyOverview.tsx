@@ -7,31 +7,31 @@ import { Progress } from '@/components/ui/Progress'
 
 interface StrategyOverviewProps {
   strategy: {
-    audience_targeting: {
-      segments: Array<{
+    audience_targeting?: {
+      segments?: Array<{
         name: string
-        targeting_criteria: any
-        budget_allocation: string
-        priority: string
+        targeting_criteria?: any
+        budget_allocation?: string
+        priority?: string
       }>
     }
-    messaging_strategy: {
-      primary_message: string
-      tone: string
-      key_themes: string[]
+    messaging_strategy?: {
+      primary_message?: string
+      tone?: string
+      key_themes?: string[]
     }
-    channel_strategy: {
-      primary_channels: string[]
-      budget_split: Record<string, string>
-      scheduling: {
-        peak_hours: string[]
-        peak_days: string[]
+    channel_strategy?: {
+      primary_channels?: string[]
+      budget_split?: Record<string, string>
+      scheduling?: {
+        peak_hours?: string[]
+        peak_days?: string[]
       }
     }
-    budget_allocation: {
-      total_budget: string
-      channel_breakdown: Record<string, string>
-      optimization_strategy: string
+    budget_allocation?: {
+      total_budget?: string
+      channel_breakdown?: Record<string, string>
+      optimization_strategy?: string
     }
   }
 }
@@ -46,8 +46,9 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
     )
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
+  const getPriorityColor = (priority?: string) => {
+    if (!priority) return 'default'
+    switch (priority.toLowerCase()) {
       case 'high': return 'danger'
       case 'medium': return 'warning'
       case 'low': return 'default'
@@ -63,8 +64,10 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
   }
 
   const getBudgetPercentage = (amount: string, total: string) => {
+    if (!amount || !total) return 0
     const amountNum = parseFloat(amount.replace(/[$,]/g, ''))
     const totalNum = parseFloat(total.replace(/[$,]/g, ''))
+    if (isNaN(amountNum) || isNaN(totalNum) || totalNum === 0) return 0
     return Math.round((amountNum / totalNum) * 100)
   }
 
@@ -84,28 +87,32 @@ export function StrategyOverview({ strategy }: StrategyOverviewProps) {
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-white">{segment.name}</h4>
                 <div className="flex items-center gap-2">
-                  <Badge variant={getPriorityColor(segment.priority) as any}>
-                    {segment.priority.toUpperCase()}
-                  </Badge>
+                  {segment.priority && (
+                    <Badge variant={getPriorityColor(segment.priority) as any}>
+                      {segment.priority.toUpperCase()}
+                    </Badge>
+                  )}
                   <span className="text-sm font-mono text-neon-emerald">
-                    {segment.budget_allocation}
+                    {segment.budget_allocation || 'TBD'}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Progress
-                  value={parseInt(segment.budget_allocation.replace('%', ''))}
-                  variant="success"
-                  className="h-2"
-                />
+                {segment.budget_allocation && (
+                  <Progress
+                    value={parseInt(segment.budget_allocation.replace('%', '') || '0')}
+                    variant="success"
+                    className="h-2"
+                  />
+                )}
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  {Object.entries(segment.targeting_criteria).map(([key, value]) => (
+                  {segment.targeting_criteria && Object.entries(segment.targeting_criteria).map(([key, value]) => (
                     <div key={key}>
                       <p className="text-gray-400 capitalize">{key.replace('_', ' ')}</p>
                       <p className="text-white font-medium">
-                        {Array.isArray(value) ? value.join(', ') : String(value)}
+                        {Array.isArray(value) ? value.join(', ') : String(value || 'Not specified')}
                       </p>
                     </div>
                   ))}
